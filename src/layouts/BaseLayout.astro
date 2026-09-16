@@ -1,0 +1,35 @@
+---
+import SiteNav from '../components/SiteNav.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  heroImage?: string;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description = 'bigbrotherwei 的个人博客，记录技术、项目、工具和思考。',
+  heroImage,
+  bodyClass = '',
+} = Astro.props;
+
+const siteTitle = title === 'bigbrotherwei' ? title : `${title} | bigbrotherwei`;
+---
+
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    {heroImage && <link rel="preload" as="image" href={heroImage} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{siteTitle}</title>
+  </head>
+  <body class={bodyClass}>
+    <SiteNav />
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,25 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="项目"
+  description="bigbrotherwei 的项目、实验和长期维护内容。"
+>
+  <main class="page-shell">
+    <PageHero
+      eyebrow="Projects"
+      title="项目"
+      description="这里会展示正在维护的项目、实验和可复用的工程经验。"
+    />
+
+    <section class="sketch-grid" aria-label="项目列表">
+      <article class="sketch-card">
+        <p class="eyebrow">Active</p>
+        <h2>bigbrotherwei.github.io</h2>
+        <p>个人博客重构项目：从旧的生成物仓库，逐步变成可写作、可扩展、可通过 PR 持续维护的 Astro 站点。</p>
+      </article>
+    </section>
+  </main>
+</BaseLayout>
