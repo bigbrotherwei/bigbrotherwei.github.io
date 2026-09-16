@@ -1,0 +1,67 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const topics = await getCollection('topics');
+
+  return topics.map((topic) => ({
+    params: { slug: topic.id },
+    props: { topic },
+  }));
+}
+
+const { topic } = Astro.props;
+const { Content } = await render(topic);
+const posts = (await getCollection('posts'))
+  .filter((post) => !post.data.draft && post.data.topic === topic.id)
+  .sort((left, right) => {
+    if (left.data.order !== right.data.order) {
+      return left.data.order - right.data.order;
+    }
+
+    return right.data.pubDate.getTime() - left.data.pubDate.getTime();
+  });
+
+const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}).format(date);
+---
+
+<BaseLayout title={topic.data.title} description={topic.data.description}>
+  <main class="page-shell">
+    <article class="article-page">
+      <a class="back-link" href="/topics/">返回专题</a>
+      <header class="article-header">
+        <p class="eyebrow">{topic.data.status}</p>
+        <h1>{topic.data.title}</h1>
+        <p>{topic.data.description}</p>
+      </header>
+
+      <div class="article-body sketch-card">
+        <Content />
+      </div>
+
+      <section class="topic-posts" aria-label="专题文章">
+        <div class="section-heading section-heading--compact">
+          <p class="eyebrow">Reading Path</p>
+          <h2>专题文章</h2>
+        </div>
+        <div class="content-list">
+          {posts.map((post) => (
+            <a class="sketch-card content-card" href={`/posts/${post.id}/`}>
+              <div class="content-card__meta">
+                <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+                <span>第 {post.data.order} 篇</span>
+              </div>
+              <h3>{post.data.title}</h3>
+              <p>{post.data.description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    </article>
+  </main>
+</BaseLayout>

@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "verify:assets": "node scripts/verify-assets.mjs",
+    "verify:content": "node scripts/verify-content.mjs",
     "verify:night-background": "node scripts/verify-night-background.mjs",
     "verify:quotes": "node scripts/verify-quotes.mjs",
-    "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:night-background",
+    "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:night-background && npm run verify:content",
     "build": "npm run verify && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "astro": "ASTRO_TELEMETRY_DISABLED=1 astro"
