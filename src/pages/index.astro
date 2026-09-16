@@ -1,7 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getDailyQuote, quotes } from '../data/quotes';
 
 const heroImage = '/images/hero-city-sketch.png';
+const dailyQuote = getDailyQuote();
+const quoteAuthor = dailyQuote.source
+  ? `-- ${dailyQuote.author}《${dailyQuote.source}》`
+  : `-- ${dailyQuote.author}`;
 ---
 
 <BaseLayout title="bigbrotherwei" heroImage={heroImage} bodyClass="home">
@@ -9,10 +14,32 @@ const heroImage = '/images/hero-city-sketch.png';
     <section class="hero-content" aria-labelledby="site-title">
       <p class="eyebrow">Personal Blog</p>
       <h1 id="site-title">bigbrotherwei</h1>
-      <p class="quote">知者不惑，仁者不忧，勇者不惧。</p>
-      <p class="quote-author">-- 孔子《论语》</p>
+      <p class="quote" data-quote-text>{dailyQuote.text}</p>
+      <p class="quote-author" data-quote-author>{quoteAuthor}</p>
     </section>
   </main>
+
+  <script is:inline type="application/json" id="daily-quotes" set:html={JSON.stringify(quotes)}></script>
+
+  <script is:inline>
+    const quoteDataElement = document.getElementById('daily-quotes');
+    const quotes = JSON.parse(quoteDataElement?.textContent || '[]');
+    const quoteText = document.querySelector('[data-quote-text]');
+    const quoteAuthor = document.querySelector('[data-quote-author]');
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    const dayIndex = quotes.length > 0
+      ? Math.abs(Math.floor(dayStart.getTime() / 86400000)) % quotes.length
+      : 0;
+    const quote = quotes[dayIndex];
+
+    if (quote && quoteText && quoteAuthor) {
+      quoteText.textContent = quote.text;
+      quoteAuthor.textContent = quote.source
+        ? `-- ${quote.author}《${quote.source}》`
+        : `-- ${quote.author}`;
+    }
+  </script>
 </BaseLayout>
 
 <style>
