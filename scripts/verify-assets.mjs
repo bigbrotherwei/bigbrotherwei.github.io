@@ -1,14 +1,13 @@
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const heroPath = join(root, 'public/images/hero-city-sketch.png');
-const forbiddenHeroPath = join(root, 'public/images/hero-city-night.png');
 const indexPath = join(root, 'src/pages/index.astro');
 const requiredComponentPaths = [
   'src/layouts/BaseLayout.astro',
   'src/components/SiteNav.astro',
   'src/components/PageHero.astro',
+  'src/components/PixelFarmBackdrop.astro',
 ];
 const requiredRoutePaths = [
   'src/pages/posts/index.astro',
@@ -17,22 +16,52 @@ const requiredRoutePaths = [
   'src/pages/projects/index.astro',
   'src/pages/about.astro',
 ];
-const publicReference = '/images/hero-city-sketch.png';
-const forbiddenReference = '/images/hero-city-night.png';
+const forbiddenAssetPaths = [
+  'public/images/hero-city-sketch.png',
+  'public/images/hero-city-night.png',
+];
+const forbiddenReferences = [
+  '/images/hero-city-sketch.png',
+  '/images/hero-city-night.png',
+];
+const sourceScanRoots = [
+  'src/pages',
+  'src/components',
+  'src/layouts',
+  'src/styles',
+];
 
 const failures = [];
+const sourceFiles = [];
 
-if (!existsSync(heroPath)) {
-  failures.push(`Missing hero image: ${heroPath}`);
-} else {
-  const size = statSync(heroPath).size;
-  if (size < 20_000) {
-    failures.push(`Hero image looks too small to be a real bitmap asset: ${size} bytes`);
+const collectSourceFiles = (relativePath) => {
+  const absolutePath = join(root, relativePath);
+  if (!existsSync(absolutePath)) {
+    return;
   }
+
+  const stat = statSync(absolutePath);
+  if (stat.isDirectory()) {
+    for (const entry of readdirSync(absolutePath)) {
+      collectSourceFiles(join(relativePath, entry));
+    }
+    return;
+  }
+
+  if (stat.isFile() && /\.(astro|css|ts|js|mjs)$/.test(relativePath)) {
+    sourceFiles.push(relativePath);
+  }
+};
+
+for (const sourceRoot of sourceScanRoots) {
+  collectSourceFiles(sourceRoot);
 }
 
-if (existsSync(forbiddenHeroPath)) {
-  failures.push(`Remove photorealistic hero image: ${forbiddenHeroPath}`);
+for (const assetPath of forbiddenAssetPaths) {
+  const absolutePath = join(root, assetPath);
+  if (existsSync(absolutePath)) {
+    failures.push(`Remove unused city hero asset: ${assetPath}`);
+  }
 }
 
 for (const componentPath of requiredComponentPaths) {
@@ -51,16 +80,24 @@ for (const routePath of requiredRoutePaths) {
 
 const indexSource = readFileSync(indexPath, 'utf8');
 
-if (!indexSource.includes(publicReference)) {
-  failures.push(`Homepage must reference ${publicReference}`);
+for (const sourceFile of sourceFiles) {
+  const source = readFileSync(join(root, sourceFile), 'utf8');
+
+  for (const forbiddenReference of forbiddenReferences) {
+    if (source.includes(forbiddenReference)) {
+      failures.push(`${sourceFile} must not reference old city hero asset ${forbiddenReference}`);
+    }
+  }
+
+  if (/hero-city|--hero-image|var\(--hero-image\)/.test(source)) {
+    failures.push(`${sourceFile} must use the CSS pixel farm scene instead of the old city hero system`);
+  }
 }
 
-if (indexSource.includes(forbiddenReference)) {
-  failures.push(`Homepage must not reference photorealistic asset ${forbiddenReference}`);
-}
-
-if (!indexSource.includes('background-image')) {
-  failures.push('Homepage hero should use background-image for the hand-drawn city asset');
+for (const requiredToken of ['pixel-farm-hero', 'pixel-farm-hero__cabin', 'pixel-farm-hero__field']) {
+  if (!indexSource.includes(requiredToken)) {
+    failures.push(`Homepage must include original pixel farm token: ${requiredToken}`);
+  }
 }
 
 if (failures.length > 0) {

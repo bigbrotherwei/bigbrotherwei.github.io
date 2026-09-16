@@ -2,22 +2,31 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getDailyQuote, quotes } from '../data/quotes';
 
-const heroImage = '/images/hero-city-sketch.png';
 const dailyQuote = getDailyQuote();
 const quoteAuthor = dailyQuote.source
   ? `-- ${dailyQuote.author}《${dailyQuote.source}》`
   : `-- ${dailyQuote.author}`;
 ---
 
-<BaseLayout title="bigbrotherwei" heroImage={heroImage} bodyClass="home">
+<BaseLayout title="bigbrotherwei" bodyClass="home">
   <main>
-    <section class="home-hero" style={`--hero-image: url("${heroImage}")`}>
-    <section class="hero-content" aria-labelledby="site-title">
-      <p class="eyebrow">Personal Blog</p>
-      <h1 id="site-title">bigbrotherwei</h1>
-      <p class="quote" data-quote-text>{dailyQuote.text}</p>
-      <p class="quote-author" data-quote-author>{quoteAuthor}</p>
-    </section>
+    <section class="home-hero pixel-farm-hero">
+      <div class="pixel-farm-hero__cabin" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
+      <div class="pixel-farm-hero__field" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <section class="hero-content" aria-labelledby="site-title">
+        <p class="eyebrow">Personal Blog</p>
+        <h1 id="site-title">bigbrotherwei</h1>
+        <p class="quote" data-quote-text>{dailyQuote.text}</p>
+        <p class="quote-author" data-quote-author>{quoteAuthor}</p>
+      </section>
     </section>
 
     <section class="home-sections">
@@ -88,13 +97,12 @@ const quoteAuthor = dailyQuote.source
     display: grid;
     min-height: 100svh;
     overflow: hidden;
-    background-color: var(--color-ink);
+    background-color: transparent;
     background-image:
-      linear-gradient(rgba(11, 31, 48, 0.16), rgba(11, 31, 48, 0.76)),
-      radial-gradient(circle at 50% 32%, rgba(240, 185, 109, 0.12), transparent 28rem),
-      var(--hero-image);
-    background-position: center, center, center bottom;
-    background-size: cover, cover, cover;
+      linear-gradient(to bottom, rgba(29, 48, 76, 0.08), rgba(56, 96, 58, 0.2) 62%, rgba(49, 87, 45, 0.24)),
+      radial-gradient(circle at 52% 18%, rgba(255, 226, 145, 0.2), transparent 18rem);
+    background-position: center;
+    background-size: cover;
   }
 
   .home-hero::before {
@@ -103,8 +111,95 @@ const quoteAuthor = dailyQuote.source
     content: "";
     pointer-events: none;
     background:
-      linear-gradient(to bottom, rgba(8, 22, 35, 0.34), transparent 36%),
-      linear-gradient(to top, rgba(8, 22, 35, 0.78), transparent 46%);
+      linear-gradient(to bottom, rgba(20, 38, 58, 0.26), transparent 38%),
+      linear-gradient(to top, rgba(38, 65, 40, 0.72), transparent 52%);
+  }
+
+  .pixel-farm-hero::after {
+    position: absolute;
+    right: -6rem;
+    bottom: -1rem;
+    left: -6rem;
+    height: min(28vh, 13rem);
+    content: "";
+    background:
+      repeating-linear-gradient(90deg, rgba(255, 224, 137, 0.16) 0 0.75rem, transparent 0.75rem 3.4rem),
+      repeating-linear-gradient(0deg, rgba(95, 57, 34, 0.22) 0 0.35rem, transparent 0.35rem 2.2rem),
+      linear-gradient(180deg, rgba(92, 141, 65, 0.9), rgba(44, 93, 53, 0.95));
+    border-top: 0.22rem solid rgba(255, 224, 137, 0.34);
+    image-rendering: pixelated;
+    transform: rotate(-0.4deg);
+  }
+
+  .pixel-farm-hero__cabin {
+    position: absolute;
+    right: clamp(1rem, 12vw, 9rem);
+    bottom: min(23vh, 10rem);
+    width: clamp(8rem, 18vw, 13rem);
+    aspect-ratio: 1.26;
+    background:
+      linear-gradient(90deg, transparent 0 14%, rgba(255, 219, 124, 0.88) 14% 28%, transparent 28% 100%),
+      linear-gradient(#8c5d36 0 0);
+    border: 0.22rem solid #4d3226;
+    box-shadow:
+      0.65rem 0.65rem 0 rgba(35, 47, 32, 0.28),
+      inset 0 0 0 0.16rem rgba(255, 245, 210, 0.18);
+    image-rendering: pixelated;
+  }
+
+  .pixel-farm-hero__cabin::before {
+    position: absolute;
+    right: -0.55rem;
+    bottom: 100%;
+    left: -0.55rem;
+    height: 44%;
+    content: "";
+    background: #b8613d;
+    border: 0.22rem solid #4d3226;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  .pixel-farm-hero__cabin span:first-child {
+    position: absolute;
+    right: 18%;
+    bottom: 16%;
+    width: 24%;
+    height: 42%;
+    background: #68442e;
+    border: 0.16rem solid #3a251f;
+  }
+
+  .pixel-farm-hero__cabin span:last-child {
+    position: absolute;
+    left: 18%;
+    top: 26%;
+    width: 22%;
+    height: 22%;
+    background: #ffe08a;
+    border: 0.16rem solid #3a251f;
+    box-shadow: 0 0 1.6rem rgba(255, 214, 116, 0.44);
+  }
+
+  .pixel-farm-hero__field {
+    position: absolute;
+    bottom: 2.5rem;
+    left: clamp(1rem, 9vw, 7rem);
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.65rem;
+    width: clamp(13rem, 28vw, 22rem);
+    transform: rotate(1deg);
+  }
+
+  .pixel-farm-hero__field span {
+    display: block;
+    height: clamp(2rem, 5vw, 3.4rem);
+    background:
+      repeating-linear-gradient(90deg, transparent 0 0.55rem, rgba(70, 128, 63, 0.75) 0.55rem 1rem),
+      linear-gradient(#7c4d2f, #5b3828);
+    border: 0.16rem solid rgba(61, 39, 31, 0.74);
+    image-rendering: pixelated;
   }
 
   .hero-content {
@@ -115,7 +210,7 @@ const quoteAuthor = dailyQuote.source
     width: min(90vw, 760px);
     padding: 7rem 1.5rem 4rem;
     text-align: center;
-    text-shadow: 0 2px 24px rgba(5, 16, 27, 0.62);
+    text-shadow: 0 2px 18px rgba(52, 44, 26, 0.54);
   }
 
   .eyebrow {
@@ -133,8 +228,9 @@ const quoteAuthor = dailyQuote.source
     line-height: 1;
     letter-spacing: 0;
     text-shadow:
-      0 0.2rem 0.35rem rgba(6, 17, 29, 0.72),
-      0 0 2.8rem rgba(240, 185, 109, 0.18);
+      0 0.2rem 0 #473226,
+      0 0.35rem 0.8rem rgba(52, 44, 26, 0.54),
+      0 0 2.8rem rgba(255, 210, 105, 0.24);
   }
 
   .quote {

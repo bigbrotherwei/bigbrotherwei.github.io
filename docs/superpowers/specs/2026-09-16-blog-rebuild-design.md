@@ -22,7 +22,7 @@ The local workspace is an empty Git repository on `main` with no commits and no 
 - Replace generated static output with a source-managed blog project.
 - Use `bigbrotherwei` as the visible site title and brand.
 - Build a Fluid-inspired, independently implemented visual style.
-- Provide a city-night homepage hero with daily Chinese quotes.
+- Provide an original pixel-farm night homepage hero with daily Chinese quotes.
 - Support articles, topics, archives, tags, projects, about content, and utility tools.
 - Make future maintenance PR-based: feature branch, review, merge, publish.
 - Deploy automatically to GitHub Pages after approved merges.
@@ -87,9 +87,9 @@ The implementation must be original. It may use the same broad design ideas, but
 
 Primary mood:
 
-- City night.
-- Quiet, reflective, technical.
-- Blue-black and cool gray base colors.
+- Pixel-farm night.
+- Quiet, warm, reflective, technical.
+- Blue-black, grass green, and soil brown base colors.
 - Small amber or cyan accents.
 - Clean Chinese reading experience.
 
@@ -99,10 +99,11 @@ Avoid:
 - Marketing-style hero copy.
 - Decorative blobs, orbs, and purely ornamental gradients.
 - Stock-like imagery that makes the site feel generic.
+- Direct copies of third-party game assets, textures, characters, logos, or UI.
 
 ## Homepage Design
 
-The homepage first viewport is a large city-night cover.
+The homepage first viewport is an original pixel-farm night scene with a full-cover feel: stars, hills, a cabin, fencing, and field rows behind the centered title and daily quote.
 
 Hero content:
 
@@ -438,7 +439,7 @@ The first implementation batch should include:
 - Source-first repository structure.
 - GitHub Pages build/deploy workflow.
 - Base layout and navigation.
-- Fluid-inspired city-night homepage hero.
+- Fluid-inspired original pixel-farm night homepage hero.
 - `bigbrotherwei` site title.
 - Daily local Chinese quote module with at least 100 quotes.
 - Posts collection and article detail page.
@@ -470,7 +471,7 @@ PR 1: Project foundation
 
 PR 2: Visual system and homepage
 
-- Add design tokens, layout, navigation, city-night hero, and daily quote module.
+- Add design tokens, layout, navigation, original pixel-farm night hero, and daily quote module.
 - Add responsive homepage sections.
 
 PR 3: Content system
@@ -504,7 +505,7 @@ The first batch is successful when:
 
 - The site builds locally and in GitHub Actions.
 - The generated site can deploy to GitHub Pages.
-- The homepage shows a city-night hero with `bigbrotherwei` and a daily Chinese quote.
+- The homepage shows an original pixel-farm night hero with `bigbrotherwei` and a daily Chinese quote.
 - Navigation works across desktop and mobile.
 - Articles, topics, tools, projects, and about pages exist.
 - Markdown articles render with code highlighting and readable typography.
@@ -523,9 +524,9 @@ Risk: First batch becomes too large.
 
 Mitigation: Use the PR sequence above and keep statistics, comments, and backend tools out of the first batch.
 
-Risk: City-night hero harms readability.
+Risk: Pixel-farm night hero harms readability.
 
-Mitigation: Use a dark overlay, text shadow, and responsive image positioning; verify on desktop and mobile.
+Mitigation: Use a dark overlay, text shadow, careful layer contrast, and responsive positioning; verify on desktop and mobile.
 
 Risk: Quote attribution is inaccurate.
 
@@ -538,6 +539,6 @@ Mitigation: Split tools into separate routes and avoid heavy libraries unless a 
 ## Open Implementation Notes
 
 - Choose final package manager during implementation, with `npm` as the default unless the repo indicates otherwise.
-- Use an original city-night asset with a clear license or generated image asset.
+- Use original CSS or generated assets for the pixel-farm night scene; do not copy third-party game assets.
 - Keep all future backend/statistics configuration outside the first deployment path.
 - Prefer small focused components over large all-purpose page files.

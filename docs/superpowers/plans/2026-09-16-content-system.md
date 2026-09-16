@@ -58,7 +58,7 @@ Add:
 "verify:content": "node scripts/verify-content.mjs"
 ```
 
-Update `verify` so it runs after `verify:night-background`.
+Update `verify` so it runs after the visual background verification script.
 
 - [x] **Step 3: Run verification and confirm red**
 
@@ -104,7 +104,7 @@ Create:
 ```text
 src/content/posts/blog-rebuild-roadmap.md
 src/content/posts/github-pages-workflow.md
-src/content/posts/night-sketch-background.md
+src/content/posts/pixel-farm-background.md
 ```
 
 Each post must point to an existing topic.
