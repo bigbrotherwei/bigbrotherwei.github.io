@@ -1,6 +1,17 @@
 ---
+import { getCollection } from 'astro:content';
 import PageHero from '../../components/PageHero.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('posts'))
+  .filter((post) => !post.data.draft)
+  .sort((left, right) => right.data.pubDate.getTime() - left.data.pubDate.getTime());
+
+const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}).format(date);
 ---
 
 <BaseLayout
@@ -11,20 +22,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <PageHero
       eyebrow="Posts"
       title="文章"
-      description="这里会放按时间发布的单篇内容。下一阶段会接入 Astro content collections，让 Markdown 文章可以按分类、标签和专题组织。"
+      description="文章是按时间发布的单篇内容。它可以独立阅读，也可以通过 frontmatter 归入某个专题。"
     />
 
-    <section class="sketch-grid" aria-label="文章计划">
-      <article class="sketch-card">
-        <p class="eyebrow">Coming Soon</p>
-        <h2>个人博客重构第一篇</h2>
-        <p>准备记录从旧 Hexo 静态产物迁移到 Astro 源码工程的过程、取舍和踩坑。</p>
-      </article>
-      <article class="sketch-card">
-        <p class="eyebrow">Draft Queue</p>
-        <h2>GitHub Pages 自动发布</h2>
-        <p>后续会整理 Pages、Actions、PR 工作流和发布验证方法。</p>
-      </article>
+    <section class="content-list" aria-label="文章列表">
+      {posts.map((post) => (
+        <a class="sketch-card content-card" href={`/posts/${post.id}/`}>
+          <div class="content-card__meta">
+            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            <span>{post.data.tags.join(' / ')}</span>
+          </div>
+          <h2>{post.data.title}</h2>
+          <p>{post.data.description}</p>
+        </a>
+      ))}
     </section>
   </main>
 </BaseLayout>

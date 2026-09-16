@@ -1,6 +1,15 @@
 ---
+import { getCollection } from 'astro:content';
 import PageHero from '../../components/PageHero.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const topics = (await getCollection('topics')).sort((left, right) => left.data.order - right.data.order);
+const posts = (await getCollection('posts')).filter((post) => !post.data.draft);
+const postCountByTopic = new Map<string, number>();
+
+for (const post of posts) {
+  postCountByTopic.set(post.data.topic, (postCountByTopic.get(post.data.topic) ?? 0) + 1);
+}
 ---
 
 <BaseLayout
@@ -11,20 +20,20 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <PageHero
       eyebrow="Topics"
       title="专题"
-      description="专题不是分类，而是一条被整理过的路径。它会把文章串成一个可以持续更新的小册子。"
+      description="专题不是分类，而是一条被整理过的阅读路径。它把多篇文章串成可以持续更新的小册子。"
     />
 
     <section class="sketch-grid" aria-label="专题列表">
-      <article class="sketch-card">
-        <p class="eyebrow">更新中</p>
-        <h2>个人博客重构实录</h2>
-        <p>记录从旧博客生成物到新 Astro 工程的每一步：设计、分支、PR、发布和后续扩展。</p>
-      </article>
-      <article class="sketch-card">
-        <p class="eyebrow">计划中</p>
-        <h2>开发者工具箱搭建</h2>
-        <p>后续围绕内置工具页，整理纯前端工具的设计、实现和体验打磨。</p>
-      </article>
+      {topics.map((topic) => (
+        <a class="sketch-card content-card" href={`/topics/${topic.id}/`}>
+          <div class="content-card__meta">
+            <span>{topic.data.status}</span>
+            <span>{postCountByTopic.get(topic.id) ?? 0} 篇文章</span>
+          </div>
+          <h2>{topic.data.title}</h2>
+          <p>{topic.data.description}</p>
+        </a>
+      ))}
     </section>
   </main>
 </BaseLayout>

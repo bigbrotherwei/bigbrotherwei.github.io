@@ -6,7 +6,7 @@
 
 - Astro
 - TypeScript
-- Markdown/MDX 内容体系
+- Markdown 内容体系
 - GitHub Actions
 - GitHub Pages
 
@@ -61,7 +61,62 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 5. Review 后合并到 `master`。
 6. GitHub Actions 自动发布。
 
-完整文章系统和实用工具逻辑还没有实现。新增文章、专题、工具和项目的具体写作方式，会在对应阶段完成后补充到本文档。
+文章和专题内容系统已经接入 Astro Content Collections。新增文章和专题时，应先修改 Markdown 内容，再运行 `npm run build` 验证。
+
+## 文章和专题
+
+文章是单篇内容，按发布时间展示，适合记录一次问题、一段经验或一篇阶段总结。文件放在：
+
+```text
+src/content/posts/
+```
+
+专题是一组文章的阅读路径，不等同于分类。专题更像一份持续更新的小册子，用来把多篇文章按顺序串起来。文件放在：
+
+```text
+src/content/topics/
+```
+
+发布顺序建议如下：
+
+1. 如果文章属于一个新系列，先创建新专题。
+2. 创建新文章，并在文章 frontmatter 的 `topic` 字段填写专题 slug。
+3. 按需要调整文章的 `order`，决定它在专题里的阅读顺序。
+4. 运行 `npm run build`。
+5. 推送分支并创建 Pull Request。
+
+创建新专题时，在 `src/content/topics/` 下新增一个 `.md` 文件。文件名就是专题 slug，例如 `developer-toolbox.md` 对应 `/topics/developer-toolbox/`。
+
+```markdown
+---
+title: "开发者工具箱搭建"
+description: "围绕博客内置工具页，整理纯前端工具的设计、实现和体验打磨。"
+status: "计划中"
+order: 2
+---
+
+这里写专题介绍。
+```
+
+创建新文章时，在 `src/content/posts/` 下新增一个 `.md` 文件。文件名就是文章 slug，例如 `json-tool-design.md` 对应 `/posts/json-tool-design/`。
+
+```markdown
+---
+title: "JSON 工具设计记录"
+description: "记录博客内置 JSON 工具的交互设计和实现取舍。"
+pubDate: 2026-09-16
+tags:
+  - 工具
+  - JSON
+topic: "developer-toolbox"
+order: 1
+draft: false
+---
+
+这里写文章正文。
+```
+
+如果一篇文章暂时不想发布，把 `draft` 设为 `true`。构建时仍会校验 frontmatter，但列表页和详情页不会生成草稿文章。
 
 ## 第一阶段范围
 
@@ -94,9 +149,20 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - 调整导航、页面标题和卡片样式，让内容在夜晚背景上保持可读。
 - 新增 `npm run verify:night-background`，并纳入 `npm run verify` 和 `npm run build`。
 
+## 第四阶段范围
+
+第四阶段把文章和专题从占位页升级为真实内容系统：
+
+- 新增 Astro Content Collections 配置。
+- 新增 `posts` 和 `topics` 两类 Markdown 内容。
+- `/posts/` 按发布时间展示文章列表。
+- `/posts/[slug]/` 渲染文章详情。
+- `/topics/` 展示专题列表和文章数量。
+- `/topics/[slug]/` 渲染专题介绍和专题内文章路径。
+- 新增 `npm run verify:content`，并纳入 `npm run verify` 和 `npm run build`。
+
 后续阶段会继续实现：
 
-- 文章和专题内容系统
 - 实用工具具体功能
 - 项目页和关于页内容完善
 - 搜索
@@ -110,3 +176,4 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - 第一阶段实现计划：`docs/superpowers/plans/2026-09-16-blog-foundation.md`
 - 第二阶段实现计划：`docs/superpowers/plans/2026-09-16-handdrawn-home.md`
 - 第三阶段实现计划：`docs/superpowers/plans/2026-09-16-night-sketch-backgrounds.md`
+- 第四阶段实现计划：`docs/superpowers/plans/2026-09-16-content-system.md`

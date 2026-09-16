@@ -1,0 +1,48 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+
+  return posts
+    .filter((post) => !post.data.draft)
+    .map((post) => ({
+      params: { slug: post.id },
+      props: { post },
+    }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const topics = await getCollection('topics');
+const topic = topics.find((entry) => entry.id === post.data.topic);
+const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}).format(date);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <main class="page-shell">
+    <article class="article-page">
+      <a class="back-link" href="/posts/">返回文章</a>
+      <header class="article-header">
+        <p class="eyebrow">Post</p>
+        <h1>{post.data.title}</h1>
+        <p>{post.data.description}</p>
+        <div class="content-card__meta">
+          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+          {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
+        </div>
+        <div class="tag-list" aria-label="文章标签">
+          {post.data.tags.map((tag) => <span>{tag}</span>)}
+        </div>
+      </header>
+      <div class="article-body sketch-card">
+        <Content />
+      </div>
+    </article>
+  </main>
+</BaseLayout>
