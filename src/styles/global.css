@@ -4,6 +4,10 @@
   --color-paper-deep: #ece3d2;
   --color-ink: #112333;
   --color-ink-soft: #405768;
+  --color-night: #101e2a;
+  --color-night-deep: #08121f;
+  --color-night-glow: #f2c16d;
+  --color-night-line: rgba(255, 250, 241, 0.2);
   --color-teal: #397f7d;
   --color-sky: #2f6381;
   --color-coral: #d76f4a;
@@ -23,18 +27,16 @@
 
 html {
   min-height: 100%;
-  background: var(--color-paper);
+  background: var(--color-night-deep);
   font-family: var(--font-sans);
 }
 
 body {
+  position: relative;
   min-height: 100%;
   margin: 0;
-  background:
-    linear-gradient(90deg, rgba(17, 35, 51, 0.035) 1px, transparent 1px),
-    linear-gradient(rgba(17, 35, 51, 0.03) 1px, transparent 1px),
-    var(--color-paper);
-  background-size: 28px 28px, 28px 28px, auto;
+  overflow-x: hidden;
+  background: var(--color-night-deep);
   color: var(--color-text);
 }
 
@@ -44,7 +46,202 @@ a {
 }
 
 main {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
+}
+
+.night-sketch-backdrop {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(242, 193, 109, 0.2), transparent 11rem),
+    radial-gradient(circle at 78% 16%, rgba(57, 127, 125, 0.2), transparent 14rem),
+    linear-gradient(180deg, #16283a 0%, var(--color-night) 46%, var(--color-night-deep) 100%);
+}
+
+.night-sketch-backdrop::before,
+.night-sketch-backdrop::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.night-sketch-backdrop::before {
+  opacity: 0.32;
+  background:
+    linear-gradient(90deg, rgba(255, 250, 241, 0.055) 1px, transparent 1px),
+    linear-gradient(rgba(255, 250, 241, 0.045) 1px, transparent 1px);
+  background-size: 30px 30px;
+  transform: rotate(-0.7deg) scale(1.04);
+}
+
+.night-sketch-backdrop::after {
+  opacity: 0.2;
+  background:
+    radial-gradient(circle at 15% 28%, rgba(255, 250, 241, 0.22) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 34%, rgba(255, 250, 241, 0.14) 0 1px, transparent 2px),
+    linear-gradient(115deg, transparent 0 48%, rgba(255, 250, 241, 0.08) 49%, transparent 50% 100%);
+  background-size: 96px 96px, 124px 124px, 220px 220px;
+}
+
+.night-sketch-backdrop__glow {
+  position: absolute;
+  inset: auto -12rem -18rem -12rem;
+  height: 34rem;
+  background: radial-gradient(ellipse at center, rgba(215, 111, 74, 0.22), transparent 62%);
+}
+
+.night-sketch-backdrop__moon {
+  position: absolute;
+  top: clamp(5.5rem, 12vh, 8rem);
+  right: clamp(2rem, 12vw, 10rem);
+  width: clamp(4.5rem, 10vw, 7rem);
+  aspect-ratio: 1;
+  background: #fff2c8;
+  border: 2px solid rgba(255, 250, 241, 0.9);
+  border-radius: 48% 52% 51% 49%;
+  box-shadow:
+    0 0 0 0.45rem rgba(242, 193, 109, 0.08),
+    0 0 4rem rgba(242, 193, 109, 0.32),
+    inset -0.65rem -0.45rem 0 rgba(215, 111, 74, 0.12);
+  transform: rotate(-8deg);
+}
+
+.night-sketch-backdrop__moon::before {
+  position: absolute;
+  top: 27%;
+  left: 22%;
+  width: 0.7rem;
+  height: 0.7rem;
+  content: "";
+  border: 1px solid rgba(17, 35, 51, 0.18);
+  border-radius: 999px;
+}
+
+.night-sketch-backdrop__stars {
+  position: absolute;
+  inset: 4.5rem 0 30%;
+  opacity: 0.72;
+  background:
+    radial-gradient(circle, #fffaf1 0 1px, transparent 1.8px),
+    radial-gradient(circle, rgba(240, 185, 109, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle, rgba(255, 250, 241, 0.68) 0 1px, transparent 1.8px);
+  background-position: 18px 16px, 72px 48px, 124px 18px;
+  background-size: 138px 92px, 168px 118px, 214px 144px;
+}
+
+.night-sketch-backdrop__cloud {
+  position: absolute;
+  width: clamp(11rem, 22vw, 19rem);
+  height: clamp(3.4rem, 7vw, 5.2rem);
+  opacity: 0.22;
+  border: 1.5px solid rgba(255, 250, 241, 0.52);
+  border-radius: 47% 53% 51% 49%;
+  transform: rotate(-3deg);
+}
+
+.night-sketch-backdrop__cloud::before,
+.night-sketch-backdrop__cloud::after {
+  position: absolute;
+  content: "";
+  border: inherit;
+  border-radius: inherit;
+}
+
+.night-sketch-backdrop__cloud::before {
+  top: -1.1rem;
+  left: 17%;
+  width: 36%;
+  height: 82%;
+}
+
+.night-sketch-backdrop__cloud::after {
+  top: -0.55rem;
+  right: 16%;
+  width: 42%;
+  height: 74%;
+}
+
+.night-sketch-backdrop__cloud--left {
+  top: 20%;
+  left: -3rem;
+}
+
+.night-sketch-backdrop__cloud--right {
+  top: 35%;
+  right: -4rem;
+  transform: rotate(4deg);
+}
+
+.night-sketch-backdrop__skyline {
+  position: absolute;
+  right: -2rem;
+  bottom: 0;
+  left: -2rem;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: clamp(0.45rem, 1.3vw, 1rem);
+  height: clamp(10rem, 25vh, 16rem);
+  padding: 0 clamp(1rem, 4vw, 4rem);
+  opacity: 0.64;
+}
+
+.night-sketch-backdrop__skyline span {
+  display: block;
+  width: clamp(2.5rem, 8vw, 6.5rem);
+  background:
+    linear-gradient(90deg, rgba(255, 250, 241, 0.12) 1px, transparent 1px),
+    linear-gradient(rgba(255, 250, 241, 0.1) 1px, transparent 1px),
+    rgba(7, 16, 28, 0.82);
+  background-size: 1.1rem 1.25rem;
+  border: 1.4px solid rgba(255, 250, 241, 0.26);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -0.25rem 0 rgba(57, 127, 125, 0.1);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(1) {
+  height: 42%;
+  transform: rotate(-1.8deg);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(2) {
+  height: 64%;
+  transform: rotate(1.2deg);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(3) {
+  height: 49%;
+  transform: rotate(-0.8deg);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(4) {
+  height: 78%;
+  transform: rotate(0.9deg);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(5) {
+  height: 57%;
+  transform: rotate(-1.1deg);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(6) {
+  height: 69%;
+  transform: rotate(1.5deg);
+}
+
+.night-sketch-backdrop__skyline span:nth-child(7) {
+  height: 45%;
+  transform: rotate(-1.4deg);
+}
+
+body.home .night-sketch-backdrop {
+  opacity: 0.58;
 }
 
 .site-nav {
@@ -58,9 +255,9 @@ main {
   justify-content: space-between;
   gap: 1.25rem;
   padding: 1rem clamp(1rem, 4vw, 3.5rem);
-  color: var(--color-ink);
-  background: rgba(247, 243, 234, 0.78);
-  border-bottom: 1px solid var(--color-line);
+  color: #fffaf1;
+  background: rgba(8, 18, 31, 0.62);
+  border-bottom: 1px solid rgba(255, 250, 241, 0.18);
   backdrop-filter: blur(14px);
 }
 
@@ -107,15 +304,16 @@ body.home .site-nav {
 
 .page-hero h1 {
   margin: 0;
-  color: var(--color-ink);
+  color: #fffaf1;
   font-size: clamp(2.5rem, 7vw, 5rem);
   line-height: 1.05;
   letter-spacing: 0;
+  text-shadow: 0 0.35rem 1.4rem rgba(4, 12, 21, 0.28);
 }
 
 .page-hero p {
   margin: 0;
-  color: var(--color-muted);
+  color: rgba(255, 250, 241, 0.76);
   font-size: clamp(1rem, 2vw, 1.18rem);
   line-height: 1.8;
 }
@@ -132,10 +330,13 @@ body.home .site-nav {
 .sketch-card {
   position: relative;
   padding: 1.3rem;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-line);
+  background:
+    linear-gradient(135deg, rgba(255, 251, 241, 0.9), rgba(236, 227, 210, 0.76)),
+    var(--color-surface);
+  border: 1.5px solid rgba(255, 250, 241, 0.46);
   border-radius: 8px;
   box-shadow: var(--shadow-sketch);
+  backdrop-filter: blur(10px);
 }
 
 .sketch-card::before {

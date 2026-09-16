@@ -84,6 +84,16 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - 主导航页面骨架：`/posts`、`/topics`、`/tools`、`/projects`、`/about`。
 - 构建前校验手绘 hero 资产、主导航页面和名言数据。
 
+## 第三阶段范围
+
+第三阶段继续沿用手绘方向，把页面背景统一调整为夜晚手绘风格：
+
+- 新增共享背景组件 `NightSketchBackdrop`。
+- 在 `BaseLayout` 层挂载背景，使首页、文章、专题、实用工具、项目和关于页面自动继承。
+- 使用 CSS 绘制月亮、星空、云层、手绘网格纹理和城市剪影，不新增写实背景图片。
+- 调整导航、页面标题和卡片样式，让内容在夜晚背景上保持可读。
+- 新增 `npm run verify:night-background`，并纳入 `npm run verify` 和 `npm run build`。
+
 后续阶段会继续实现：
 
 - 文章和专题内容系统
@@ -99,3 +109,4 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - 英文设计文档：`docs/superpowers/specs/2026-09-16-blog-rebuild-design.md`
 - 第一阶段实现计划：`docs/superpowers/plans/2026-09-16-blog-foundation.md`
 - 第二阶段实现计划：`docs/superpowers/plans/2026-09-16-handdrawn-home.md`
+- 第三阶段实现计划：`docs/superpowers/plans/2026-09-16-night-sketch-backgrounds.md`
