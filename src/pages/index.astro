@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+
+const heroImage = '/images/hero-city-night.png';
 ---
 
 <html lang="zh-CN">
@@ -10,11 +12,12 @@ import '../styles/global.css';
       name="description"
       content="bigbrotherwei 的个人博客，记录技术、项目、工具和思考。"
     />
+    <link rel="preload" as="image" href={heroImage} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>bigbrotherwei</title>
   </head>
   <body>
-    <main class="hero">
+    <main class="hero" style={`--hero-image: url("${heroImage}")`}>
       <nav class="nav" aria-label="主导航">
         <a class="brand" href="/">bigbrotherwei</a>
         <div class="nav-links">
@@ -42,25 +45,22 @@ import '../styles/global.css';
     display: grid;
     min-height: 100vh;
     overflow: hidden;
-    background:
-      linear-gradient(rgba(8, 13, 24, 0.35), rgba(8, 13, 24, 0.84)),
-      radial-gradient(circle at 22% 20%, rgba(70, 130, 180, 0.45), transparent 26rem),
-      linear-gradient(145deg, #101827 0%, #18233a 42%, #070b13 100%);
+    background-color: #070b13;
+    background-image:
+      linear-gradient(rgba(4, 8, 16, 0.34), rgba(4, 8, 16, 0.78)),
+      radial-gradient(circle at 50% 38%, rgba(23, 48, 79, 0.18), transparent 32rem),
+      var(--hero-image);
+    background-position: center, center, center bottom;
+    background-size: cover, cover, cover;
   }
 
   .hero::after {
     position: absolute;
     inset: auto 0 0;
-    height: 38vh;
+    height: 42vh;
     content: "";
-    background:
-      linear-gradient(to top, rgba(0, 0, 0, 0.44), transparent),
-      repeating-linear-gradient(
-        90deg,
-        rgba(246, 193, 119, 0.38) 0 2px,
-        transparent 2px 28px
-      );
-    opacity: 0.18;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
+    opacity: 0.72;
   }
 
   .nav {
