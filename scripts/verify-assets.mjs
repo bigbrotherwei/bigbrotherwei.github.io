@@ -5,6 +5,11 @@ const root = process.cwd();
 const heroPath = join(root, 'public/images/hero-city-sketch.png');
 const forbiddenHeroPath = join(root, 'public/images/hero-city-night.png');
 const indexPath = join(root, 'src/pages/index.astro');
+const requiredComponentPaths = [
+  'src/layouts/BaseLayout.astro',
+  'src/components/SiteNav.astro',
+  'src/components/PageHero.astro',
+];
 const publicReference = '/images/hero-city-sketch.png';
 const forbiddenReference = '/images/hero-city-night.png';
 
@@ -21,6 +26,13 @@ if (!existsSync(heroPath)) {
 
 if (existsSync(forbiddenHeroPath)) {
   failures.push(`Remove photorealistic hero image: ${forbiddenHeroPath}`);
+}
+
+for (const componentPath of requiredComponentPaths) {
+  const absolutePath = join(root, componentPath);
+  if (!existsSync(absolutePath)) {
+    failures.push(`Missing shared component: ${componentPath}`);
+  }
 }
 
 const indexSource = readFileSync(indexPath, 'utf8');
