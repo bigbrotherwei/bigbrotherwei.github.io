@@ -61,7 +61,7 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 5. Review 后合并到 `master`。
 6. GitHub Actions 自动发布。
 
-文章系统和实用工具系统还没有在第一阶段实现。新增文章、专题、工具和项目的具体写作方式，会在对应阶段完成后补充到本文档。
+完整文章系统和实用工具逻辑还没有实现。新增文章、专题、工具和项目的具体写作方式，会在对应阶段完成后补充到本文档。
 
 ## 第一阶段范围
 
@@ -73,13 +73,22 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - GitHub Pages workflow
 - 本地开发和维护说明
 
+## 第二阶段范围
+
+第二阶段把站点从最小首页推进到可浏览的博客框架：
+
+- 手绘插画风格首屏，不使用写实照片。
+- 共享布局组件和主导航组件。
+- 本地每日中文名言库，按日期自动轮换。
+- 首页内容入口：文章、专题、实用工具、项目、关于。
+- 主导航页面骨架：`/posts`、`/topics`、`/tools`、`/projects`、`/about`。
+- 构建前校验手绘 hero 资产、主导航页面和名言数据。
+
 后续阶段会继续实现：
 
-- Fluid-inspired 城市夜景视觉系统
-- 每日中文名言库
 - 文章和专题内容系统
-- 实用工具页面
-- 项目页和关于页完善
+- 实用工具具体功能
+- 项目页和关于页内容完善
 - 搜索
 - 暗色模式
 - 访问统计和当前在线人数
@@ -89,3 +98,4 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - 中文设计文档：`docs/superpowers/specs/2026-09-16-blog-rebuild-design.zh.md`
 - 英文设计文档：`docs/superpowers/specs/2026-09-16-blog-rebuild-design.md`
 - 第一阶段实现计划：`docs/superpowers/plans/2026-09-16-blog-foundation.md`
+- 第二阶段实现计划：`docs/superpowers/plans/2026-09-16-handdrawn-home.md`

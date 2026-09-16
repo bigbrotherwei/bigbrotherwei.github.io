@@ -10,12 +10,52 @@ const quoteAuthor = dailyQuote.source
 ---
 
 <BaseLayout title="bigbrotherwei" heroImage={heroImage} bodyClass="home">
-  <main class="home-hero" style={`--hero-image: url("${heroImage}")`}>
+  <main>
+    <section class="home-hero" style={`--hero-image: url("${heroImage}")`}>
     <section class="hero-content" aria-labelledby="site-title">
       <p class="eyebrow">Personal Blog</p>
       <h1 id="site-title">bigbrotherwei</h1>
       <p class="quote" data-quote-text>{dailyQuote.text}</p>
       <p class="quote-author" data-quote-author>{quoteAuthor}</p>
+    </section>
+    </section>
+
+    <section class="home-sections">
+      <div class="page-shell">
+        <div class="section-heading">
+          <p class="eyebrow">Next Pages</p>
+          <h2>把想法慢慢画成地图</h2>
+          <p>这里会逐步沉淀文章、专题、实用工具、项目记录和一点个人说明。第二阶段先把入口铺好，让博客像一个可以继续生长的工作台。</p>
+        </div>
+
+        <div class="sketch-grid">
+          <a class="sketch-card home-card" href="/posts">
+            <span>文章</span>
+            <h3>技术笔记与思考</h3>
+            <p>后续会放 Astro、GitHub Pages、工程实践和日常学习记录。</p>
+          </a>
+          <a class="sketch-card home-card" href="/topics">
+            <span>专题</span>
+            <h3>个人博客重构实录</h3>
+            <p>把这次从旧静态产物到新博客工程的过程整理成连续专题。</p>
+          </a>
+          <a class="sketch-card home-card" href="/tools">
+            <span>实用工具</span>
+            <h3>内置开发者工具箱</h3>
+            <p>先搭工具入口，后续逐步实现 JSON、Base64、URL、时间戳等纯前端工具。</p>
+          </a>
+          <a class="sketch-card home-card" href="/projects">
+            <span>项目</span>
+            <h3>实验与作品</h3>
+            <p>记录正在维护的项目、尝试过的想法，以及能复用的工程经验。</p>
+          </a>
+          <a class="sketch-card home-card" href="/about">
+            <span>关于</span>
+            <h3>bigbrotherwei</h3>
+            <p>一个更像手账页的个人说明：兴趣、方向、技术栈和联系方式。</p>
+          </a>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -104,5 +144,58 @@ const quoteAuthor = dailyQuote.source
     margin: 0.75rem 0 0;
     color: rgba(255, 250, 241, 0.78);
     font-size: 1rem;
+  }
+
+  .home-sections {
+    background:
+      linear-gradient(to bottom, rgba(17, 35, 51, 0.08), transparent 9rem),
+      transparent;
+  }
+
+  .section-heading {
+    max-width: 740px;
+    margin-bottom: 2rem;
+  }
+
+  .section-heading h2 {
+    margin: 0.35rem 0 0;
+    color: var(--color-ink);
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    line-height: 1.12;
+    letter-spacing: 0;
+  }
+
+  .section-heading p:last-child {
+    margin: 1rem 0 0;
+    color: var(--color-muted);
+    font-size: 1.08rem;
+    line-height: 1.85;
+  }
+
+  .home-card {
+    display: grid;
+    min-height: 210px;
+    align-content: start;
+    gap: 0.8rem;
+  }
+
+  .home-card span {
+    width: fit-content;
+    color: var(--color-coral);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .home-card h3 {
+    margin: 0;
+    color: var(--color-ink);
+    font-size: 1.35rem;
+    line-height: 1.35;
+  }
+
+  .home-card p {
+    margin: 0;
+    color: var(--color-muted);
+    line-height: 1.8;
   }
 </style>

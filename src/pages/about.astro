@@ -1,0 +1,35 @@
+---
+import PageHero from '../components/PageHero.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="关于"
+  description="关于 bigbrotherwei 的个人说明、技术兴趣和当前关注方向。"
+>
+  <main class="page-shell">
+    <PageHero
+      eyebrow="About"
+      title="关于 bigbrotherwei"
+      description="这里会逐步整理我的技术兴趣、项目记录和正在关注的方向。语气保持自然一点，像翻开一本手账，而不是打开一份简历。"
+    />
+
+    <section class="sketch-grid" aria-label="关于内容">
+      <article class="sketch-card">
+        <p class="eyebrow">Focus</p>
+        <h2>当前关注</h2>
+        <p>个人博客工程化、静态站点体验、开发者工具、自动化发布，以及把日常经验沉淀成可复用内容。</p>
+      </article>
+      <article class="sketch-card">
+        <p class="eyebrow">Stack</p>
+        <h2>常用技术</h2>
+        <p>Astro、TypeScript、GitHub Actions、Markdown，以及围绕个人效率和内容生产的一些轻量工具。</p>
+      </article>
+      <article class="sketch-card">
+        <p class="eyebrow">Next</p>
+        <h2>接下来</h2>
+        <p>先把文章系统、专题系统和实用工具页补完整，再慢慢补搜索、暗色模式和访问统计。</p>
+      </article>
+    </section>
+  </main>
+</BaseLayout>

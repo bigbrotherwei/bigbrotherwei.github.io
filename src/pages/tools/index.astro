@@ -1,0 +1,86 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const tools = ['JSON 格式化', 'Base64 编码解码', 'URL 编码解码', '时间戳转换', 'UUID 生成', '字数统计'];
+---
+
+<BaseLayout
+  title="实用工具"
+  description="内置到博客中的轻量开发者工具箱，优先实现纯前端工具。"
+>
+  <main class="page-shell">
+    <PageHero
+      eyebrow="Tools"
+      title="实用工具"
+      description="这个页面参考工具箱的组织方式，但会保持博客自己的手绘视觉。当前先搭入口和分类骨架，工具逻辑后续逐个实现。"
+    />
+
+    <section class="tool-panel" aria-label="工具筛选">
+      <label>
+        搜索工具
+        <input type="search" placeholder="例如 JSON、Base64、时间戳" disabled />
+      </label>
+      <div class="tool-tags" aria-label="工具分类">
+        <span>文本</span>
+        <span>编码</span>
+        <span>时间</span>
+        <span>开发</span>
+      </div>
+    </section>
+
+    <section class="sketch-grid" aria-label="工具列表">
+      {tools.map((tool) => (
+        <article class="sketch-card">
+          <p class="eyebrow">Planned</p>
+          <h2>{tool}</h2>
+          <p>纯前端处理，不上传内容。下一阶段会为这个工具补独立页面和交互逻辑。</p>
+        </article>
+      ))}
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .tool-panel {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 251, 241, 0.72);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+  }
+
+  label {
+    display: grid;
+    gap: 0.5rem;
+    color: var(--color-muted);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  input {
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    color: var(--color-muted);
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid var(--color-line);
+    border-radius: 6px;
+  }
+
+  .tool-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .tool-tags span {
+    padding: 0.36rem 0.7rem;
+    color: var(--color-ink);
+    background: rgba(57, 127, 125, 0.1);
+    border: 1px solid rgba(57, 127, 125, 0.24);
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+</style>

@@ -10,6 +10,13 @@ const requiredComponentPaths = [
   'src/components/SiteNav.astro',
   'src/components/PageHero.astro',
 ];
+const requiredRoutePaths = [
+  'src/pages/posts/index.astro',
+  'src/pages/topics/index.astro',
+  'src/pages/tools/index.astro',
+  'src/pages/projects/index.astro',
+  'src/pages/about.astro',
+];
 const publicReference = '/images/hero-city-sketch.png';
 const forbiddenReference = '/images/hero-city-night.png';
 
@@ -32,6 +39,13 @@ for (const componentPath of requiredComponentPaths) {
   const absolutePath = join(root, componentPath);
   if (!existsSync(absolutePath)) {
     failures.push(`Missing shared component: ${componentPath}`);
+  }
+}
+
+for (const routePath of requiredRoutePaths) {
+  const absolutePath = join(root, routePath);
+  if (!existsSync(absolutePath)) {
+    failures.push(`Missing primary navigation route: ${routePath}`);
   }
 }
 

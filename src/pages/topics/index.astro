@@ -1,0 +1,30 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="专题"
+  description="专题用于把多篇文章组织成有顺序的学习路径或项目记录。"
+>
+  <main class="page-shell">
+    <PageHero
+      eyebrow="Topics"
+      title="专题"
+      description="专题不是分类，而是一条被整理过的路径。它会把文章串成一个可以持续更新的小册子。"
+    />
+
+    <section class="sketch-grid" aria-label="专题列表">
+      <article class="sketch-card">
+        <p class="eyebrow">更新中</p>
+        <h2>个人博客重构实录</h2>
+        <p>记录从旧博客生成物到新 Astro 工程的每一步：设计、分支、PR、发布和后续扩展。</p>
+      </article>
+      <article class="sketch-card">
+        <p class="eyebrow">计划中</p>
+        <h2>开发者工具箱搭建</h2>
+        <p>后续围绕内置工具页，整理纯前端工具的设计、实现和体验打磨。</p>
+      </article>
+    </section>
+  </main>
+</BaseLayout>
