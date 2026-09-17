@@ -7,7 +7,10 @@ const requiredComponentPaths = [
   'src/layouts/BaseLayout.astro',
   'src/components/SiteNav.astro',
   'src/components/PageHero.astro',
-  'src/components/PixelFarmBackdrop.astro',
+  'src/components/HandPaintedFarmBackdrop.astro',
+];
+const requiredAssetPaths = [
+  'public/images/hand-painted-farm-dusk.webp',
 ];
 const requiredRoutePaths = [
   'src/pages/posts/index.astro',
@@ -71,6 +74,13 @@ for (const componentPath of requiredComponentPaths) {
   }
 }
 
+for (const assetPath of requiredAssetPaths) {
+  const absolutePath = join(root, assetPath);
+  if (!existsSync(absolutePath)) {
+    failures.push(`Missing required visual asset: ${assetPath}`);
+  }
+}
+
 for (const routePath of requiredRoutePaths) {
   const absolutePath = join(root, routePath);
   if (!existsSync(absolutePath)) {
@@ -90,13 +100,13 @@ for (const sourceFile of sourceFiles) {
   }
 
   if (/hero-city|--hero-image|var\(--hero-image\)/.test(source)) {
-    failures.push(`${sourceFile} must use the CSS pixel farm scene instead of the old city hero system`);
+    failures.push(`${sourceFile} must use the shared hand-painted farm background instead of the old city hero system`);
   }
 }
 
-for (const requiredToken of ['pixel-farm-hero', 'pixel-farm-hero__cabin', 'pixel-farm-hero__field']) {
-  if (!indexSource.includes(requiredToken)) {
-    failures.push(`Homepage must include original pixel farm token: ${requiredToken}`);
+for (const forbiddenToken of ['pixel-farm-hero', 'pixel-farm-hero__cabin', 'pixel-farm-hero__field']) {
+  if (indexSource.includes(forbiddenToken)) {
+    failures.push(`Homepage must remove old CSS pixel farm token: ${forbiddenToken}`);
   }
 }
 
