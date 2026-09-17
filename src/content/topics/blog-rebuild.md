@@ -3,6 +3,7 @@ title: "个人博客重构实录"
 description: "记录从旧博客生成物到新 Astro 工程的每一步：设计、分支、PR、发布和后续扩展。"
 status: "更新中"
 order: 1
+background: "topic-blog-rebuild"
 ---
 
 这个专题用来记录个人博客重新维护的全过程。

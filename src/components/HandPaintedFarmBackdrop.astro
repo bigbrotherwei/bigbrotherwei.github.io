@@ -1,1 +1,17 @@
-<div class="hand-painted-farm-backdrop" aria-hidden="true"></div>
+---
+import type { PageBackground } from '../data/backgrounds';
+
+interface Props {
+  background: PageBackground;
+}
+
+const { background } = Astro.props;
+const backdropStyle = [
+  `--background-image: url("${background.desktop}")`,
+  `--background-image-mobile: url("${background.mobile}")`,
+  `--background-position: ${background.position ?? 'center'}`,
+  `--background-position-mobile: ${background.mobilePosition ?? 'center'}`,
+].join('; ');
+---
+
+<div class="hand-painted-farm-backdrop" style={backdropStyle} aria-hidden="true"></div>

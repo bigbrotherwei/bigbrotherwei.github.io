@@ -9,6 +9,7 @@ tags:
 topic: "blog-rebuild"
 order: 3
 draft: false
+background: "post-pixel-farm-background"
 ---
 
 这一轮视觉调整的目标，是让每个页面都带有更温暖、更有游戏手账感的背景，而不是继续停留在城市夜景方向。

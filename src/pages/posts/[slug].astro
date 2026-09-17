@@ -24,7 +24,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
 }).format(date);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout title={post.data.title} description={post.data.description} backgroundKey={post.data.background}>
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/posts/">返回文章</a>

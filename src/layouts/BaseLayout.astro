@@ -1,21 +1,25 @@
 ---
 import HandPaintedFarmBackdrop from '../components/HandPaintedFarmBackdrop.astro';
 import SiteNav from '../components/SiteNav.astro';
+import { pageBackgrounds, type BackgroundKey } from '../data/backgrounds';
 import '../styles/global.css';
 
 interface Props {
   title: string;
   description?: string;
   bodyClass?: string;
+  backgroundKey?: BackgroundKey;
 }
 
 const {
   title,
   description = 'bigbrotherwei 的个人博客，记录技术、项目、工具和思考。',
   bodyClass = '',
+  backgroundKey = 'home',
 } = Astro.props;
 
 const siteTitle = title === 'bigbrotherwei' ? title : `${title} | bigbrotherwei`;
+const background = pageBackgrounds[backgroundKey];
 ---
 
 <html lang="zh-CN">
@@ -24,12 +28,12 @@ const siteTitle = title === 'bigbrotherwei' ? title : `${title} | bigbrotherwei`
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" as="image" href="/images/hand-painted-farm-dusk.webp" media="(min-width: 641px)" fetchpriority="high" />
-    <link rel="preload" as="image" href="/images/hand-painted-farm-dusk-mobile.webp" media="(max-width: 640px)" fetchpriority="high" />
+    <link rel="preload" as="image" href={background.desktop} media="(min-width: 640.01px)" fetchpriority="high" />
+    <link rel="preload" as="image" href={background.mobile} media="(max-width: 640px)" fetchpriority="high" />
     <title>{siteTitle}</title>
   </head>
   <body class={bodyClass}>
-    <HandPaintedFarmBackdrop />
+    <HandPaintedFarmBackdrop background={background} />
     <SiteNav />
     <slot />
   </body>

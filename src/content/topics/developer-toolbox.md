@@ -3,6 +3,7 @@ title: "开发者工具箱搭建"
 description: "围绕博客内置工具页，整理纯前端工具的设计、实现和体验打磨。"
 status: "计划中"
 order: 2
+background: "topic-developer-toolbox"
 ---
 
 这个专题后续会专门记录工具页的设计和实现。

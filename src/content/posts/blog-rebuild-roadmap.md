@@ -9,6 +9,7 @@ tags:
 topic: "blog-rebuild"
 order: 1
 draft: false
+background: "post-blog-rebuild-roadmap"
 ---
 
 重新维护个人博客时，第一件事不是马上写文章，而是先把维护方式变得可靠。

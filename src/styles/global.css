@@ -62,8 +62,8 @@ main {
   overflow: hidden;
   pointer-events: none;
   background-color: #0c2231;
-  background-image: url('/images/hand-painted-farm-dusk.webp');
-  background-position: center center;
+  background-image: var(--background-image);
+  background-position: var(--background-position);
   background-size: cover;
 }
 
@@ -84,8 +84,8 @@ body.home .hand-painted-farm-backdrop::after {
 
 @media (max-width: 640px) {
   .hand-painted-farm-backdrop {
-    background-image: url('/images/hand-painted-farm-dusk-mobile.webp');
-    background-position: center;
+    background-image: var(--background-image-mobile);
+    background-position: var(--background-position-mobile);
   }
 }
 
