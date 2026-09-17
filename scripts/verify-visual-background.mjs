@@ -1,8 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
 const backdropPath = join(root, 'src/components/HandPaintedFarmBackdrop.astro');
+const registryPath = join(root, 'src/data/backgrounds.ts');
 const oldBackdropPath = join(root, 'src/components/PixelFarmBackdrop.astro');
 const imagePath = join(root, 'public/images/hand-painted-farm-dusk.webp');
 const mobileImagePath = join(root, 'public/images/hand-painted-farm-dusk-mobile.webp');
@@ -18,7 +19,6 @@ const routePaths = [
   'src/pages/posts/[slug].astro',
   'src/pages/topics/[slug].astro',
 ];
-
 const failures = [];
 const stripComments = (source) => source.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
 const readWebpDimensions = (path) => {
@@ -40,6 +40,10 @@ const readWebpDimensions = (path) => {
 
 if (!existsSync(backdropPath)) {
   failures.push('Missing shared hand-painted farm backdrop component');
+}
+
+if (!existsSync(registryPath)) {
+  failures.push('Missing page background registry: src/data/backgrounds.ts');
 }
 
 if (existsSync(oldBackdropPath)) {
@@ -90,24 +94,75 @@ if (!layoutSource.includes("import HandPaintedFarmBackdrop from '../components/H
   failures.push('BaseLayout must import HandPaintedFarmBackdrop');
 }
 
-if (!layoutBodyMatch || !/<HandPaintedFarmBackdrop\s*\/>/.test(layoutBodyMatch[1])) {
-  failures.push('BaseLayout must render <HandPaintedFarmBackdrop /> inside <body>');
+if (!layoutBodyMatch || !/<HandPaintedFarmBackdrop[\s\S]*background=\{background\}[\s\S]*\/>/.test(layoutBodyMatch[1])) {
+  failures.push('BaseLayout must pass the selected background to HandPaintedFarmBackdrop');
 }
 
-for (const preload of [
-  'href="/images/hand-painted-farm-dusk.webp" media="(min-width: 641px)"',
-  'href="/images/hand-painted-farm-dusk-mobile.webp" media="(max-width: 640px)"',
-]) {
-  if (!layoutSource.includes(preload)) {
-    failures.push(`BaseLayout must include responsive image preload: ${preload}`);
+for (const required of ['backgroundKey', 'background.desktop', 'background.mobile', 'media="(min-width: 640.01px)"', 'media="(max-width: 640px)"']) {
+  if (!layoutSource.includes(required)) {
+    failures.push(`BaseLayout must select and preload only the active page background: ${required}`);
+  }
+}
+
+if (existsSync(registryPath)) {
+  const registrySource = readFileSync(registryPath, 'utf8');
+  const entries = [...registrySource.matchAll(/^\s{2}(?:'([^']+)'|([a-z][\w-]*)):\s*\{\n([\s\S]*?)^\s{2}\},?$/gm)];
+  const assetOwners = new Map();
+
+  if (entries.length === 0) {
+    failures.push('Background registry must contain at least one page background');
+  }
+
+  for (const entry of entries) {
+    const key = entry[1] ?? entry[2];
+    const body = entry[3];
+
+    for (const [variant, assetMatch] of [
+      ['desktop', body.match(/desktop:\s*'([^']+)'/)],
+      ['mobile', body.match(/mobile:\s*'([^']+)'/)],
+    ]) {
+      if (!assetMatch) {
+        failures.push(`Background registry entry ${key} is missing its ${variant} asset`);
+        continue;
+      }
+
+      const asset = assetMatch[1];
+      const previousOwner = assetOwners.get(asset);
+      if (previousOwner) {
+        failures.push(`Background ${key} must not reuse ${variant} asset ${asset} from ${previousOwner}`);
+      } else {
+        assetOwners.set(asset, `${key}.${variant}`);
+      }
+
+      const path = join(root, 'public', asset.replace(/^\//, ''));
+      if (!existsSync(path)) {
+        failures.push(`Missing page background asset: ${asset}`);
+        continue;
+      }
+
+      const metadata = readWebpDimensions(path);
+      const isMobile = variant === 'mobile';
+      const minimumWidth = isMobile ? 720 : 1600;
+      const minimumHeight = isMobile ? 1280 : 900;
+
+      if (!metadata) {
+        failures.push(`Page background must be a lossy WebP image: ${asset}`);
+      } else if (metadata.width < minimumWidth || metadata.height < minimumHeight) {
+        failures.push(`Page background is too small: ${asset} (${metadata.width}x${metadata.height})`);
+      } else if (metadata.bytes < 80_000 || metadata.bytes > 1_000_000) {
+        failures.push(`Page background size must stay between 80 KB and 1 MB: ${asset}`);
+      }
+    }
   }
 }
 
 const stylesSource = readFileSync(stylesPath, 'utf8');
 for (const token of [
   '.hand-painted-farm-backdrop',
-  '/images/hand-painted-farm-dusk.webp',
-  '/images/hand-painted-farm-dusk-mobile.webp',
+  'var(--background-image)',
+  'var(--background-image-mobile)',
+  'var(--background-position)',
+  'var(--background-position-mobile)',
   'background-size: cover',
   'body.home .hand-painted-farm-backdrop',
   '@media (max-width: 640px)',
@@ -128,6 +183,75 @@ for (const routePath of routePaths) {
   const source = stripComments(readFileSync(join(root, routePath), 'utf8'));
   if (!/<BaseLayout(?:\s|>)[\s\S]*<\/BaseLayout>/.test(source)) {
     failures.push(`${routePath} must use BaseLayout so the hand-painted background appears on the page`);
+  }
+}
+
+const pageBackgroundRequirements = {
+  'src/pages/index.astro': 'home',
+  'src/pages/posts/index.astro': 'posts-index',
+  'src/pages/topics/index.astro': 'topics-index',
+  'src/pages/tools/index.astro': 'tools-index',
+  'src/pages/projects/index.astro': 'projects-index',
+  'src/pages/about.astro': 'about',
+};
+
+for (const [routePath, key] of Object.entries(pageBackgroundRequirements)) {
+  const source = readFileSync(join(root, routePath), 'utf8');
+  if (!source.includes(`backgroundKey="${key}"`)) {
+    failures.push(`${routePath} must use its unique background key: ${key}`);
+  }
+}
+
+const expectedContentBackgrounds = {
+  posts: {
+    'blog-rebuild-roadmap.md': 'post-blog-rebuild-roadmap',
+    'github-pages-workflow.md': 'post-github-pages-workflow',
+    'pixel-farm-background.md': 'post-pixel-farm-background',
+  },
+  topics: {
+    'blog-rebuild.md': 'topic-blog-rebuild',
+    'developer-toolbox.md': 'topic-developer-toolbox',
+  },
+};
+
+const claimedBackgrounds = new Map(
+  Object.entries(pageBackgroundRequirements).map(([routePath, key]) => [key, routePath]),
+);
+
+for (const [collection, expectedEntries] of Object.entries(expectedContentBackgrounds)) {
+  for (const [filename, key] of Object.entries(expectedEntries)) {
+    const source = readFileSync(join(root, 'src/content', collection, filename), 'utf8');
+    if (!source.includes(`background: "${key}"`)) {
+      failures.push(`${collection}/${filename} must declare its unique background: ${key}`);
+    }
+  }
+
+  const collectionPath = join(root, 'src/content', collection);
+  for (const filename of readdirSync(collectionPath).filter((name) => name.endsWith('.md'))) {
+    const source = readFileSync(join(collectionPath, filename), 'utf8');
+    const backgroundMatch = source.match(/^background:\s*["']?([^"'\n]+)["']?\s*$/m);
+    if (!backgroundMatch) {
+      failures.push(`${collection}/${filename} must declare a background key`);
+      continue;
+    }
+
+    const key = backgroundMatch[1].trim();
+    const previousOwner = claimedBackgrounds.get(key);
+    if (previousOwner) {
+      failures.push(`${collection}/${filename} must not reuse background ${key} from ${previousOwner}`);
+    } else {
+      claimedBackgrounds.set(key, `${collection}/${filename}`);
+    }
+  }
+}
+
+for (const [routePath, expression] of [
+  ['src/pages/posts/[slug].astro', 'backgroundKey={post.data.background}'],
+  ['src/pages/topics/[slug].astro', 'backgroundKey={topic.data.background}'],
+]) {
+  const source = readFileSync(join(root, routePath), 'utf8');
+  if (!source.includes(expression)) {
+    failures.push(`${routePath} must pass its content-specific background to BaseLayout`);
   }
 }
 

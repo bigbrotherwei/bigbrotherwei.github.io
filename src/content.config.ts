@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { backgroundKeys } from './data/backgrounds';
 
 const posts = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/posts' }),
@@ -13,6 +14,7 @@ const posts = defineCollection({
     topic: z.string(),
     order: z.number(),
     draft: z.boolean().default(false),
+    background: z.enum(backgroundKeys),
   }),
 });
 
@@ -23,6 +25,7 @@ const topics = defineCollection({
     description: z.string(),
     status: z.enum(['更新中', '计划中', '已完成']),
     order: z.number(),
+    background: z.enum(backgroundKeys),
   }),
 });
 

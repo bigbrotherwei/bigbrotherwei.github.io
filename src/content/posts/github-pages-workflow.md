@@ -9,6 +9,7 @@ tags:
 topic: "blog-rebuild"
 order: 2
 draft: false
+background: "post-github-pages-workflow"
 ---
 
 这个博客会继续使用 GitHub Pages 发布，但维护方式从直接改主分支改成了功能分支和 Pull Request。

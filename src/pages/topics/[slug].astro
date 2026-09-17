@@ -30,7 +30,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
 }).format(date);
 ---
 
-<BaseLayout title={topic.data.title} description={topic.data.description}>
+<BaseLayout title={topic.data.title} description={topic.data.description} backgroundKey={topic.data.background}>
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/topics/">返回专题</a>
