@@ -11,6 +11,7 @@ const requiredComponentPaths = [
 ];
 const requiredAssetPaths = [
   'public/images/hand-painted-farm-dusk.webp',
+  'public/images/hand-painted-farm-dusk-mobile.webp',
 ];
 const requiredRoutePaths = [
   'src/pages/posts/index.astro',

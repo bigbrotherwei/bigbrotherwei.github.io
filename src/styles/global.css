@@ -84,7 +84,8 @@ body.home .hand-painted-farm-backdrop::after {
 
 @media (max-width: 640px) {
   .hand-painted-farm-backdrop {
-    background-position: 64% center;
+    background-image: url('/images/hand-painted-farm-dusk-mobile.webp');
+    background-position: center;
   }
 }
 
