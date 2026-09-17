@@ -93,6 +93,7 @@ title: "开发者工具箱搭建"
 description: "围绕博客内置工具页，整理纯前端工具的设计、实现和体验打磨。"
 status: "计划中"
 order: 2
+background: "topic-developer-toolbox"
 ---
 
 这里写专题介绍。
@@ -111,12 +112,22 @@ tags:
 topic: "developer-toolbox"
 order: 1
 draft: false
+background: "post-json-tool-design"
 ---
 
 这里写文章正文。
 ```
 
 如果一篇文章暂时不想发布，把 `draft` 设为 `true`。构建时仍会校验 frontmatter，但列表页和详情页不会生成草稿文章。
+
+每篇文章和每个专题详情都必须拥有独立背景。新增内容时需要同时完成：
+
+1. 准备一张至少 `1600 x 900` 的桌面 WebP 和一张至少 `720 x 1280` 的移动 WebP，放入 `public/images/backgrounds/`。
+2. 在 `src/data/backgrounds.ts` 中登记一个唯一背景 key，并配置桌面、移动资源路径和定位。
+3. 在 Markdown frontmatter 的 `background` 字段填写该 key。
+4. 运行 `npm run verify:visual-background`；脚本会校验 key、资源格式、尺寸、体积和页面映射。
+
+栏目页也使用同一背景注册表，但由对应 Astro 页面直接传入 key。所有场景保持原创手绘农场暮景的统一美术方向，各自采用不同地点和构图。
 
 ## 第一阶段范围
 
@@ -146,6 +157,8 @@ draft: false
 - 新增共享背景组件 `HandPaintedFarmBackdrop`。
 - 在 `BaseLayout` 层挂载背景，使首页、文章、专题、实用工具、项目和关于页面自动继承。
 - 使用原创生成的手绘场景资产呈现树林、木屋、田地、道路和水岸，并保留少量游戏美术纹理，不直接复制第三方游戏素材。
+- 为 5 个主栏目、3 篇现有文章和 2 个现有专题分别配置独立场景，并为每张背景提供移动端裁切图。
+- 通过 `src/data/backgrounds.ts` 集中管理背景资源，文章和专题通过必填 `background` frontmatter 选择场景。
 - 调整导航、页面标题和卡片样式，让内容在夜晚背景上保持可读。
 - 新增 `npm run verify:visual-background`，并纳入 `npm run verify` 和 `npm run build`。
 

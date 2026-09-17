@@ -142,6 +142,8 @@
 
 首页首屏采用原创手绘农场暮景：树林、木屋、田地、道路、桥梁和水岸构成有纵深的背景层，保留 Fluid 式“大图封面 + 居中标题 + 每日名言”的结构，但视觉资产完全由本站独立生成和实现。
 
+首页、文章列表、专题列表、实用工具、项目和关于页分别使用不同场景。每篇文章详情和每个专题详情也必须有独立背景，不与其他内容共用同一张图。所有背景保持统一的蓝调暮色、暖色灯光和细腻手绘质感，只在地点、建筑、道路、水岸和构图上变化。桌面和移动端使用同场景的独立裁切资源，避免仅依赖 `background-position` 导致移动端丢失视觉主体。
+
 首屏内容：
 
 - 主标题：`bigbrotherwei`
@@ -268,14 +270,12 @@ type Quote = {
 ```yaml
 title:
 description:
-date:
-updated:
-category:
+pubDate:
 tags:
-featured:
 draft:
-cover:
 topic:
+order:
+background:
 ```
 
 专题 frontmatter：
@@ -283,11 +283,12 @@ topic:
 ```yaml
 title:
 description:
-slug:
-cover:
 status:
-posts:
+order:
+background:
 ```
+
+`background` 为文章和专题的必填字段，值来自 `src/data/backgrounds.ts` 中的背景 key。每个 key 同时声明桌面、移动资源及各自定位；内容集合 schema 和视觉校验脚本共同保证引用有效、资源存在且尺寸合格。新增文章或专题时，先制作独立背景并登记 key，再创建内容和提交 PR。
 
 工具 frontmatter：
 
