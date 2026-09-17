@@ -22,7 +22,7 @@ The local workspace is an empty Git repository on `main` with no commits and no 
 - Replace generated static output with a source-managed blog project.
 - Use `bigbrotherwei` as the visible site title and brand.
 - Build a Fluid-inspired, independently implemented visual style.
-- Provide an original pixel-farm night homepage hero with daily Chinese quotes.
+- Provide an original hand-painted farm-at-dusk homepage hero with daily Chinese quotes.
 - Support articles, topics, archives, tags, projects, about content, and utility tools.
 - Make future maintenance PR-based: feature branch, review, merge, publish.
 - Deploy automatically to GitHub Pages after approved merges.
@@ -103,7 +103,7 @@ Avoid:
 
 ## Homepage Design
 
-The homepage first viewport is an original pixel-farm night scene with a full-cover feel: stars, hills, a cabin, fencing, and field rows behind the centered title and daily quote.
+The homepage first viewport is an original hand-painted farm-at-dusk scene with a full-cover feel: woodland, a cabin, fields, paths, a bridge, and water behind the centered title and daily quote.
 
 Hero content:
 
@@ -439,7 +439,7 @@ The first implementation batch should include:
 - Source-first repository structure.
 - GitHub Pages build/deploy workflow.
 - Base layout and navigation.
-- Fluid-inspired original pixel-farm night homepage hero.
+- Fluid-inspired original hand-painted farm-at-dusk homepage hero.
 - `bigbrotherwei` site title.
 - Daily local Chinese quote module with at least 100 quotes.
 - Posts collection and article detail page.
@@ -471,7 +471,7 @@ PR 1: Project foundation
 
 PR 2: Visual system and homepage
 
-- Add design tokens, layout, navigation, original pixel-farm night hero, and daily quote module.
+- Add design tokens, layout, navigation, original hand-painted farm hero, and daily quote module.
 - Add responsive homepage sections.
 
 PR 3: Content system
@@ -505,7 +505,7 @@ The first batch is successful when:
 
 - The site builds locally and in GitHub Actions.
 - The generated site can deploy to GitHub Pages.
-- The homepage shows an original pixel-farm night hero with `bigbrotherwei` and a daily Chinese quote.
+- The homepage shows an original hand-painted farm-at-dusk hero with `bigbrotherwei` and a daily Chinese quote.
 - Navigation works across desktop and mobile.
 - Articles, topics, tools, projects, and about pages exist.
 - Markdown articles render with code highlighting and readable typography.
@@ -539,6 +539,6 @@ Mitigation: Split tools into separate routes and avoid heavy libraries unless a 
 ## Open Implementation Notes
 
 - Choose final package manager during implementation, with `npm` as the default unless the repo indicates otherwise.
-- Use original CSS or generated assets for the pixel-farm night scene; do not copy third-party game assets.
+- Use an original generated asset for the hand-painted farm scene; do not copy third-party game assets, maps, buildings, or UI.
 - Keep all future backend/statistics configuration outside the first deployment path.
 - Prefer small focused components over large all-purpose page files.

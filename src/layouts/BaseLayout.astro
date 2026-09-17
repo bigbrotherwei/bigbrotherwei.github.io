@@ -1,5 +1,5 @@
 ---
-import PixelFarmBackdrop from '../components/PixelFarmBackdrop.astro';
+import HandPaintedFarmBackdrop from '../components/HandPaintedFarmBackdrop.astro';
 import SiteNav from '../components/SiteNav.astro';
 import '../styles/global.css';
 
@@ -24,10 +24,12 @@ const siteTitle = title === 'bigbrotherwei' ? title : `${title} | bigbrotherwei`
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" as="image" href="/images/hand-painted-farm-dusk.webp" media="(min-width: 641px)" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/hand-painted-farm-dusk-mobile.webp" media="(max-width: 640px)" fetchpriority="high" />
     <title>{siteTitle}</title>
   </head>
   <body class={bodyClass}>
-    <PixelFarmBackdrop />
+    <HandPaintedFarmBackdrop />
     <SiteNav />
     <slot />
   </body>
