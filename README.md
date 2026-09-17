@@ -141,13 +141,13 @@ draft: false
 
 ## 第三阶段范围
 
-第三阶段继续沿用手绘方向，把页面背景统一调整为夜晚手绘风格：
+第三阶段和后续视觉调整继续沿用手绘方向，并把页面背景统一调整为原创像素农场夜景：
 
-- 新增共享背景组件 `NightSketchBackdrop`。
+- 新增共享背景组件 `PixelFarmBackdrop`。
 - 在 `BaseLayout` 层挂载背景，使首页、文章、专题、实用工具、项目和关于页面自动继承。
-- 使用 CSS 绘制月亮、星空、云层、手绘网格纹理和城市剪影，不新增写实背景图片。
+- 使用 CSS 绘制星空、云层、远山、木屋、围栏和田垄，不新增写实背景图片，也不直接复制第三方游戏素材。
 - 调整导航、页面标题和卡片样式，让内容在夜晚背景上保持可读。
-- 新增 `npm run verify:night-background`，并纳入 `npm run verify` 和 `npm run build`。
+- 新增 `npm run verify:visual-background`，并纳入 `npm run verify` 和 `npm run build`。
 
 ## 第四阶段范围
 
@@ -177,3 +177,4 @@ draft: false
 - 第二阶段实现计划：`docs/superpowers/plans/2026-09-16-handdrawn-home.md`
 - 第三阶段实现计划：`docs/superpowers/plans/2026-09-16-night-sketch-backgrounds.md`
 - 第四阶段实现计划：`docs/superpowers/plans/2026-09-16-content-system.md`
+- 中途视觉调整计划：`docs/superpowers/plans/2026-09-16-cozy-pixel-farm-background.md`
