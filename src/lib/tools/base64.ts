@@ -21,7 +21,10 @@ export const decodeBase64 = (input: string): ToolResult<string> => {
 
     if (btoa(bytesToBinary(bytes)) !== input) return invalidBase64();
 
-    return { ok: true, value: new TextDecoder('utf-8', { fatal: true }).decode(bytes) };
+    return {
+      ok: true,
+      value: new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes),
+    };
   } catch {
     return invalidBase64();
   }

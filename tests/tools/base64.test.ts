@@ -9,6 +9,14 @@ test('round-trips Chinese and emoji as UTF-8', () => {
   if (encoded.ok) assert.deepEqual(decodeBase64(encoded.value), { ok: true, value: '博客🌙' });
 });
 
+test('round-trips a leading UTF-8 BOM as string content', () => {
+  const input = '\uFEFF博客🌙';
+  const encoded = encodeBase64(input);
+
+  assert.equal(encoded.ok, true);
+  if (encoded.ok) assert.deepEqual(decodeBase64(encoded.value), { ok: true, value: input });
+});
+
 test('rejects malformed Base64', () => {
   const result = decodeBase64('%%%');
 
