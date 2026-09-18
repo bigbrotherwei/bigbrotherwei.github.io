@@ -57,3 +57,49 @@ git diff --check      # exit 0
 ## Concern
 
 The six tool metadata background keys are intentionally not present in `src/data/backgrounds.ts` yet. Task 7 must register those unique backgrounds and replace the six placeholder `tools-index` assignments before the full tool-page interaction work in Task 6.
+
+## Review Fix Round 1
+
+### Major: Derive Route Checks From the Registry
+
+`scripts/verify-tools.mjs` now imports `tools` first and derives each required Astro file from the registered `href`. It no longer maintains an independent route-slug list. The directory import and hook checks, plus unique background-key validation, remain unchanged.
+
+### Test File
+
+- Updated `tests/tools/registry.test.ts`
+  - Creates an isolated temporary project with all six legacy route files.
+  - Registers only `/tools/missing/` and runs the real verifier as a child process.
+  - Requires the verifier to exit 1 and identify `src/pages/tools/missing.astro` as missing.
+
+### Red Evidence
+
+`node --test tests/tools/registry.test.ts` exited 1 before the verifier change.
+
+```text
+pass 2
+fail 1
+AssertionError: 0 !== 1
+```
+
+The verifier incorrectly exited 0 while the fixture registry pointed at a route without an Astro page, reproducing the reviewed failure mode.
+
+### Green Evidence
+
+`node --test tests/tools/registry.test.ts` exited 0 after the verifier derives page paths from `tool.href`.
+
+```text
+pass 3
+fail 0
+```
+
+### Command Results
+
+```text
+node --test tests/tools/registry.test.ts  # exit 0, 3 passed, 0 failed
+npm run verify:tools                      # exit 0, 27 passed, 0 failed
+npm run build                             # exit 0, Astro check 0 errors / 0 warnings / 0 hints
+```
+
+### Deferred Minor Findings
+
+The category-uniqueness and initial-result-count minor findings were deliberately left unchanged for the requested follow-up workflow.

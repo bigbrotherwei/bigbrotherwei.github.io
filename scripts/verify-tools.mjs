@@ -3,16 +3,8 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = process.cwd();
-const requiredRoutes = ['json', 'base64', 'url', 'timestamp', 'uuid', 'text-counter'];
 const failures = [];
 const read = (path) => readFileSync(join(root, path), 'utf8');
-
-for (const slug of requiredRoutes) {
-  const routePath = `src/pages/tools/${slug}.astro`;
-  if (!existsSync(join(root, routePath))) {
-    failures.push(`Missing tool route: ${routePath}`);
-  }
-}
 
 const toolsIndexPath = 'src/pages/tools/index.astro';
 if (!existsSync(join(root, toolsIndexPath))) {
@@ -31,6 +23,14 @@ if (!existsSync(join(root, registryPath))) {
   failures.push(`Missing tool registry: ${registryPath}`);
 } else {
   const { tools } = await import(pathToFileURL(join(root, registryPath)).href);
+
+  for (const tool of tools) {
+    const routePath = `src/pages/${tool.href.replace(/^\/+|\/+$/g, '')}.astro`;
+    if (!existsSync(join(root, routePath))) {
+      failures.push(`Missing tool route: ${routePath}`);
+    }
+  }
+
   if (new Set(tools.map((tool) => tool.backgroundKey)).size !== tools.length) {
     failures.push('Tool registry background keys must be unique');
   }
