@@ -1,3 +1,5 @@
+@import "./tools.css";
+
 :root {
   color-scheme: light;
   --color-paper: #f7f3ea;
