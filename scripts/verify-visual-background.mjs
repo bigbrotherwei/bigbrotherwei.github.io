@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { hasExplicitBackgroundKey } from './lib/visual-background-rules.mjs';
 
 const root = process.cwd();
 const backdropPath = join(root, 'src/components/HandPaintedFarmBackdrop.astro');
@@ -230,10 +231,8 @@ const expectedToolAssets = {
 
 for (const [routePath, key] of Object.entries(pageBackgroundRequirements)) {
   const source = readFileSync(join(root, routePath), 'utf8');
-  const usesRegisteredToolBackground = routePath.startsWith('src/pages/tools/')
-    && source.includes('backgroundKey={tool.backgroundKey}');
-  if (!source.includes(`backgroundKey="${key}"`) && !usesRegisteredToolBackground) {
-    failures.push(`${routePath} must use its unique background key: ${key}`);
+  if (!hasExplicitBackgroundKey(source, key)) {
+    failures.push(`${routePath} must explicitly use its unique background key: ${key}`);
   }
 }
 
