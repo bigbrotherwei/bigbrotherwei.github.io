@@ -1,3 +1,5 @@
+import type { BackgroundKey } from './backgrounds';
+
 export type ToolCategory = 'text' | 'encoding' | 'time' | 'development';
 
 export interface ToolCategoryDefinition {
@@ -11,7 +13,7 @@ export interface ToolDefinition {
   title: string;
   description: string;
   category: ToolCategory;
-  backgroundKey: string;
+  backgroundKey: BackgroundKey;
   searchTerms: string;
 }
 
