@@ -25,22 +25,41 @@ if (!existsSync(join(root, registryPath))) {
 } else {
   const { tools } = await import(pathToFileURL(join(root, registryPath)).href);
   const pageContracts = {
-    json: { logicModule: 'json.ts', logicCalls: ['formatJson', 'minifyJson', 'validateJson'] },
+    json: {
+      logicModule: 'json.ts',
+      logicCalls: ['formatJson', 'minifyJson', 'validateJson'],
+      valueCalls: ['formatJson', 'minifyJson', 'validateJson'],
+    },
     base64: {
       logicModule: 'base64.ts',
       logicCalls: ['encodeBase64', 'decodeBase64'],
+      valueCalls: ['encodeBase64', 'decodeBase64', 'swapTransformation'],
       browserCalls: ['swapTransformation'],
+      browserModule: 'browser.ts',
+      swapCall: 'swapTransformation',
     },
     url: {
       logicModule: 'url.ts',
       logicCalls: ['encodeUrlComponent', 'decodeUrlComponent'],
+      valueCalls: ['encodeUrlComponent', 'decodeUrlComponent', 'swapTransformation'],
       browserCalls: ['swapTransformation'],
+      browserModule: 'browser.ts',
+      swapCall: 'swapTransformation',
     },
-    timestamp: { logicModule: 'timestamp.ts', logicCalls: ['convertTimestamp'] },
-    uuid: { logicModule: 'uuid.ts', logicCalls: ['generateUuids'] },
+    timestamp: {
+      logicModule: 'timestamp.ts',
+      logicCalls: ['convertTimestamp'],
+      valueCalls: ['convertTimestamp'],
+    },
+    uuid: {
+      logicModule: 'uuid.ts',
+      logicCalls: ['generateUuids', 'normalizeUuidCount'],
+      valueCalls: ['generateUuids', 'normalizeUuidCount'],
+    },
     'text-counter': {
       logicModule: 'text-counter.ts',
       logicCalls: ['countText', 'shouldShowTextPerformanceNotice'],
+      valueCalls: ['countText'],
     },
   };
 
