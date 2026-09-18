@@ -68,7 +68,7 @@
   min-height: 2.75rem;
   padding: 0.55rem 0.9rem;
   color: #fffaf1;
-  background: var(--color-teal);
+  background: var(--color-sky);
   border: 1px solid transparent;
   border-radius: 6px;
   cursor: pointer;
@@ -77,7 +77,7 @@
 }
 
 .tool-toolbar button:hover {
-  background: var(--color-sky);
+  background: var(--color-farm-sky);
 }
 
 .tool-toolbar .tool-icon-button {
@@ -131,8 +131,9 @@
 }
 
 .tool-page :where(a, button, input, select, textarea):focus-visible {
-  outline: 3px solid var(--color-warm);
-  outline-offset: 3px;
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 7px #fffaf1;
 }
 
 @media (max-width: 760px) {

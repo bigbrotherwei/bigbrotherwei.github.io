@@ -25,6 +25,12 @@ test('returns an actionable error when the clipboard rejects a copy', async () =
   assert.deepEqual(result, { ok: false, error: '复制失败，请检查浏览器权限' });
 });
 
+test('returns an actionable error when the clipboard API is unavailable', async () => {
+  const result = await copyText('博客工具箱', undefined);
+
+  assert.deepEqual(result, { ok: false, error: '复制失败，请检查浏览器权限' });
+});
+
 test('debounce replaces an earlier pending call with the latest call', async () => {
   const calls: string[] = [];
   const collect = debounce((value: string) => calls.push(value), 10);
