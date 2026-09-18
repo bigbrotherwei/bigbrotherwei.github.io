@@ -14,11 +14,11 @@ if (!tool) throw new Error('缺少 Base64 工具注册信息');
   <div class="tool-fields">
     <div class="tool-field">
       <label for="base64-input">输入内容</label>
-      <textarea id="base64-input" aria-label="Base64 输入" placeholder="输入文本或 Base64 内容" spellcheck="false"></textarea>
+      <textarea id="base64-input" placeholder="输入文本或 Base64 内容" spellcheck="false"></textarea>
     </div>
     <div class="tool-field">
       <label for="base64-output">转换结果</label>
-      <textarea id="base64-output" aria-label="Base64 输出" readonly placeholder="结果会显示在这里"></textarea>
+      <textarea id="base64-output" readonly placeholder="结果会显示在这里"></textarea>
     </div>
   </div>
   <div class="tool-toolbar" aria-label="Base64 操作">
@@ -30,12 +30,12 @@ if (!tool) throw new Error('缺少 Base64 工具注册信息');
 
 <script>
   import { decodeBase64, encodeBase64 } from '../../lib/tools/base64.ts';
-  import { copyText } from '../../lib/tools/browser.ts';
+  import { copyText, swapTransformation, type TransformationMode } from '../../lib/tools/browser.ts';
 
   const input = document.querySelector<HTMLTextAreaElement>('#base64-input');
   const output = document.querySelector<HTMLTextAreaElement>('#base64-output');
   const status = document.querySelector<HTMLElement>('#base64-status');
-  let mode: 'encode' | 'decode' = 'encode';
+  let mode: TransformationMode = 'encode';
 
   const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
     if (!status) return;
@@ -56,12 +56,16 @@ if (!tool) throw new Error('缺少 Base64 工具注册信息');
     showStatus(input.value === '' ? '等待输入内容' : '转换完成', input.value === '' ? 'idle' : 'success');
   };
 
+  const setMode = (nextMode: TransformationMode) => {
+    mode = nextMode;
+    document.querySelectorAll<HTMLButtonElement>('[data-base64-mode]').forEach((control) => {
+      control.setAttribute('aria-pressed', String(control.dataset.base64Mode === mode));
+    });
+  };
+
   document.querySelectorAll<HTMLButtonElement>('[data-base64-mode]').forEach((button) => {
     button.addEventListener('click', () => {
-      mode = button.dataset.base64Mode === 'decode' ? 'decode' : 'encode';
-      document.querySelectorAll<HTMLButtonElement>('[data-base64-mode]').forEach((control) => {
-        control.setAttribute('aria-pressed', String(control === button));
-      });
+      setMode(button.dataset.base64Mode === 'decode' ? 'decode' : 'encode');
       convert();
     });
   });
@@ -71,8 +75,11 @@ if (!tool) throw new Error('缺少 Base64 工具注册信息');
     button.addEventListener('click', async () => {
       if (!input || !output) return;
       if (button.dataset.base64Action === 'swap') {
-        input.value = output.value;
-        convert();
+        const swapped = swapTransformation({ input: input.value, output: output.value, mode });
+        input.value = swapped.input;
+        output.value = swapped.output;
+        setMode(swapped.mode);
+        showStatus('已交换输入与输出，并切换转换方向', 'success');
         input.focus();
         return;
       }

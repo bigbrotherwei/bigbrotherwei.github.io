@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { copyText, debounce } from '../../src/lib/tools/browser.ts';
+import { copyText, debounce, swapTransformation } from '../../src/lib/tools/browser.ts';
 
 test('copies text through the supplied clipboard implementation', async () => {
   const copied: string[] = [];
@@ -41,4 +41,12 @@ test('debounce replaces an earlier pending call with the latest call', async () 
   await new Promise((resolve) => setTimeout(resolve, 30));
 
   assert.deepEqual(calls, ['latest']);
+});
+
+test('swaps transformation values and reverses the conversion mode', () => {
+  assert.deepEqual(swapTransformation({ input: 'a b', output: 'a%20b', mode: 'encode' }), {
+    input: 'a%20b',
+    output: 'a b',
+    mode: 'decode',
+  });
 });

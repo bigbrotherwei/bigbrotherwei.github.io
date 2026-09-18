@@ -1,5 +1,13 @@
 import type { ToolResult } from './result.ts';
 
+export type TransformationMode = 'encode' | 'decode';
+
+export interface TransformationValues {
+  input: string;
+  output: string;
+  mode: TransformationMode;
+}
+
 const copyFailure = (): ToolResult<never> => ({ ok: false, error: '复制失败，请检查浏览器权限' });
 
 export const copyText = async (
@@ -24,3 +32,9 @@ export const debounce = <T extends unknown[]>(callback: (...arguments_: T) => vo
     timeoutId = setTimeout(() => callback(...arguments_), delay);
   };
 };
+
+export const swapTransformation = ({ input, output, mode }: TransformationValues): TransformationValues => ({
+  input: output,
+  output: input,
+  mode: mode === 'encode' ? 'decode' : 'encode',
+});

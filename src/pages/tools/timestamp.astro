@@ -9,7 +9,7 @@ if (!tool) throw new Error('缺少时间戳工具注册信息');
 <ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-timestamp" statusId="timestamp-status">
   <div class="tool-field">
     <label for="timestamp-input">Unix 时间戳</label>
-    <input id="timestamp-input" aria-label="时间戳输入" inputmode="numeric" placeholder="输入秒或毫秒时间戳" autocomplete="off" />
+    <input id="timestamp-input" inputmode="numeric" placeholder="输入秒或毫秒时间戳" autocomplete="off" />
   </div>
   <div class="tool-segmented" role="group" aria-label="时间戳单位">
     <button type="button" data-timestamp-unit="auto" aria-pressed="true">自动</button>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { countText } from '../../src/lib/tools/text-counter.ts';
+import { countText, shouldShowTextPerformanceNotice } from '../../src/lib/tools/text-counter.ts';
 
 test('counts empty text without visible lines', () => {
   assert.deepEqual(countText(''), {
@@ -30,4 +30,10 @@ test('counts Chinese, alphanumeric words, emoji, and UTF-8 bytes', () => {
 
 test('splits English word runs around adjacent Chinese characters', () => {
   assert.equal(countText('alpha你好beta').englishWords, 2);
+});
+
+test('warns only when text reaches the large-input threshold', () => {
+  assert.equal(shouldShowTextPerformanceNotice(countText('a'.repeat(99_999))), false);
+  assert.equal(shouldShowTextPerformanceNotice(countText('a'.repeat(100_000))), true);
+  assert.equal(shouldShowTextPerformanceNotice(countText('🌙'.repeat(25_000))), true);
 });

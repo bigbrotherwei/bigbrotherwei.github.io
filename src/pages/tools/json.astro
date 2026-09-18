@@ -9,7 +9,7 @@ if (!tool) throw new Error('缺少 JSON 工具注册信息');
 <ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-json" statusId="json-status">
   <div class="tool-field">
     <label for="json-input">JSON 内容</label>
-    <textarea id="json-input" aria-label="JSON 输入" placeholder='例如：{"name":"博客","items":[1,2]}' spellcheck="false"></textarea>
+    <textarea id="json-input" placeholder='例如：{"name":"博客","items":[1,2]}' spellcheck="false"></textarea>
   </div>
   <div class="tool-toolbar" aria-label="JSON 操作">
     <button type="button" data-json-action="format">格式化</button>

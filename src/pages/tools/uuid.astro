@@ -9,7 +9,7 @@ if (!tool) throw new Error('缺少 UUID 工具注册信息');
 <ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-uuid" statusId="uuid-status">
   <div class="tool-field tool-field--compact">
     <label for="uuid-count">生成数量</label>
-    <input id="uuid-count" aria-label="UUID 生成数量" type="number" min="1" max="20" step="1" value="1" inputmode="numeric" />
+    <input id="uuid-count" type="number" min="1" max="20" step="1" value="1" inputmode="numeric" />
   </div>
   <div class="tool-toolbar" aria-label="UUID 操作">
     <button type="button" data-uuid-action="generate">生成 UUID</button>
@@ -20,7 +20,7 @@ if (!tool) throw new Error('缺少 UUID 工具注册信息');
 
 <script>
   import { copyText } from '../../lib/tools/browser.ts';
-  import { generateUuids } from '../../lib/tools/uuid.ts';
+  import { generateUuids, normalizeUuidCount } from '../../lib/tools/uuid.ts';
 
   const countInput = document.querySelector<HTMLInputElement>('#uuid-count');
   const list = document.querySelector<HTMLElement>('#uuid-results');
@@ -36,8 +36,7 @@ if (!tool) throw new Error('缺少 UUID 工具注册信息');
 
   const normalizedCount = () => {
     if (!countInput) return 1;
-    const count = Number.parseInt(countInput.value, 10);
-    const normalized = Number.isFinite(count) ? Math.min(20, Math.max(1, count)) : 1;
+    const normalized = normalizeUuidCount(countInput.value);
     countInput.value = String(normalized);
     return normalized;
   };

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { validateToolPageContract } from './lib/tool-page-contracts.mjs';
 
 const root = process.cwd();
 const failures = [];
@@ -24,12 +25,23 @@ if (!existsSync(join(root, registryPath))) {
 } else {
   const { tools } = await import(pathToFileURL(join(root, registryPath)).href);
   const pageContracts = {
-    json: 'json.ts',
-    base64: 'base64.ts',
-    url: 'url.ts',
-    timestamp: 'timestamp.ts',
-    uuid: 'uuid.ts',
-    'text-counter': 'text-counter.ts',
+    json: { logicModule: 'json.ts', logicCalls: ['formatJson', 'minifyJson', 'validateJson'] },
+    base64: {
+      logicModule: 'base64.ts',
+      logicCalls: ['encodeBase64', 'decodeBase64'],
+      browserCalls: ['swapTransformation'],
+    },
+    url: {
+      logicModule: 'url.ts',
+      logicCalls: ['encodeUrlComponent', 'decodeUrlComponent'],
+      browserCalls: ['swapTransformation'],
+    },
+    timestamp: { logicModule: 'timestamp.ts', logicCalls: ['convertTimestamp'] },
+    uuid: { logicModule: 'uuid.ts', logicCalls: ['generateUuids'] },
+    'text-counter': {
+      logicModule: 'text-counter.ts',
+      logicCalls: ['countText', 'shouldShowTextPerformanceNotice'],
+    },
   };
 
   for (const tool of tools) {
@@ -39,30 +51,18 @@ if (!existsSync(join(root, registryPath))) {
       continue;
     }
 
-    const route = read(routePath);
-    const logicModule = pageContracts[tool.slug];
-    const requiredTokens = [
-      "import ToolLayout from '../../components/tools/ToolLayout.astro';",
-      `../../lib/tools/${logicModule}`,
-      `backgroundKey=\"${tool.backgroundKey}\"`,
-      '<label',
-      'aria-label=',
-    ];
-
-    for (const token of requiredTokens) {
-      if (!route.includes(token)) {
-        failures.push(`${routePath} must include: ${token}`);
-      }
+    const pageContract = pageContracts[tool.slug];
+    if (!pageContract) {
+      failures.push(`${routePath} has no page contract for tool slug: ${tool.slug}`);
+      continue;
     }
 
-    if (!/<(?:input|textarea)\b/.test(route)) {
-      failures.push(`${routePath} must render a labeled input control`);
-    }
-
-    for (const forbidden of ['innerHTML', 'fetch(', 'localStorage', 'sessionStorage']) {
-      if (route.includes(forbidden)) {
-        failures.push(`${routePath} must not use ${forbidden}`);
-      }
+    for (const failure of validateToolPageContract(read(routePath), {
+      ...pageContract,
+      slug: tool.slug,
+      backgroundKey: tool.backgroundKey,
+    })) {
+      failures.push(`${routePath} ${failure}`);
     }
   }
 

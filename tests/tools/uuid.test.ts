@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { generateUuids } from '../../src/lib/tools/uuid.ts';
+import { generateUuids, normalizeUuidCount } from '../../src/lib/tools/uuid.ts';
 
 test('rejects UUID counts outside one through twenty', () => {
   assert.equal(generateUuids(0, () => 'unused').ok, false);
@@ -31,4 +31,11 @@ test('reports unavailable secure UUID generation when no generator exists', () =
     if (descriptor) Object.defineProperty(globalThis, 'crypto', descriptor);
     else delete (globalThis as { crypto?: Crypto }).crypto;
   }
+});
+
+test('normalizes UUID count with Number semantics before clamping', () => {
+  assert.equal(normalizeUuidCount('1e2'), 20);
+  assert.equal(normalizeUuidCount('3.8'), 3);
+  assert.equal(normalizeUuidCount('not-a-number'), 1);
+  assert.equal(normalizeUuidCount('Infinity'), 1);
 });

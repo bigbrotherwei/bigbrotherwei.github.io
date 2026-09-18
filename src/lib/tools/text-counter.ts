@@ -7,6 +7,8 @@ export interface TextStatistics {
   utf8Bytes: number;
 }
 
+const largeTextThreshold = 100_000;
+
 const hanCharacter = /\p{Script=Han}/u;
 const englishWord = /(?:(?!\p{Script=Han})[\p{L}\p{N}])+/gu;
 
@@ -23,3 +25,6 @@ export const countText = (input: string): TextStatistics => {
     utf8Bytes: new TextEncoder().encode(input).length,
   };
 };
+
+export const shouldShowTextPerformanceNotice = (statistics: TextStatistics): boolean =>
+  statistics.characters >= largeTextThreshold || statistics.utf8Bytes >= largeTextThreshold;
