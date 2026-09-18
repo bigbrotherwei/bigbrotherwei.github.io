@@ -7,7 +7,7 @@ const contract = {
   backgroundKey: 'tool-json',
   logicModule: 'json.ts',
   logicCalls: ['formatJson'],
-  valueCalls: ['formatJson'],
+  toolResultCalls: ['formatJson'],
 };
 
 test('accepts a real tool layout, paired label, event control, and invoked logic', () => {
@@ -25,6 +25,7 @@ import ToolLayout from '../../components/tools/ToolLayout.astro';
   input.addEventListener('input', () => {
     const result = formatJson(input.value);
     if (!result.ok) return;
+    input.value = result.value;
   });
 </script>`;
 
@@ -117,7 +118,7 @@ import ToolLayout from '../../components/tools/ToolLayout.astro';
 </script>`;
 
   const failures = validateToolPageContract(source, contract);
-  assert.ok(failures.some((failure) => failure.includes('must assign and consume formatJson')));
+  assert.ok(failures.some((failure) => failure.includes('must consume formatJson ToolResult')));
 });
 
 test('rejects a bare swap helper call that does not update fields and mode', () => {
@@ -142,7 +143,8 @@ import ToolLayout from '../../components/tools/ToolLayout.astro';
   const failures = validateToolPageContract(source, {
     ...contract,
     browserCalls: ['swapTransformation'],
-    valueCalls: ['formatJson', 'swapTransformation'],
+    browserModule: 'browser.ts',
+    toolResultCalls: ['formatJson'],
     swapCall: 'swapTransformation',
   });
   assert.ok(failures.some((failure) => failure.includes('must assign and consume swapTransformation')));
@@ -169,7 +171,8 @@ import ToolLayout from '../../components/tools/ToolLayout.astro';
     ...contract,
     logicModule: 'uuid.ts',
     logicCalls: ['generateUuids', 'normalizeUuidCount'],
-    valueCalls: ['generateUuids', 'normalizeUuidCount'],
+    toolResultCalls: ['generateUuids'],
+    sinkCalls: ['normalizeUuidCount'],
   });
   assert.ok(failures.some((failure) => failure.includes('must call normalizeUuidCount')));
 });
@@ -217,4 +220,119 @@ import ToolLayout from '../../components/tools/ToolLayout.astro';
   const failures = validateToolPageContract(source, contract);
   assert.ok(failures.some((failure) => failure.includes('must not use fetch')));
   assert.ok(failures.some((failure) => failure.includes('must not use localStorage')));
+});
+
+test('rejects a local function that shadows a missing named import', () => {
+  const source = `---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+---
+<ToolLayout backgroundKey="tool-json">
+  <label for="json-input">JSON 内容</label>
+  <textarea id="json-input"></textarea>
+</ToolLayout>
+<script>
+  import { minifyJson } from '../../lib/tools/json.ts';
+  const formatJson = () => ({ ok: true, value: '{}' });
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    const result = formatJson(input.value);
+    if (!result.ok) return;
+    input.value = result.value;
+  });
+</script>`;
+
+  const failures = validateToolPageContract(source, contract);
+  assert.ok(failures.some((failure) => failure.includes('must import formatJson as a named binding')));
+});
+
+test('rejects a ToolResult that is only stored on an unrelated object', () => {
+  const source = `---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+---
+<ToolLayout backgroundKey="tool-json">
+  <label for="json-input">JSON 内容</label>
+  <textarea id="json-input"></textarea>
+</ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    const result = formatJson(input.value);
+    const metadata = { result };
+    console.log(metadata);
+  });
+</script>`;
+
+  const failures = validateToolPageContract(source, contract);
+  assert.ok(failures.some((failure) => failure.includes('must consume formatJson ToolResult')));
+});
+
+test('rejects a ToolResult that appears only in an unreachable branch', () => {
+  const source = `---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+---
+<ToolLayout backgroundKey="tool-json">
+  <label for="json-input">JSON 内容</label>
+  <textarea id="json-input"></textarea>
+</ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    const result = formatJson(input.value);
+    if (false) {
+      if (result.ok) input.value = result.value;
+    }
+  });
+</script>`;
+
+  const failures = validateToolPageContract(source, contract);
+  assert.ok(failures.some((failure) => failure.includes('must consume formatJson ToolResult')));
+});
+
+test('rejects a result that is shadowed by a consumed nested-block variable', () => {
+  const source = `---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+---
+<ToolLayout backgroundKey="tool-json">
+  <label for="json-input">JSON 内容</label>
+  <textarea id="json-input"></textarea>
+</ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    const result = formatJson(input.value);
+    if (true) {
+      const result = { ok: true, value: '{}' };
+      if (result.ok) input.value = result.value;
+    }
+  });
+</script>`;
+
+  const failures = validateToolPageContract(source, contract);
+  assert.ok(failures.some((failure) => failure.includes('must consume formatJson ToolResult')));
+});
+
+test('allows an unrelated object property named fetch', () => {
+  const source = `---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+---
+<ToolLayout backgroundKey="tool-json">
+  <label for="json-input">JSON 内容</label>
+  <textarea id="json-input"></textarea>
+</ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  const metadata = { fetch: 'not a browser API' };
+  input.addEventListener('input', () => {
+    const result = formatJson(input.value);
+    if (!result.ok) return;
+    input.value = result.value;
+  });
+  console.log(metadata);
+</script>`;
+
+  assert.deepEqual(validateToolPageContract(source, contract), []);
 });

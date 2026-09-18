@@ -28,12 +28,12 @@ if (!existsSync(join(root, registryPath))) {
     json: {
       logicModule: 'json.ts',
       logicCalls: ['formatJson', 'minifyJson', 'validateJson'],
-      valueCalls: ['formatJson', 'minifyJson', 'validateJson'],
+      toolResultCalls: ['formatJson', 'minifyJson', 'validateJson'],
     },
     base64: {
       logicModule: 'base64.ts',
       logicCalls: ['encodeBase64', 'decodeBase64'],
-      valueCalls: ['encodeBase64', 'decodeBase64', 'swapTransformation'],
+      toolResultCalls: ['encodeBase64', 'decodeBase64'],
       browserCalls: ['swapTransformation'],
       browserModule: 'browser.ts',
       swapCall: 'swapTransformation',
@@ -41,7 +41,7 @@ if (!existsSync(join(root, registryPath))) {
     url: {
       logicModule: 'url.ts',
       logicCalls: ['encodeUrlComponent', 'decodeUrlComponent'],
-      valueCalls: ['encodeUrlComponent', 'decodeUrlComponent', 'swapTransformation'],
+      toolResultCalls: ['encodeUrlComponent', 'decodeUrlComponent'],
       browserCalls: ['swapTransformation'],
       browserModule: 'browser.ts',
       swapCall: 'swapTransformation',
@@ -49,17 +49,18 @@ if (!existsSync(join(root, registryPath))) {
     timestamp: {
       logicModule: 'timestamp.ts',
       logicCalls: ['convertTimestamp'],
-      valueCalls: ['convertTimestamp'],
+      toolResultCalls: ['convertTimestamp'],
     },
     uuid: {
       logicModule: 'uuid.ts',
       logicCalls: ['generateUuids', 'normalizeUuidCount'],
-      valueCalls: ['generateUuids', 'normalizeUuidCount'],
+      toolResultCalls: ['generateUuids'],
+      sinkCalls: ['normalizeUuidCount'],
     },
     'text-counter': {
       logicModule: 'text-counter.ts',
       logicCalls: ['countText', 'shouldShowTextPerformanceNotice'],
-      valueCalls: ['countText'],
+      sinkCalls: ['countText'],
     },
   };
 

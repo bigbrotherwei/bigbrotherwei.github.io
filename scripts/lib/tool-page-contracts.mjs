@@ -41,34 +41,135 @@ const findAssignedResult = (call) => {
   return null;
 };
 
-const containsIdentifier = (node, names) => {
-  let found = false;
-  const visit = (child) => {
-    if (ts.isIdentifier(child) && names.has(child.text)) {
-      found = true;
+const findFunctionScope = (node) => {
+  let current = node;
+  while (current.parent) {
+    if (ts.isFunctionLike(current)) return current;
+    current = current.parent;
+  }
+  return current;
+};
+
+const isInUnreachableFalseBranch = (node, scope) => {
+  let current = node;
+  while (current.parent && current !== scope) {
+    const parent = current.parent;
+    if (ts.isIfStatement(parent)
+      && parent.thenStatement === current
+      && parent.expression.kind === ts.SyntaxKind.FalseKeyword) {
+      return true;
+    }
+    current = parent;
+  }
+  return false;
+};
+
+const getBindingContext = (assignment) => {
+  if (!assignment.statement || !ts.isBlock(assignment.statement.parent)) return null;
+  const block = assignment.statement.parent;
+  const index = block.statements.findIndex((statement) => statement === assignment.statement);
+  return index === -1 ? null : { block, index };
+};
+
+const statementDeclaresAny = (statement, names) => {
+  if (ts.isVariableStatement(statement)) {
+    return statement.declarationList.declarations.some((declaration) => getBindingNames(declaration.name)
+      .some((name) => names.has(name)));
+  }
+  return (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement))
+    && Boolean(statement.name && names.has(statement.name.text));
+};
+
+const walkAfterBinding = (assignment, visit) => {
+  const context = getBindingContext(assignment);
+  if (!context) return;
+  const names = new Set(assignment.names);
+  const scope = findFunctionScope(assignment.statement);
+  const walk = (node) => {
+    if (node !== scope && ts.isFunctionLike(node)) return;
+    if (ts.isBlock(node) && node !== context.block && node.statements.some((statement) => statementDeclaresAny(statement, names))) {
       return;
     }
+    visit(node, scope);
+    ts.forEachChild(node, walk);
+  };
+  context.block.statements.slice(context.index + 1).forEach((statement) => walk(statement));
+};
+
+const isResultProperty = (node, names, property) => ts.isPropertyAccessExpression(node)
+  && ts.isIdentifier(node.expression)
+  && names.has(node.expression.text)
+  && node.name.text === property;
+
+const containsResultProperty = (node, names, property) => {
+  let found = false;
+  const visit = (child) => {
+    if (isResultProperty(child, names, property)) found = true;
     if (!found) ts.forEachChild(child, visit);
   };
-  ts.forEachChild(node, visit);
+  visit(node);
   return found;
 };
 
-const isConsumedImmediately = (assignment) => {
-  if (!assignment.statement || !ts.isBlock(assignment.statement.parent)) return false;
-  const statements = assignment.statement.parent.statements;
-  const index = statements.findIndex((statement) => statement === assignment.statement);
-  if (index === -1) return false;
+const hasToolResultConsumption = (assignment) => {
+  if (!assignment.statement) return false;
   const names = new Set(assignment.names);
-  return statements.slice(index + 1, index + 4).some((statement) => containsIdentifier(statement, names));
+  let checksOk = false;
+  let consumesValueOrError = false;
+
+  walkAfterBinding(assignment, (node, scope) => {
+    if (isInUnreachableFalseBranch(node, scope)) return;
+    if (ts.isIfStatement(node) && containsResultProperty(node.expression, names, 'ok')) checksOk = true;
+    if (isResultProperty(node, names, 'value') || isResultProperty(node, names, 'error')) {
+      consumesValueOrError = true;
+    }
+  });
+
+  return checksOk && consumesValueOrError;
+};
+
+const containsResultValue = (node, names) => {
+  let found = false;
+  const visit = (child) => {
+    if (ts.isIdentifier(child) && names.has(child.text)) found = true;
+    if (!found) ts.forEachChild(child, visit);
+  };
+  visit(node);
+  return found;
+};
+
+const isConsoleCall = (node) => ts.isCallExpression(node)
+  && ts.isPropertyAccessExpression(node.expression)
+  && ts.isIdentifier(node.expression.expression)
+  && node.expression.expression.text === 'console';
+
+const hasDomOrArgumentConsumption = (assignment) => {
+  if (!assignment.statement) return false;
+  const names = new Set(assignment.names);
+  let consumed = false;
+
+  walkAfterBinding(assignment, (node, scope) => {
+    if (consumed || isInUnreachableFalseBranch(node, scope)) return;
+    if (ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && ts.isPropertyAccessExpression(node.left)
+      && ['value', 'textContent'].includes(node.left.name.text)
+      && containsResultValue(node.right, names)) {
+      consumed = true;
+      return;
+    }
+    if (ts.isCallExpression(node) && !isConsoleCall(node)
+      && node.arguments.some((argument) => containsResultValue(argument, names))) {
+      consumed = true;
+    }
+  });
+
+  return consumed;
 };
 
 const isSwapConsumed = (assignment) => {
-  if (!assignment.statement || assignment.names.length !== 1 || !ts.isBlock(assignment.statement.parent)) return false;
+  if (!assignment.statement || assignment.names.length !== 1) return false;
   const [name] = assignment.names;
-  const statements = assignment.statement.parent.statements;
-  const index = statements.findIndex((statement) => statement === assignment.statement);
-  if (index === -1) return false;
 
   const consumed = { input: false, output: false, mode: false };
   const propertyFromResult = (node, property) => ts.isPropertyAccessExpression(node)
@@ -94,21 +195,55 @@ const isSwapConsumed = (assignment) => {
     ts.forEachChild(node, visit);
   };
 
-  statements.slice(index + 1, index + 5).forEach((statement) => visit(statement));
+  walkAfterBinding(assignment, (node, scope) => {
+    if (!isInUnreachableFalseBranch(node, scope)) visit(node);
+  });
   return consumed.input && consumed.output && consumed.mode;
 };
 
 const collectScriptFacts = (scripts) => {
   const sourceFile = ts.createSourceFile('tool-page.ts', scripts, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const imports = new Set();
+  const namedImports = new Map();
   const calls = new Map();
   const forbidden = new Set();
 
   for (const statement of sourceFile.statements) {
     if (ts.isImportDeclaration(statement) && ts.isStringLiteral(statement.moduleSpecifier)) {
-      imports.add(statement.moduleSpecifier.text);
+      const moduleName = statement.moduleSpecifier.text;
+      imports.add(moduleName);
+      const bindings = namedImports.get(moduleName) ?? new Map();
+      const elements = statement.importClause?.namedBindings && ts.isNamedImports(statement.importClause.namedBindings)
+        ? statement.importClause.namedBindings.elements
+        : [];
+      for (const element of elements) {
+        const importedName = element.propertyName?.text ?? element.name.text;
+        const locals = bindings.get(importedName) ?? new Set();
+        locals.add(element.name.text);
+        bindings.set(importedName, locals);
+      }
+      namedImports.set(moduleName, bindings);
     }
   }
+
+  const isGlobalObject = (node) => ts.isIdentifier(node) && ['window', 'globalThis', 'navigator'].includes(node.text);
+  const globalInitializerFor = (node) => {
+    let current = node;
+    while (current.parent && !ts.isVariableDeclaration(current)) current = current.parent;
+    return ts.isVariableDeclaration(current) && current.initializer && isGlobalObject(current.initializer);
+  };
+  const isUnsafeIdentifier = (node) => {
+    if (!forbiddenApiNames.has(node.text)) return false;
+    const parent = node.parent;
+    if (ts.isPropertyAssignment(parent) && parent.name === node) return false;
+    if (ts.isBindingElement(parent) && (parent.name === node || parent.propertyName === node)) {
+      return globalInitializerFor(parent);
+    }
+    if (ts.isPropertyAccessExpression(parent) && parent.name === node) {
+      return isGlobalObject(parent.expression);
+    }
+    return true;
+  };
 
   const visit = (node) => {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
@@ -116,17 +251,18 @@ const collectScriptFacts = (scripts) => {
       existing.push(node);
       calls.set(node.expression.text, existing);
     }
-    if (ts.isIdentifier(node) && forbiddenApiNames.has(node.text)) forbidden.add(node.text);
+    if (ts.isIdentifier(node) && isUnsafeIdentifier(node)) forbidden.add(node.text);
     if (ts.isElementAccessExpression(node)
       && ts.isStringLiteral(node.argumentExpression)
-      && forbiddenApiNames.has(node.argumentExpression.text)) {
+      && forbiddenApiNames.has(node.argumentExpression.text)
+      && isGlobalObject(node.expression)) {
       forbidden.add(node.argumentExpression.text);
     }
     ts.forEachChild(node, visit);
   };
   ts.forEachChild(sourceFile, visit);
 
-  return { imports, calls, forbidden };
+  return { imports, namedImports, calls, forbidden };
 };
 
 export const validateToolPageContract = (source, contract) => {
@@ -147,21 +283,45 @@ export const validateToolPageContract = (source, contract) => {
     }
   }
 
-  const requiredCalls = [...contract.logicCalls, ...(contract.browserCalls ?? [])];
-  for (const functionName of requiredCalls) {
+  const requiredCalls = [
+    ...contract.logicCalls.map((functionName) => [functionName, contract.logicModule]),
+    ...(contract.browserCalls ?? []).map((functionName) => [functionName, contract.browserModule]),
+  ];
+  for (const [functionName, moduleName] of requiredCalls) {
+    const importedLocals = moduleName ? facts.namedImports.get(`../../lib/tools/${moduleName}`)?.get(functionName) : undefined;
+    if (!importedLocals?.has(functionName)) {
+      failures.push(`must import ${functionName} as a named binding from ${moduleName}`);
+    }
     if (!facts.calls.has(functionName)) {
       failures.push(`must call ${functionName} from a page script`);
     }
   }
 
-  for (const functionName of contract.valueCalls ?? []) {
+  for (const functionName of contract.toolResultCalls ?? []) {
     const calls = facts.calls.get(functionName) ?? [];
-    const hasConsumedResult = calls.some((call) => {
+    const hasToolResult = calls.some((call) => {
       const assignment = findAssignedResult(call);
-      if (!assignment || !isConsumedImmediately(assignment)) return false;
-      return contract.swapCall === functionName ? isSwapConsumed(assignment) : true;
+      return assignment && hasToolResultConsumption(assignment);
     });
-    if (!hasConsumedResult) failures.push(`must assign and consume ${functionName} result`);
+    if (!hasToolResult) failures.push(`must consume ${functionName} ToolResult with .ok and .value/.error`);
+  }
+
+  for (const functionName of contract.sinkCalls ?? []) {
+    const calls = facts.calls.get(functionName) ?? [];
+    const hasSink = calls.some((call) => {
+      const assignment = findAssignedResult(call);
+      return assignment && hasDomOrArgumentConsumption(assignment);
+    });
+    if (!hasSink) failures.push(`must send ${functionName} result to a DOM update or function argument`);
+  }
+
+  if (contract.swapCall) {
+    const swapCalls = facts.calls.get(contract.swapCall) ?? [];
+    const hasSwap = swapCalls.some((call) => {
+      const assignment = findAssignedResult(call);
+      return assignment && isSwapConsumed(assignment);
+    });
+    if (!hasSwap) failures.push(`must assign and consume ${contract.swapCall} result`);
   }
 
   const labels = [...cleaned.matchAll(/<label\b[^>]*\bfor=\"([^\"]+)\"[^>]*>/g)].map((match) => match[1]);
