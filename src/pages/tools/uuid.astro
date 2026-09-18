@@ -1,13 +1,88 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'uuid');
+if (!tool) throw new Error('缺少 UUID 工具注册信息');
 ---
 
-<BaseLayout title="UUID 生成" description="安全随机 UUID 生成工具。" backgroundKey="tool-uuid">
-  <main class="page-shell">
-    <section class="sketch-card" aria-label="UUID 生成工具">
-      <p class="eyebrow">Tools</p>
-      <h1>UUID 生成</h1>
-      <p>交互界面将在下一项任务中接入。</p>
-    </section>
-  </main>
-</BaseLayout>
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-uuid" statusId="uuid-status">
+  <div class="tool-field tool-field--compact">
+    <label for="uuid-count">生成数量</label>
+    <input id="uuid-count" aria-label="UUID 生成数量" type="number" min="1" max="20" step="1" value="1" inputmode="numeric" />
+  </div>
+  <div class="tool-toolbar" aria-label="UUID 操作">
+    <button type="button" data-uuid-action="generate">生成 UUID</button>
+    <button type="button" data-uuid-action="copy-all">复制全部</button>
+  </div>
+  <div id="uuid-results" class="tool-results" aria-label="UUID 列表"></div>
+</ToolLayout>
+
+<script>
+  import { copyText } from '../../lib/tools/browser.ts';
+  import { generateUuids } from '../../lib/tools/uuid.ts';
+
+  const countInput = document.querySelector<HTMLInputElement>('#uuid-count');
+  const list = document.querySelector<HTMLElement>('#uuid-results');
+  const status = document.querySelector<HTMLElement>('#uuid-status');
+  let uuids: string[] = [];
+
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    if (!status) return;
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  const normalizedCount = () => {
+    if (!countInput) return 1;
+    const count = Number.parseInt(countInput.value, 10);
+    const normalized = Number.isFinite(count) ? Math.min(20, Math.max(1, count)) : 1;
+    countInput.value = String(normalized);
+    return normalized;
+  };
+
+  const render = () => {
+    if (!list) return;
+    list.replaceChildren();
+    uuids.forEach((uuid, index) => {
+      const row = document.createElement('div');
+      row.className = 'tool-result-row';
+      const value = document.createElement('output');
+      value.textContent = uuid;
+      const copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.textContent = '复制';
+      copyButton.setAttribute('aria-label', `复制第 ${index + 1} 个 UUID`);
+      copyButton.addEventListener('click', async () => {
+        const result = await copyText(uuid);
+        showStatus(result.ok ? `已复制第 ${index + 1} 个 UUID` : result.error, result.ok ? 'success' : 'error');
+      });
+      row.append(value, copyButton);
+      list.append(row);
+    });
+  };
+
+  countInput?.addEventListener('change', normalizedCount);
+  document.querySelectorAll<HTMLButtonElement>('[data-uuid-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (button.dataset.uuidAction === 'generate') {
+        const result = generateUuids(normalizedCount());
+        if (!result.ok) {
+          showStatus(result.error, 'error');
+          return;
+        }
+        uuids = result.value;
+        render();
+        showStatus(`已生成 ${uuids.length} 个 UUID`, 'success');
+        return;
+      }
+      if (uuids.length === 0) {
+        showStatus('请先生成 UUID', 'error');
+        return;
+      }
+      const result = await copyText(uuids.join('\n'));
+      showStatus(result.ok ? `已复制 ${uuids.length} 个 UUID` : result.error, result.ok ? 'success' : 'error');
+    });
+  });
+</script>

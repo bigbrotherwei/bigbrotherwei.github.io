@@ -1,13 +1,70 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'json');
+if (!tool) throw new Error('缺少 JSON 工具注册信息');
 ---
 
-<BaseLayout title="JSON 格式化" description="JSON 格式化、压缩和校验工具。" backgroundKey="tool-json">
-  <main class="page-shell">
-    <section class="sketch-card" aria-label="JSON 格式化工具">
-      <p class="eyebrow">Tools</p>
-      <h1>JSON 格式化</h1>
-      <p>交互界面将在下一项任务中接入。</p>
-    </section>
-  </main>
-</BaseLayout>
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-json" statusId="json-status">
+  <div class="tool-field">
+    <label for="json-input">JSON 内容</label>
+    <textarea id="json-input" aria-label="JSON 输入" placeholder='例如：{"name":"博客","items":[1,2]}' spellcheck="false"></textarea>
+  </div>
+  <div class="tool-toolbar" aria-label="JSON 操作">
+    <button type="button" data-json-action="format">格式化</button>
+    <button type="button" data-json-action="minify">压缩</button>
+    <button type="button" data-json-action="validate">校验</button>
+    <button type="button" data-json-action="copy">复制</button>
+    <button type="button" data-json-action="clear">清空</button>
+  </div>
+</ToolLayout>
+
+<script>
+  import { formatJson, minifyJson, validateJson } from '../../lib/tools/json.ts';
+  import { copyText } from '../../lib/tools/browser.ts';
+
+  const input = document.querySelector<HTMLTextAreaElement>('#json-input');
+  const status = document.querySelector<HTMLElement>('#json-status');
+
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    if (!status) return;
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-json-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!input) return;
+      const action = button.dataset.jsonAction;
+
+      if (action === 'clear') {
+        input.value = '';
+        showStatus('已清空 JSON 内容');
+        input.focus();
+        return;
+      }
+
+      if (action === 'copy') {
+        const result = await copyText(input.value);
+        showStatus(result.ok ? '已复制 JSON 内容' : result.error, result.ok ? 'success' : 'error');
+        return;
+      }
+
+      const result = action === 'format'
+        ? formatJson(input.value)
+        : action === 'minify'
+          ? minifyJson(input.value)
+          : validateJson(input.value);
+
+      if (!result.ok) {
+        showStatus(result.error, 'error');
+        return;
+      }
+
+      if (typeof result.value === 'string') input.value = result.value;
+      showStatus(action === 'validate' ? 'JSON 有效' : 'JSON 已转换', 'success');
+    });
+  });
+</script>
