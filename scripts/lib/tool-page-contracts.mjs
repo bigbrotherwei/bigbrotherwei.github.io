@@ -286,22 +286,31 @@ const collectScriptFacts = (scripts) => {
   host.fileExists = (name) => name === fileName || originalFileExists(name);
   host.readFile = (name) => name === fileName ? scripts : originalReadFile(name);
   const program = ts.createProgram([fileName], compilerOptions, host);
+  const checker = program.getTypeChecker();
+  const importedCalls = new Map();
+  for (const [moduleName, moduleBindings] of namedImportNodes) {
+    for (const [importedName, localBindings] of moduleBindings) {
+      for (const [localName, importNode] of localBindings) {
+        const key = `${moduleName}:${importedName}:${localName}`;
+        const importSymbol = checker.getSymbolAtLocation(importNode);
+        const boundCalls = (calls.get(localName) ?? []).filter((call) =>
+          ts.isIdentifier(call.expression)
+          && checker.getSymbolAtLocation(call.expression) === importSymbol);
+        importedCalls.set(key, boundCalls);
+      }
+    }
+  }
 
   return {
     imports,
     namedImports,
     namedImportNodes,
-    checker: program.getTypeChecker(),
+    checker,
     calls,
+    importedCalls,
     forbidden,
   };
 };
-
-const hasBoundNamedImportCall = (calls, importedLocals, importNodes, checker) => [...calls].some((call) => {
-  if (!ts.isIdentifier(call.expression) || !importedLocals.has(call.expression.text)) return false;
-  const importNode = importNodes.get(call.expression.text);
-  return importNode && checker.getSymbolAtLocation(call.expression) === checker.getSymbolAtLocation(importNode);
-});
 
 export const validateToolPageContract = (source, contract) => {
   const failures = [];
@@ -325,24 +334,21 @@ export const validateToolPageContract = (source, contract) => {
     ...contract.logicCalls.map((functionName) => [functionName, contract.logicModule]),
     ...(contract.browserCalls ?? []).map((functionName) => [functionName, contract.browserModule]),
   ];
+  const importedCallsFor = (moduleName, functionName) => facts.importedCalls.get(
+    `../../lib/tools/${moduleName}:${functionName}:${functionName}`,
+  ) ?? [];
   for (const [functionName, moduleName] of requiredCalls) {
     const importedLocals = moduleName ? facts.namedImports.get(`../../lib/tools/${moduleName}`)?.get(functionName) : undefined;
     if (!importedLocals?.has(functionName)) {
       failures.push(`must import ${functionName} as a named binding from ${moduleName}`);
     }
-    if (!importedLocals?.has(functionName)
-      || !hasBoundNamedImportCall(
-        facts.calls.get(functionName) ?? [],
-        importedLocals,
-        facts.namedImportNodes.get(`../../lib/tools/${moduleName}`)?.get(functionName) ?? new Map(),
-        facts.checker,
-      )) {
+    if (!importedLocals?.has(functionName) || importedCallsFor(moduleName, functionName).length === 0) {
       failures.push(`must call ${functionName} from a page script`);
     }
   }
 
   for (const functionName of contract.toolResultCalls ?? []) {
-    const calls = facts.calls.get(functionName) ?? [];
+    const calls = importedCallsFor(contract.logicModule, functionName);
     const hasToolResult = calls.some((call) => {
       const assignment = findAssignedResult(call);
       return assignment && hasToolResultConsumption(assignment);
@@ -351,7 +357,7 @@ export const validateToolPageContract = (source, contract) => {
   }
 
   for (const functionName of contract.sinkCalls ?? []) {
-    const calls = facts.calls.get(functionName) ?? [];
+    const calls = importedCallsFor(contract.logicModule, functionName);
     const hasSink = calls.some((call) => {
       const assignment = findAssignedResult(call);
       return assignment && hasDomOrArgumentConsumption(assignment);
@@ -360,7 +366,8 @@ export const validateToolPageContract = (source, contract) => {
   }
 
   if (contract.swapCall) {
-    const swapCalls = facts.calls.get(contract.swapCall) ?? [];
+    const swapModule = contract.browserModule ?? contract.logicModule;
+    const swapCalls = importedCallsFor(swapModule, contract.swapCall);
     const hasSwap = swapCalls.some((call) => {
       const assignment = findAssignedResult(call);
       return assignment && isSwapConsumed(assignment);

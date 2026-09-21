@@ -330,6 +330,83 @@ test('resolves destructuring, var hoisting, and loop scopes for named imports', 
   assert.ok(validateToolPageContract(varLoop, contract).some((failure) => failure.includes('must call formatJson')));
 });
 
+test('does not let a shadowed fake call satisfy imported result, sink, or swap flow', () => {
+  const jsonMixed = `
+<ToolLayout backgroundKey="tool-json"><label for="json-input">JSON 内容</label><textarea id="json-input"></textarea></ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    formatJson(input.value);
+    {
+      const formatJson = () => ({ ok: true, value: '{}' });
+      const result = formatJson(input.value);
+      if (!result.ok) return;
+      input.value = result.value;
+    }
+  });
+</script>`;
+  assert.ok(validateToolPageContract(jsonMixed, contract).some((failure) => failure.includes('must consume formatJson ToolResult')));
+
+  const sinkSource = (name: string, module: string) => `
+<ToolLayout backgroundKey="tool-json"><label for="json-input">JSON 内容</label><textarea id="json-input"></textarea></ToolLayout>
+<script>
+  import { ${name} } from '../../lib/tools/${module}';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    ${name}(input.value);
+    {
+      const ${name} = () => ({ ok: true, value: 'fake' });
+      const result = ${name}(input.value);
+      renderResults(result);
+    }
+  });
+</script>`;
+  const sinkContract = (name: string, module: string) => ({
+    ...contract,
+    logicModule: module,
+    logicCalls: [name],
+    toolResultCalls: [],
+    sinkCalls: [name],
+  });
+  assert.ok(validateToolPageContract(
+    sinkSource('countText', 'text-counter.ts'),
+    sinkContract('countText', 'text-counter.ts'),
+  ).some((failure) => failure.includes('must send countText result')));
+  assert.ok(validateToolPageContract(
+    sinkSource('normalizeUuidCount', 'uuid.ts'),
+    sinkContract('normalizeUuidCount', 'uuid.ts'),
+  ).some((failure) => failure.includes('must send normalizeUuidCount result')));
+
+  const swapContract = {
+    ...contract,
+    logicModule: 'browser.ts',
+    logicCalls: ['swapTransformation'],
+    toolResultCalls: [],
+    browserModule: undefined,
+    browserCalls: [],
+    swapCall: 'swapTransformation',
+  };
+  const swapMixed = `
+<ToolLayout backgroundKey="tool-json"><label for="json-input">JSON 内容</label><textarea id="json-input"></textarea></ToolLayout>
+<script>
+  import { swapTransformation } from '../../lib/tools/browser.ts';
+  const input = document.querySelector('#json-input');
+  const output = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    swapTransformation({ input: input.value, output: output.value, mode: 'encode' });
+    {
+      const swapTransformation = () => ({ input: 'fake', output: 'fake', mode: 'decode' });
+      const result = swapTransformation({ input: input.value, output: output.value, mode: 'encode' });
+      input.value = result.input;
+      output.value = result.output;
+      setMode(result.mode);
+    }
+  });
+</script>`;
+  assert.ok(validateToolPageContract(swapMixed, swapContract).some((failure) => failure.includes('must assign and consume swapTransformation')));
+});
+
 test('rejects a ToolResult that is only stored on an unrelated object', () => {
   const source = `---
 import ToolLayout from '../../components/tools/ToolLayout.astro';
