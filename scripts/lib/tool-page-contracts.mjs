@@ -265,6 +265,85 @@ const collectScriptFacts = (scripts) => {
   return { imports, namedImports, calls, forbidden };
 };
 
+const isBindingName = (node, name) => ts.isIdentifier(node) && node.text === name;
+
+const hasBindingInNode = (node, name, { includeVar = false } = {}) => {
+  let found = false;
+  const visit = (child) => {
+    if (found) return;
+    if (ts.isVariableDeclaration(child)
+      && isBindingName(child.name, name)
+      && (includeVar || child.parent.flags & ts.NodeFlags.Let || child.parent.flags & ts.NodeFlags.Const)) {
+      found = true;
+      return;
+    }
+    if ((ts.isFunctionDeclaration(child) || ts.isClassDeclaration(child))
+      && child.name && isBindingName(child.name, name)) {
+      found = true;
+      return;
+    }
+    if (child !== node && ts.isFunctionLike(child)) return;
+    if (child !== node && ts.isBlock(child)) return;
+    ts.forEachChild(child, visit);
+  };
+  ts.forEachChild(node, visit);
+  return found;
+};
+
+const hasLexicalBindingInScope = (scope, name) => {
+  if (ts.isFunctionLike(scope)) {
+    if (scope.name && isBindingName(scope.name, name)) return true;
+    if (scope.parameters.some((parameter) => isBindingName(parameter.name, name))) return true;
+    return false;
+  }
+  if (ts.isCatchClause(scope) && scope.variableDeclaration
+    && isBindingName(scope.variableDeclaration.name, name)) return true;
+  return hasBindingInNode(scope, name);
+};
+
+const hasVarBindingInFunction = (functionScope, name) => {
+  let found = false;
+  const visit = (node) => {
+    if (found) return;
+    if (node !== functionScope && ts.isFunctionLike(node)) return;
+    if (ts.isVariableDeclaration(node)
+      && isBindingName(node.name, name)
+      && (node.parent.flags & ts.NodeFlags.Var)) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(functionScope, visit);
+  return found;
+};
+
+const resolvesToNamedImport = (identifier, expectedImport) => {
+  let current = identifier.parent;
+  let functionScope = null;
+  while (current) {
+    if (ts.isFunctionLike(current)) {
+      functionScope = current;
+      if (current.name && isBindingName(current.name, identifier.text)) return false;
+      if (current.parameters.some((parameter) => isBindingName(parameter.name, identifier.text))) return false;
+    }
+    if (ts.isCatchClause(current) && current.variableDeclaration
+      && isBindingName(current.variableDeclaration.name, identifier.text)) return false;
+    if (ts.isBlock(current) || ts.isSourceFile(current)) {
+      if (hasLexicalBindingInScope(current, identifier.text)) return false;
+    }
+    if (ts.isSourceFile(current)) break;
+    current = current.parent;
+  }
+  if (functionScope && hasVarBindingInFunction(functionScope, identifier.text)) return false;
+  return identifier.text === expectedImport.localName;
+};
+
+const hasBoundNamedImportCall = (calls, functionName, importedLocals) => [...calls].some((call) => {
+  if (!ts.isIdentifier(call.expression) || !importedLocals.has(call.expression.text)) return false;
+  return resolvesToNamedImport(call.expression, { localName: functionName });
+});
+
 export const validateToolPageContract = (source, contract) => {
   const failures = [];
   const cleaned = stripComments(source);
@@ -292,7 +371,8 @@ export const validateToolPageContract = (source, contract) => {
     if (!importedLocals?.has(functionName)) {
       failures.push(`must import ${functionName} as a named binding from ${moduleName}`);
     }
-    if (!facts.calls.has(functionName)) {
+    if (!importedLocals?.has(functionName)
+      || !hasBoundNamedImportCall(facts.calls.get(functionName) ?? [], functionName, importedLocals)) {
       failures.push(`must call ${functionName} from a page script`);
     }
   }

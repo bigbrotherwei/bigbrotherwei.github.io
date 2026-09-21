@@ -245,6 +245,36 @@ import ToolLayout from '../../components/tools/ToolLayout.astro';
   assert.ok(failures.some((failure) => failure.includes('must import formatJson as a named binding')));
 });
 
+test('rejects const and function declarations that shadow a real named import at the call site', () => {
+  const constShadow = `
+<ToolLayout backgroundKey="tool-json"><label for="json-input">JSON 内容</label><textarea id="json-input"></textarea></ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    const formatJson = () => ({ ok: true, value: '{}' });
+    const result = formatJson(input.value);
+    if (!result.ok) return;
+    input.value = result.value;
+  });
+</script>`;
+  const functionShadow = `
+<ToolLayout backgroundKey="tool-json"><label for="json-input">JSON 内容</label><textarea id="json-input"></textarea></ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => {
+    function formatJson() { return { ok: true, value: '{}' }; }
+    const result = formatJson(input.value);
+    if (!result.ok) return;
+    input.value = result.value;
+  });
+</script>`;
+
+  assert.ok(validateToolPageContract(constShadow, contract).some((failure) => failure.includes('must call formatJson')));
+  assert.ok(validateToolPageContract(functionShadow, contract).some((failure) => failure.includes('must call formatJson')));
+});
+
 test('rejects a ToolResult that is only stored on an unrelated object', () => {
   const source = `---
 import ToolLayout from '../../components/tools/ToolLayout.astro';
