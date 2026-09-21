@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -57,4 +57,10 @@ test('route verification rejects a registry route that has no page even when leg
   } finally {
     rmSync(fixtureRoot, { recursive: true, force: true });
   }
+});
+
+test('keeps hidden tool cards visually removed even when card classes set display', () => {
+  const globalCss = readFileSync(new URL('../../src/styles/global.css', import.meta.url), 'utf8');
+
+  assert.match(globalCss, /\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important\s*;/s);
 });
