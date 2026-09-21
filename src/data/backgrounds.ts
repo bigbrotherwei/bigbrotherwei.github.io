@@ -10,6 +10,12 @@ export const backgroundKeys = [
   'post-pixel-farm-background',
   'topic-blog-rebuild',
   'topic-developer-toolbox',
+  'tool-json',
+  'tool-base64',
+  'tool-url',
+  'tool-timestamp',
+  'tool-uuid',
+  'tool-text-counter',
 ] as const;
 
 export type BackgroundKey = (typeof backgroundKeys)[number];
@@ -65,5 +71,41 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'topic-developer-toolbox': {
     desktop: '/images/backgrounds/topic-inventor-workshop.webp',
     mobile: '/images/backgrounds/topic-inventor-workshop-mobile.webp',
+  },
+  'tool-json': {
+    desktop: '/images/backgrounds/tool-json-archive.webp',
+    mobile: '/images/backgrounds/tool-json-archive-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-base64': {
+    desktop: '/images/backgrounds/tool-base64-telegraph.webp',
+    mobile: '/images/backgrounds/tool-base64-telegraph-mobile.webp',
+    position: 'right center',
+    mobilePosition: 'right center',
+  },
+  'tool-url': {
+    desktop: '/images/backgrounds/tool-url-waystation.webp',
+    mobile: '/images/backgrounds/tool-url-waystation-mobile.webp',
+    position: 'left center',
+    mobilePosition: 'left center',
+  },
+  'tool-timestamp': {
+    desktop: '/images/backgrounds/tool-timestamp-clockshop.webp',
+    mobile: '/images/backgrounds/tool-timestamp-clockshop-mobile.webp',
+    position: 'right center',
+    mobilePosition: 'right center',
+  },
+  'tool-uuid': {
+    desktop: '/images/backgrounds/tool-uuid-greenhouse.webp',
+    mobile: '/images/backgrounds/tool-uuid-greenhouse-mobile.webp',
+    position: 'left center',
+    mobilePosition: 'left center',
+  },
+  'tool-text-counter': {
+    desktop: '/images/backgrounds/tool-text-scriptorium.webp',
+    mobile: '/images/backgrounds/tool-text-scriptorium-mobile.webp',
+    position: 'center',
+    mobilePosition: 'right center',
   },
 };

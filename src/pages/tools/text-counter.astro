@@ -1,0 +1,57 @@
+---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'text-counter');
+if (!tool) throw new Error('缺少字数统计工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-text-counter" statusId="text-counter-status">
+  <div class="tool-field">
+    <label for="text-counter-input">文本内容</label>
+    <textarea id="text-counter-input" placeholder="输入或粘贴文字后自动统计" spellcheck="false"></textarea>
+  </div>
+  <dl class="tool-results tool-statistics" aria-label="字数统计结果">
+    <div><dt>字符</dt><dd><span id="count-characters" class="tool-result-value">0</span></dd></div>
+    <div><dt>去空白字符</dt><dd><span id="count-without-whitespace" class="tool-result-value">0</span></dd></div>
+    <div><dt>汉字</dt><dd><span id="count-chinese" class="tool-result-value">0</span></dd></div>
+    <div><dt>英文词</dt><dd><span id="count-english-words" class="tool-result-value">0</span></dd></div>
+    <div><dt>行数</dt><dd><span id="count-lines" class="tool-result-value">0</span></dd></div>
+    <div><dt>UTF-8 字节</dt><dd><span id="count-utf8-bytes" class="tool-result-value">0</span></dd></div>
+  </dl>
+</ToolLayout>
+
+<script>
+  import { debounce } from '../../lib/tools/browser.ts';
+  import { countText, shouldShowTextPerformanceNotice } from '../../lib/tools/text-counter.ts';
+
+  const input = document.querySelector<HTMLTextAreaElement>('#text-counter-input');
+  const status = document.querySelector<HTMLElement>('#text-counter-status');
+  const outputs = {
+    characters: document.querySelector<HTMLElement>('#count-characters'),
+    charactersWithoutWhitespace: document.querySelector<HTMLElement>('#count-without-whitespace'),
+    chineseCharacters: document.querySelector<HTMLElement>('#count-chinese'),
+    englishWords: document.querySelector<HTMLElement>('#count-english-words'),
+    lines: document.querySelector<HTMLElement>('#count-lines'),
+    utf8Bytes: document.querySelector<HTMLElement>('#count-utf8-bytes'),
+  };
+
+  const update = () => {
+    const statistics = countText(input?.value ?? '');
+    Object.entries(outputs).forEach(([key, output]) => {
+      if (output) output.textContent = String(statistics[key as keyof typeof statistics]);
+    });
+    if (status) {
+      const summary = `已统计：字符 ${statistics.characters}；去空白字符 ${statistics.charactersWithoutWhitespace}；汉字 ${statistics.chineseCharacters}；英文词 ${statistics.englishWords}；行数 ${statistics.lines}；UTF-8 字节 ${statistics.utf8Bytes}。`;
+      status.textContent = shouldShowTextPerformanceNotice(statistics)
+        ? `${summary} 文本较大，继续输入时可能略有延迟。`
+        : summary;
+      delete status.dataset.state;
+      if (shouldShowTextPerformanceNotice(statistics)) status.dataset.performanceNotice = 'true';
+      else delete status.dataset.performanceNotice;
+    }
+  };
+
+  const scheduleUpdate = debounce(update, 150);
+  input?.addEventListener('input', scheduleUpdate);
+</script>

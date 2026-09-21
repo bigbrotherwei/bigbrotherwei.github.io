@@ -1,0 +1,30 @@
+export interface TextStatistics {
+  characters: number;
+  charactersWithoutWhitespace: number;
+  chineseCharacters: number;
+  englishWords: number;
+  lines: number;
+  utf8Bytes: number;
+}
+
+const largeTextThreshold = 100_000;
+
+const hanCharacter = /\p{Script=Han}/u;
+const englishWord = /(?:(?!\p{Script=Han})[\p{L}\p{N}])+/gu;
+
+export const countText = (input: string): TextStatistics => {
+  const characters = Array.from(input);
+  const textWithoutTerminalNewline = input.replace(/\r?\n$/u, '');
+
+  return {
+    characters: characters.length,
+    charactersWithoutWhitespace: characters.filter((character) => !/\s/u.test(character)).length,
+    chineseCharacters: characters.filter((character) => hanCharacter.test(character)).length,
+    englishWords: Array.from(input.matchAll(englishWord)).length,
+    lines: textWithoutTerminalNewline === '' ? 0 : textWithoutTerminalNewline.split(/\r?\n/u).length,
+    utf8Bytes: new TextEncoder().encode(input).length,
+  };
+};
+
+export const shouldShowTextPerformanceNotice = (statistics: TextStatistics): boolean =>
+  statistics.characters >= largeTextThreshold || statistics.utf8Bytes >= largeTextThreshold;

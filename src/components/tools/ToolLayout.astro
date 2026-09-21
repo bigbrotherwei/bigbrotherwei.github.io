@@ -1,0 +1,26 @@
+---
+import PageHero from '../PageHero.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { BackgroundKey } from '../../data/backgrounds';
+
+interface Props {
+  title: string;
+  description: string;
+  backgroundKey: BackgroundKey;
+  statusId?: string;
+}
+
+const { title, description, backgroundKey, statusId = 'tool-status' } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} backgroundKey={backgroundKey}>
+  <main class="page-shell tool-page">
+    <a class="back-link" href="/tools/">返回工具箱</a>
+    <PageHero eyebrow="Tools" title={title} description={description} />
+    <p class="tool-privacy-note">输入内容只在浏览器中处理，不会上传或保存。</p>
+    <section class="tool-workspace" aria-describedby={statusId} aria-label={`${title} 工作台`}>
+      <slot />
+    </section>
+    <p id={statusId} class="tool-status" role="status" aria-live="polite">准备就绪</p>
+  </main>
+</BaseLayout>

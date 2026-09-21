@@ -1,0 +1,108 @@
+---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'timestamp');
+if (!tool) throw new Error('缺少时间戳工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-timestamp" statusId="timestamp-status">
+  <div class="tool-field">
+    <label for="timestamp-input">Unix 时间戳</label>
+    <input id="timestamp-input" inputmode="numeric" placeholder="输入秒或毫秒时间戳" autocomplete="off" />
+  </div>
+  <div class="tool-segmented" role="group" aria-label="时间戳单位">
+    <button type="button" data-timestamp-unit="auto" aria-pressed="true">自动</button>
+    <button type="button" data-timestamp-unit="seconds" aria-pressed="false">秒</button>
+    <button type="button" data-timestamp-unit="milliseconds" aria-pressed="false">毫秒</button>
+  </div>
+  <div class="tool-toolbar" aria-label="时间戳操作">
+    <button type="button" data-timestamp-action="now">现在</button>
+    <button type="button" data-timestamp-action="clear">清空</button>
+  </div>
+  <dl class="tool-results tool-statistics" aria-label="时间戳转换结果">
+    <div><dt>本地时间</dt><dd><span id="timestamp-local" class="tool-result-value">--</span></dd></div>
+    <div><dt>UTC ISO 时间</dt><dd><span id="timestamp-iso" class="tool-result-value">--</span></dd></div>
+    <div><dt>秒时间戳</dt><dd><span id="timestamp-seconds" class="tool-result-value">--</span></dd></div>
+    <div><dt>毫秒时间戳</dt><dd><span id="timestamp-milliseconds" class="tool-result-value">--</span></dd></div>
+  </dl>
+</ToolLayout>
+
+<script>
+  import { convertTimestamp } from '../../lib/tools/timestamp.ts';
+
+  const input = document.querySelector<HTMLInputElement>('#timestamp-input');
+  const status = document.querySelector<HTMLElement>('#timestamp-status');
+  const outputs = {
+    local: document.querySelector<HTMLElement>('#timestamp-local'),
+    iso: document.querySelector<HTMLElement>('#timestamp-iso'),
+    seconds: document.querySelector<HTMLElement>('#timestamp-seconds'),
+    milliseconds: document.querySelector<HTMLElement>('#timestamp-milliseconds'),
+  };
+  let unit: 'auto' | 'seconds' | 'milliseconds' = 'auto';
+
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    if (!status) return;
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  const clearResults = () => {
+    Object.values(outputs).forEach((output) => {
+      if (output) output.textContent = '--';
+    });
+  };
+
+  const convert = () => {
+    if (!input) return;
+    if (input.value.trim() === '') {
+      clearResults();
+      showStatus('输入秒或毫秒时间戳以转换');
+      return;
+    }
+
+    const result = convertTimestamp(input.value, unit);
+    if (!result.ok) {
+      clearResults();
+      showStatus(result.error, 'error');
+      return;
+    }
+    outputs.local && (outputs.local.textContent = result.value.local);
+    outputs.iso && (outputs.iso.textContent = result.value.iso);
+    outputs.seconds && (outputs.seconds.textContent = String(result.value.seconds));
+    outputs.milliseconds && (outputs.milliseconds.textContent = String(result.value.milliseconds));
+    showStatus(`已转换：本地时间 ${result.value.local}；UTC ISO 时间 ${result.value.iso}；秒时间戳 ${result.value.seconds}；毫秒时间戳 ${result.value.milliseconds}。`, 'success');
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-timestamp-unit]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const selected = button.dataset.timestampUnit;
+      unit = selected === 'seconds' || selected === 'milliseconds' ? selected : 'auto';
+      document.querySelectorAll<HTMLButtonElement>('[data-timestamp-unit]').forEach((control) => {
+        control.setAttribute('aria-pressed', String(control === button));
+      });
+      convert();
+    });
+  });
+
+  input?.addEventListener('input', convert);
+  document.querySelectorAll<HTMLButtonElement>('[data-timestamp-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!input) return;
+      if (button.dataset.timestampAction === 'now') {
+        input.value = String(Date.now());
+        unit = 'milliseconds';
+        document.querySelectorAll<HTMLButtonElement>('[data-timestamp-unit]').forEach((control) => {
+          control.setAttribute('aria-pressed', String(control.dataset.timestampUnit === 'milliseconds'));
+        });
+        convert();
+        return;
+      }
+      input.value = '';
+      clearResults();
+      showStatus('已清空时间戳');
+      input.focus();
+    });
+  });
+</script>

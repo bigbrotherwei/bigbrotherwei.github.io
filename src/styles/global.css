@@ -1,3 +1,5 @@
+@import "./tools.css";
+
 :root {
   color-scheme: light;
   --color-paper: #f7f3ea;
@@ -27,6 +29,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 html {

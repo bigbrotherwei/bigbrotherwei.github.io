@@ -1,0 +1,98 @@
+---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'url');
+if (!tool) throw new Error('缺少 URL 工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-url" statusId="url-status">
+  <p class="tool-hint">处理查询参数值或路径片段，不会把完整 URL 的结构字符一并编码。</p>
+  <div class="tool-segmented" role="group" aria-label="URL 转换模式">
+    <button type="button" data-url-mode="encode" aria-pressed="true">编码</button>
+    <button type="button" data-url-mode="decode" aria-pressed="false">解码</button>
+  </div>
+  <div class="tool-fields">
+    <div class="tool-field">
+      <label for="url-input">输入内容</label>
+      <textarea id="url-input" placeholder="例如：搜索?q=中文" spellcheck="false"></textarea>
+    </div>
+    <div class="tool-field">
+      <label for="url-output">转换结果</label>
+      <textarea id="url-output" readonly placeholder="结果会显示在这里"></textarea>
+    </div>
+  </div>
+  <div class="tool-toolbar" aria-label="URL 操作">
+    <button type="button" data-url-action="swap">交换</button>
+    <button type="button" data-url-action="copy">复制结果</button>
+    <button type="button" data-url-action="clear">清空</button>
+  </div>
+</ToolLayout>
+
+<script>
+  import { decodeUrlComponent, encodeUrlComponent } from '../../lib/tools/url.ts';
+  import { copyText, swapTransformation, type TransformationMode } from '../../lib/tools/browser.ts';
+
+  const input = document.querySelector<HTMLTextAreaElement>('#url-input');
+  const output = document.querySelector<HTMLTextAreaElement>('#url-output');
+  const status = document.querySelector<HTMLElement>('#url-status');
+  let mode: TransformationMode = 'encode';
+
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    if (!status) return;
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  const convert = () => {
+    if (!input || !output) return;
+    const result = mode === 'encode' ? encodeUrlComponent(input.value) : decodeUrlComponent(input.value);
+    if (!result.ok) {
+      output.value = '';
+      showStatus(result.error, 'error');
+      return;
+    }
+    output.value = result.value;
+    showStatus(input.value === '' ? '等待输入内容' : '转换完成', input.value === '' ? 'idle' : 'success');
+  };
+
+  const setMode = (nextMode: TransformationMode) => {
+    mode = nextMode;
+    document.querySelectorAll<HTMLButtonElement>('[data-url-mode]').forEach((control) => {
+      control.setAttribute('aria-pressed', String(control.dataset.urlMode === mode));
+    });
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-url-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      setMode(button.dataset.urlMode === 'decode' ? 'decode' : 'encode');
+      convert();
+    });
+  });
+
+  input?.addEventListener('input', convert);
+  document.querySelectorAll<HTMLButtonElement>('[data-url-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!input || !output) return;
+      if (button.dataset.urlAction === 'swap') {
+        const swapped = swapTransformation({ input: input.value, output: output.value, mode });
+        input.value = swapped.input;
+        output.value = swapped.output;
+        setMode(swapped.mode);
+        showStatus('已交换输入与输出，并切换转换方向', 'success');
+        input.focus();
+        return;
+      }
+      if (button.dataset.urlAction === 'clear') {
+        input.value = '';
+        output.value = '';
+        showStatus('已清空内容');
+        input.focus();
+        return;
+      }
+      const result = await copyText(output.value);
+      showStatus(result.ok ? '已复制转换结果' : result.error, result.ok ? 'success' : 'error');
+    });
+  });
+</script>

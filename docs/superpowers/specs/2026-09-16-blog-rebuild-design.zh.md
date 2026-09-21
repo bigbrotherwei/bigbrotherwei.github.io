@@ -381,38 +381,32 @@ cover:
 - 工具描述。
 - 分类和标签。
 
-第一批优先做纯前端工具，不依赖后端：
+本阶段已实现的第一批工具均为纯前端实现，不依赖后端：
 
-- JSON 格式化、压缩、校验。
-- Base64 编码解码。
-- URL 编码解码。
-- 时间戳转换。
-- UUID 生成。
-- 字数统计。
-- 文本 diff。
-- Markdown 预览。
-- Mermaid 预览。
-- 正则测试。
+- `/tools/json/`：JSON 格式化、压缩、校验。
+- `/tools/base64/`：Base64 编码解码。
+- `/tools/url/`：URL 组件编码解码。
+- `/tools/timestamp/`：时间戳转换。
+- `/tools/uuid/`：UUID v4 生成。
+- `/tools/text-counter/`：字数统计。
 
-第一批建议路由：
-
-- `/tools`
-- `/tools/json`
-- `/tools/base64`
-- `/tools/url`
-- `/tools/timestamp`
-- `/tools/uuid`
-- `/tools/text-counter`
-- `/tools/diff`
-- `/tools/markdown`
+`/tools/` 提供搜索和分类组合筛选。文本 diff、Markdown 预览、Mermaid 预览、正则测试等不属于首批已完成范围，是否实现留待后续需求单独确认。
 
 实现要求：
 
 - 每个工具有独立页面。
 - 工具逻辑和 UI 分离。
-- 纯文本转换不上传服务器。
+- 工具输入、输出和复制操作只在当前浏览器中处理；不发送网络请求、不上传内容、不写入持久化存储，也不记录输入内容。
 - 不为了工具页引入过重依赖。
 - 工具页面在移动端也能使用。
+
+新增工具的维护步骤：
+
+1. 在 `src/data/tools.ts` 登记唯一 slug、路径、分类、搜索词和背景 key。
+2. 在 `src/lib/tools/` 编写无 DOM 依赖的纯函数，并在 `tests/tools/` 覆盖成功、错误和边界输入。
+3. 在 `src/pages/tools/` 创建使用 `ToolLayout` 的页面，采用关联标签、键盘焦点和 `aria-live` 状态；用户输入只能通过表单值或文本节点呈现，不能拼接为 `innerHTML`。
+4. 为该工具制作独立桌面、移动 WebP 背景，在 `src/data/backgrounds.ts` 注册，并更新工具页面静态契约校验。
+5. 运行 `npm run verify:tools`、`npm run verify:visual-background`、`npm run astro -- check` 和 `npm run build`，再执行桌面与移动端浏览器验收。
 
 后续可扩展：
 

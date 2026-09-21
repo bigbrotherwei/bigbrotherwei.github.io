@@ -1,0 +1,219 @@
+.tool-page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.tool-page .back-link,
+.tool-page .page-hero {
+  margin-bottom: 0;
+}
+
+.tool-privacy-note {
+  margin: 0;
+  color: rgba(255, 250, 241, 0.82);
+  font-size: 0.94rem;
+  line-height: 1.65;
+}
+
+.tool-workspace {
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: rgba(255, 251, 241, 0.88);
+  border: 1px solid rgba(255, 250, 241, 0.52);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sketch);
+  backdrop-filter: blur(10px);
+}
+
+.tool-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tool-field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.tool-field :where(input, select, textarea) {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.72rem 0.82rem;
+  resize: vertical;
+  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font: inherit;
+  line-height: 1.55;
+}
+
+.tool-field textarea {
+  min-height: 12rem;
+}
+
+.tool-field :where(input, textarea)[readonly] {
+  color: var(--color-muted);
+  background: rgba(57, 127, 125, 0.07);
+}
+
+.tool-field--compact {
+  max-width: 12rem;
+}
+
+.tool-hint {
+  margin: 0 0 1rem;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.tool-segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 1rem 0;
+}
+
+.tool-segmented button,
+.tool-result-row button {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.8rem;
+  color: var(--color-muted);
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.tool-segmented button[aria-pressed='true'] {
+  color: #fffaf1;
+  background: var(--color-sky);
+  border-color: var(--color-sky);
+}
+
+.tool-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.tool-toolbar button {
+  min-height: 2.75rem;
+  padding: 0.55rem 0.9rem;
+  color: #fffaf1;
+  background: var(--color-sky);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.tool-toolbar button:hover {
+  background: var(--color-farm-sky);
+}
+
+.tool-toolbar .tool-icon-button {
+  display: inline-grid;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  place-items: center;
+}
+
+.tool-status {
+  min-height: 1.5rem;
+  margin: 0;
+  color: rgba(255, 250, 241, 0.9);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.tool-status[data-state='success'] {
+  color: #b9f5c8;
+}
+
+.tool-status[data-state='error'] {
+  color: #ffd0be;
+}
+
+.tool-results {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.tool-results :where(.tool-result-value, pre) {
+  display: block;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.8rem;
+  overflow: auto;
+  color: var(--color-ink);
+  background: rgba(57, 127, 125, 0.08);
+  border: 1px solid rgba(57, 127, 125, 0.22);
+  border-radius: 6px;
+  font: inherit;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.tool-statistics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tool-statistics > div {
+  min-width: 0;
+}
+
+.tool-statistics dt {
+  margin-bottom: 0.3rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.tool-statistics dd {
+  margin: 0;
+}
+
+.tool-result-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.tool-result-row .tool-result-value {
+  min-width: 0;
+}
+
+.tool-page :where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 7px #fffaf1;
+}
+
+@media (max-width: 760px) {
+  .tool-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-statistics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

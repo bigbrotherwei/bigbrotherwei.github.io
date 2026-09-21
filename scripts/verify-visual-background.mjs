@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { hasExplicitBackgroundKey } from './lib/visual-background-rules.mjs';
 
 const root = process.cwd();
 const backdropPath = join(root, 'src/components/HandPaintedFarmBackdrop.astro');
@@ -193,12 +194,67 @@ const pageBackgroundRequirements = {
   'src/pages/tools/index.astro': 'tools-index',
   'src/pages/projects/index.astro': 'projects-index',
   'src/pages/about.astro': 'about',
+  'src/pages/tools/json.astro': 'tool-json',
+  'src/pages/tools/base64.astro': 'tool-base64',
+  'src/pages/tools/url.astro': 'tool-url',
+  'src/pages/tools/timestamp.astro': 'tool-timestamp',
+  'src/pages/tools/uuid.astro': 'tool-uuid',
+  'src/pages/tools/text-counter.astro': 'tool-text-counter',
+};
+
+const expectedToolAssets = {
+  'tool-json': {
+    desktop: '/images/backgrounds/tool-json-archive.webp',
+    mobile: '/images/backgrounds/tool-json-archive-mobile.webp',
+  },
+  'tool-base64': {
+    desktop: '/images/backgrounds/tool-base64-telegraph.webp',
+    mobile: '/images/backgrounds/tool-base64-telegraph-mobile.webp',
+  },
+  'tool-url': {
+    desktop: '/images/backgrounds/tool-url-waystation.webp',
+    mobile: '/images/backgrounds/tool-url-waystation-mobile.webp',
+  },
+  'tool-timestamp': {
+    desktop: '/images/backgrounds/tool-timestamp-clockshop.webp',
+    mobile: '/images/backgrounds/tool-timestamp-clockshop-mobile.webp',
+  },
+  'tool-uuid': {
+    desktop: '/images/backgrounds/tool-uuid-greenhouse.webp',
+    mobile: '/images/backgrounds/tool-uuid-greenhouse-mobile.webp',
+  },
+  'tool-text-counter': {
+    desktop: '/images/backgrounds/tool-text-scriptorium.webp',
+    mobile: '/images/backgrounds/tool-text-scriptorium-mobile.webp',
+  },
 };
 
 for (const [routePath, key] of Object.entries(pageBackgroundRequirements)) {
   const source = readFileSync(join(root, routePath), 'utf8');
-  if (!source.includes(`backgroundKey="${key}"`)) {
-    failures.push(`${routePath} must use its unique background key: ${key}`);
+  if (!hasExplicitBackgroundKey(source, key)) {
+    failures.push(`${routePath} must explicitly use its unique background key: ${key}`);
+  }
+}
+
+if (existsSync(registryPath)) {
+  const registrySource = readFileSync(registryPath, 'utf8');
+  for (const [key, assets] of Object.entries(expectedToolAssets)) {
+    const entryStart = registrySource.indexOf(`  '${key}': {`);
+    const entryEnd = registrySource.indexOf('\n  },', entryStart);
+    const entrySource = entryStart === -1 || entryEnd === -1
+      ? ''
+      : registrySource.slice(entryStart, entryEnd);
+
+    if (!entrySource) {
+      failures.push(`Missing required unique tool background key: ${key}`);
+      continue;
+    }
+
+    for (const [variant, asset] of Object.entries(assets)) {
+      if (!entrySource.includes(`${variant}: '${asset}'`)) {
+        failures.push(`Tool background ${key} must register its dedicated ${variant} asset`);
+      }
+    }
   }
 }
 

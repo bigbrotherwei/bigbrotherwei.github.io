@@ -1,8 +1,7 @@
 ---
 import PageHero from '../../components/PageHero.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-
-const tools = ['JSON 格式化', 'Base64 编码解码', 'URL 编码解码', '时间戳转换', 'UUID 生成', '字数统计'];
+import { tools, toolCategories } from '../../data/tools';
 ---
 
 <BaseLayout
@@ -14,33 +13,75 @@ const tools = ['JSON 格式化', 'Base64 编码解码', 'URL 编码解码', '时
     <PageHero
       eyebrow="Tools"
       title="实用工具"
-      description="这个页面参考工具箱的组织方式，但会保持博客自己的手绘视觉。当前先搭入口和分类骨架，工具逻辑后续逐个实现。"
+      description="纯前端的小工具，输入内容只在浏览器中处理。按名称、用途或分类找到需要的一件。"
     />
 
     <section class="tool-panel" aria-label="工具筛选">
-      <label>
+      <label for="tool-search">
         搜索工具
-        <input type="search" placeholder="例如 JSON、Base64、时间戳" disabled />
+        <input id="tool-search" type="search" placeholder="例如 JSON、Base64、时间戳" autocomplete="off" />
       </label>
-      <div class="tool-tags" aria-label="工具分类">
-        <span>文本</span>
-        <span>编码</span>
-        <span>时间</span>
-        <span>开发</span>
+      <div class="tool-tags" aria-label="工具分类" role="group">
+        {toolCategories.map((category) => (
+          <button type="button" data-category-filter={category.value} aria-pressed={category.value === 'all' ? 'true' : 'false'}>
+            {category.label}
+          </button>
+        ))}
       </div>
     </section>
 
     <section class="sketch-grid" aria-label="工具列表">
       {tools.map((tool) => (
-        <article class="sketch-card">
-          <p class="eyebrow">Planned</p>
-          <h2>{tool}</h2>
-          <p>纯前端处理，不上传内容。下一阶段会为这个工具补独立页面和交互逻辑。</p>
-        </article>
+        <a class="sketch-card content-card" href={tool.href} data-tool-card data-category={tool.category} data-search={`${tool.title} ${tool.description} ${tool.searchTerms}`}>
+          <p class="eyebrow">{toolCategories.find((category) => category.value === tool.category)?.label}</p>
+          <h2>{tool.title}</h2>
+          <p>{tool.description}</p>
+        </a>
       ))}
     </section>
+    <p class="tool-result-count" data-result-count role="status" aria-live="polite">已显示 6 个工具。</p>
+    <p data-empty-state hidden role="status" aria-live="polite">没有找到匹配的工具。</p>
   </main>
 </BaseLayout>
+
+<script>
+  const searchInput = document.querySelector<HTMLInputElement>('#tool-search');
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-card]'));
+  const categoryFilters = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-category-filter]'));
+  const resultCount = document.querySelector<HTMLElement>('[data-result-count]');
+  const emptyState = document.querySelector<HTMLElement>('[data-empty-state]');
+  let activeCategory = 'all';
+
+  const normalize = (value: string) => value.trim().toLocaleLowerCase('zh-CN');
+
+  const updateResults = () => {
+    const query = normalize(searchInput?.value ?? '');
+    let visibleCount = 0;
+
+    for (const card of cards) {
+      const matchesQuery = normalize(card.dataset.search ?? '').includes(query);
+      const matchesCategory = activeCategory === 'all' || card.dataset.category === activeCategory;
+      const visible = matchesQuery && matchesCategory;
+      card.hidden = !visible;
+      if (visible) visibleCount += 1;
+    }
+
+    if (resultCount) resultCount.textContent = `已显示 ${visibleCount} 个工具。`;
+    if (emptyState) emptyState.hidden = visibleCount !== 0;
+  };
+
+  searchInput?.addEventListener('input', updateResults);
+
+  for (const filter of categoryFilters) {
+    filter.addEventListener('click', () => {
+      activeCategory = filter.dataset.categoryFilter ?? 'all';
+      for (const item of categoryFilters) {
+        item.setAttribute('aria-pressed', String(item === filter));
+      }
+      updateResults();
+    });
+  }
+</script>
 
 <style>
   .tool-panel {
@@ -76,12 +117,29 @@ const tools = ['JSON 格式化', 'Base64 编码解码', 'URL 编码解码', '时
     gap: 0.6rem;
   }
 
-  .tool-tags span {
+  .tool-tags button {
     padding: 0.36rem 0.7rem;
     color: var(--color-ink);
     background: rgba(57, 127, 125, 0.1);
     border: 1px solid rgba(57, 127, 125, 0.24);
     border-radius: 999px;
+    cursor: pointer;
     font-size: 0.9rem;
+  }
+
+  .tool-tags button[aria-pressed='true'] {
+    color: #fffaf1;
+    background: var(--color-teal);
+  }
+
+  [data-empty-state] {
+    margin: 1.5rem 0 0;
+    color: #fffaf1;
+    font-weight: 700;
+  }
+
+  .tool-result-count {
+    margin: 1.5rem 0 0;
+    color: rgba(255, 250, 241, 0.84);
   }
 </style>
