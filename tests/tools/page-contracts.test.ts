@@ -275,6 +275,61 @@ test('rejects const and function declarations that shadow a real named import at
   assert.ok(validateToolPageContract(functionShadow, contract).some((failure) => failure.includes('must call formatJson')));
 });
 
+test('resolves destructuring, var hoisting, and loop scopes for named imports', () => {
+  const page = (handler: string) => `
+<ToolLayout backgroundKey="tool-json"><label for="json-input">JSON 内容</label><textarea id="json-input"></textarea></ToolLayout>
+<script>
+  import { formatJson } from '../../lib/tools/json.ts';
+  const input = document.querySelector('#json-input');
+  input.addEventListener('input', () => ${handler});
+</script>`;
+  const consumed = (expression: string) => `{
+    const result = ${expression};
+    if (!result.ok) return;
+    input.value = result.value;
+  }`;
+
+  const shadowingCases = [
+    page(`{
+      var formatJson = () => ({ ok: true, value: '{}' });
+      ${consumed('formatJson(input.value)')}
+    }`),
+    page(`{
+      const { formatJson } = { formatJson: () => ({ ok: true, value: '{}' }) };
+      ${consumed('formatJson(input.value)')}
+    }`),
+    page(`{
+      const [formatJson] = [() => ({ ok: true, value: '{}' })];
+      ${consumed('formatJson(input.value)')}
+    }`),
+    page(`({ formatJson }) => ${consumed('formatJson(input.value)')}`),
+    page(`{
+      try { throw { formatJson: () => ({ ok: true, value: '{}' }) }; }
+      catch ({ formatJson }) { ${consumed('formatJson(input.value)')} }
+    }`),
+  ];
+  for (const source of shadowingCases) {
+    assert.ok(
+      validateToolPageContract(source, contract).some((failure) => failure.includes('must call formatJson')),
+    );
+  }
+
+  const legalAfterLoop = page(`{
+    for (const formatJson of []) { ${consumed('formatJson(input.value)')} }
+    for (let formatJson of []) { ${consumed('formatJson(input.value)')} }
+    for (const formatJson in {}) { ${consumed('formatJson(input.value)')} }
+    for (let formatJson of []) { ${consumed('formatJson(input.value)')} }
+    ${consumed('formatJson(input.value)')}
+  }`);
+  assert.deepEqual(validateToolPageContract(legalAfterLoop, contract), []);
+
+  const varLoop = page(`{
+    for (var formatJson of []) { ${consumed('formatJson(input.value)')} }
+    ${consumed('formatJson(input.value)')}
+  }`);
+  assert.ok(validateToolPageContract(varLoop, contract).some((failure) => failure.includes('must call formatJson')));
+});
+
 test('rejects a ToolResult that is only stored on an unrelated object', () => {
   const source = `---
 import ToolLayout from '../../components/tools/ToolLayout.astro';

@@ -205,6 +205,7 @@ const collectScriptFacts = (scripts) => {
   const sourceFile = ts.createSourceFile('tool-page.ts', scripts, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const imports = new Set();
   const namedImports = new Map();
+  const namedImportNodes = new Map();
   const calls = new Map();
   const forbidden = new Set();
 
@@ -213,6 +214,7 @@ const collectScriptFacts = (scripts) => {
       const moduleName = statement.moduleSpecifier.text;
       imports.add(moduleName);
       const bindings = namedImports.get(moduleName) ?? new Map();
+      const bindingNodes = namedImportNodes.get(moduleName) ?? new Map();
       const elements = statement.importClause?.namedBindings && ts.isNamedImports(statement.importClause.namedBindings)
         ? statement.importClause.namedBindings.elements
         : [];
@@ -221,8 +223,12 @@ const collectScriptFacts = (scripts) => {
         const locals = bindings.get(importedName) ?? new Set();
         locals.add(element.name.text);
         bindings.set(importedName, locals);
+        const nodes = bindingNodes.get(importedName) ?? new Map();
+        nodes.set(element.name.text, element.name);
+        bindingNodes.set(importedName, nodes);
       }
       namedImports.set(moduleName, bindings);
+      namedImportNodes.set(moduleName, bindingNodes);
     }
   }
 
@@ -262,86 +268,39 @@ const collectScriptFacts = (scripts) => {
   };
   ts.forEachChild(sourceFile, visit);
 
-  return { imports, namedImports, calls, forbidden };
-};
-
-const isBindingName = (node, name) => ts.isIdentifier(node) && node.text === name;
-
-const hasBindingInNode = (node, name, { includeVar = false } = {}) => {
-  let found = false;
-  const visit = (child) => {
-    if (found) return;
-    if (ts.isVariableDeclaration(child)
-      && isBindingName(child.name, name)
-      && (includeVar || child.parent.flags & ts.NodeFlags.Let || child.parent.flags & ts.NodeFlags.Const)) {
-      found = true;
-      return;
-    }
-    if ((ts.isFunctionDeclaration(child) || ts.isClassDeclaration(child))
-      && child.name && isBindingName(child.name, name)) {
-      found = true;
-      return;
-    }
-    if (child !== node && ts.isFunctionLike(child)) return;
-    if (child !== node && ts.isBlock(child)) return;
-    ts.forEachChild(child, visit);
+  const fileName = 'tool-page.ts';
+  const compilerOptions = {
+    allowImportingTsExtensions: true,
+    module: ts.ModuleKind.ESNext,
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    noEmit: true,
+    target: ts.ScriptTarget.Latest,
   };
-  ts.forEachChild(node, visit);
-  return found;
-};
+  const host = ts.createCompilerHost(compilerOptions);
+  const originalGetSourceFile = host.getSourceFile.bind(host);
+  const originalFileExists = host.fileExists.bind(host);
+  const originalReadFile = host.readFile.bind(host);
+  host.getSourceFile = (name, languageVersion) => name === fileName
+    ? sourceFile
+    : originalGetSourceFile(name, languageVersion);
+  host.fileExists = (name) => name === fileName || originalFileExists(name);
+  host.readFile = (name) => name === fileName ? scripts : originalReadFile(name);
+  const program = ts.createProgram([fileName], compilerOptions, host);
 
-const hasLexicalBindingInScope = (scope, name) => {
-  if (ts.isFunctionLike(scope)) {
-    if (scope.name && isBindingName(scope.name, name)) return true;
-    if (scope.parameters.some((parameter) => isBindingName(parameter.name, name))) return true;
-    return false;
-  }
-  if (ts.isCatchClause(scope) && scope.variableDeclaration
-    && isBindingName(scope.variableDeclaration.name, name)) return true;
-  return hasBindingInNode(scope, name);
-};
-
-const hasVarBindingInFunction = (functionScope, name) => {
-  let found = false;
-  const visit = (node) => {
-    if (found) return;
-    if (node !== functionScope && ts.isFunctionLike(node)) return;
-    if (ts.isVariableDeclaration(node)
-      && isBindingName(node.name, name)
-      && (node.parent.flags & ts.NodeFlags.Var)) {
-      found = true;
-      return;
-    }
-    ts.forEachChild(node, visit);
+  return {
+    imports,
+    namedImports,
+    namedImportNodes,
+    checker: program.getTypeChecker(),
+    calls,
+    forbidden,
   };
-  ts.forEachChild(functionScope, visit);
-  return found;
 };
 
-const resolvesToNamedImport = (identifier, expectedImport) => {
-  let current = identifier.parent;
-  let functionScope = null;
-  while (current) {
-    if (ts.isFunctionLike(current)) {
-      functionScope = current;
-      if (current.name && isBindingName(current.name, identifier.text)) return false;
-      if (current.parameters.some((parameter) => isBindingName(parameter.name, identifier.text))) return false;
-    }
-    if (ts.isCatchClause(current) && current.variableDeclaration
-      && isBindingName(current.variableDeclaration.name, identifier.text)) return false;
-    if (ts.isBlock(current) || ts.isSourceFile(current)) {
-      if (hasLexicalBindingInScope(current, identifier.text)) return false;
-    }
-    if (ts.isSourceFile(current)) break;
-    current = current.parent;
-  }
-  if (functionScope && hasVarBindingInFunction(functionScope, identifier.text)) return false;
-  return identifier.text === expectedImport.localName;
-};
-
-const hasBoundNamedImportCall = (calls, functionName, importedLocals) => [...calls].some((call) => {
+const hasBoundNamedImportCall = (calls, importedLocals, importNodes, checker) => [...calls].some((call) => {
   if (!ts.isIdentifier(call.expression) || !importedLocals.has(call.expression.text)) return false;
-  return resolvesToNamedImport(call.expression, { localName: functionName });
+  const importNode = importNodes.get(call.expression.text);
+  return importNode && checker.getSymbolAtLocation(call.expression) === checker.getSymbolAtLocation(importNode);
 });
 
 export const validateToolPageContract = (source, contract) => {
@@ -372,7 +331,12 @@ export const validateToolPageContract = (source, contract) => {
       failures.push(`must import ${functionName} as a named binding from ${moduleName}`);
     }
     if (!importedLocals?.has(functionName)
-      || !hasBoundNamedImportCall(facts.calls.get(functionName) ?? [], functionName, importedLocals)) {
+      || !hasBoundNamedImportCall(
+        facts.calls.get(functionName) ?? [],
+        importedLocals,
+        facts.namedImportNodes.get(`../../lib/tools/${moduleName}`)?.get(functionName) ?? new Map(),
+        facts.checker,
+      )) {
       failures.push(`must call ${functionName} from a page script`);
     }
   }
