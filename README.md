@@ -63,6 +63,38 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
 文章和专题内容系统已经接入 Astro Content Collections。新增文章和专题时，应先修改 Markdown 内容，再运行 `npm run build` 验证。
 
+## 实用工具
+
+工具箱位于 `/tools/`，当前已经上线六个纯前端工具：
+
+- `/tools/json/`：JSON 格式化、压缩与校验。
+- `/tools/base64/`：UTF-8 文本与 Base64 编码解码。
+- `/tools/url/`：URL 查询参数值或路径片段编码解码。
+- `/tools/timestamp/`：Unix 秒、毫秒时间戳与可读日期转换。
+- `/tools/uuid/`：使用浏览器安全随机能力生成 UUID v4。
+- `/tools/text-counter/`：统计字符、汉字、英文词、行数和 UTF-8 字节数。
+
+所有工具输入、转换结果和复制操作都只在当前浏览器中处理：工具页不发送网络请求、不上传内容、不写入本地持久化存储，也不记录输入内容。不要把需要后端、第三方接口或上传文件的功能伪装成现有工具的扩展；此类需求应单独设计隐私提示和服务边界。
+
+工具改动的基础验证命令：
+
+```bash
+npm run verify:tools
+npm run verify:visual-background
+npm run astro -- check
+npm run build
+```
+
+### 新增工具
+
+新增一个浏览器内工具时，需要同时完成以下步骤：
+
+1. 在 `src/data/tools.ts` 增加唯一的 `slug`、路由、分类、搜索词和背景 key；工具首页会据此自动生成入口和筛选项。
+2. 在 `src/lib/tools/` 编写不依赖 DOM 的纯 TypeScript 逻辑，并在 `tests/tools/` 覆盖正常、错误和边界输入。
+3. 在 `src/pages/tools/<slug>.astro` 创建独立页面，使用 `ToolLayout`、关联标签和 `aria-live` 状态；不得使用 `innerHTML` 渲染用户输入，也不得引入 `fetch`、存储或分析输入内容的代码。
+4. 为桌面和移动端分别准备原创 WebP 背景，在 `src/data/backgrounds.ts` 登记唯一 key，并运行 `npm run verify:visual-background`。
+5. 扩展 `scripts/verify-tools.mjs` 对该页面的静态契约校验；最后运行上面的四条验证命令和桌面、移动端浏览器验收。
+
 ## 文章和专题
 
 文章是单篇内容，按发布时间展示，适合记录一次问题、一段经验或一篇阶段总结。文件放在：
@@ -191,3 +223,5 @@ background: "post-json-tool-design"
 - 第三阶段实现计划：`docs/superpowers/plans/2026-09-16-night-sketch-backgrounds.md`
 - 第四阶段实现计划：`docs/superpowers/plans/2026-09-16-content-system.md`
 - 中途视觉调整计划：`docs/superpowers/plans/2026-09-16-cozy-pixel-farm-background.md`
+- 第五阶段设计：`docs/superpowers/specs/2026-09-18-practical-tools-design.zh.md`
+- 第五阶段实现计划：`docs/superpowers/plans/2026-09-18-practical-tools.md`
