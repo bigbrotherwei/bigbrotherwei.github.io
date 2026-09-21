@@ -12,12 +12,12 @@ if (!tool) throw new Error('缺少字数统计工具注册信息');
     <textarea id="text-counter-input" placeholder="输入或粘贴文字后自动统计" spellcheck="false"></textarea>
   </div>
   <dl class="tool-results tool-statistics" aria-label="字数统计结果">
-    <div><dt>字符</dt><dd><output id="count-characters">0</output></dd></div>
-    <div><dt>去空白字符</dt><dd><output id="count-without-whitespace">0</output></dd></div>
-    <div><dt>汉字</dt><dd><output id="count-chinese">0</output></dd></div>
-    <div><dt>英文词</dt><dd><output id="count-english-words">0</output></dd></div>
-    <div><dt>行数</dt><dd><output id="count-lines">0</output></dd></div>
-    <div><dt>UTF-8 字节</dt><dd><output id="count-utf8-bytes">0</output></dd></div>
+    <div><dt>字符</dt><dd><span id="count-characters" class="tool-result-value">0</span></dd></div>
+    <div><dt>去空白字符</dt><dd><span id="count-without-whitespace" class="tool-result-value">0</span></dd></div>
+    <div><dt>汉字</dt><dd><span id="count-chinese" class="tool-result-value">0</span></dd></div>
+    <div><dt>英文词</dt><dd><span id="count-english-words" class="tool-result-value">0</span></dd></div>
+    <div><dt>行数</dt><dd><span id="count-lines" class="tool-result-value">0</span></dd></div>
+    <div><dt>UTF-8 字节</dt><dd><span id="count-utf8-bytes" class="tool-result-value">0</span></dd></div>
   </dl>
 </ToolLayout>
 
@@ -28,12 +28,12 @@ if (!tool) throw new Error('缺少字数统计工具注册信息');
   const input = document.querySelector<HTMLTextAreaElement>('#text-counter-input');
   const status = document.querySelector<HTMLElement>('#text-counter-status');
   const outputs = {
-    characters: document.querySelector<HTMLOutputElement>('#count-characters'),
-    charactersWithoutWhitespace: document.querySelector<HTMLOutputElement>('#count-without-whitespace'),
-    chineseCharacters: document.querySelector<HTMLOutputElement>('#count-chinese'),
-    englishWords: document.querySelector<HTMLOutputElement>('#count-english-words'),
-    lines: document.querySelector<HTMLOutputElement>('#count-lines'),
-    utf8Bytes: document.querySelector<HTMLOutputElement>('#count-utf8-bytes'),
+    characters: document.querySelector<HTMLElement>('#count-characters'),
+    charactersWithoutWhitespace: document.querySelector<HTMLElement>('#count-without-whitespace'),
+    chineseCharacters: document.querySelector<HTMLElement>('#count-chinese'),
+    englishWords: document.querySelector<HTMLElement>('#count-english-words'),
+    lines: document.querySelector<HTMLElement>('#count-lines'),
+    utf8Bytes: document.querySelector<HTMLElement>('#count-utf8-bytes'),
   };
 
   const update = () => {
@@ -41,14 +41,14 @@ if (!tool) throw new Error('缺少字数统计工具注册信息');
     Object.entries(outputs).forEach(([key, output]) => {
       if (output) output.textContent = String(statistics[key as keyof typeof statistics]);
     });
-    if (status && shouldShowTextPerformanceNotice(statistics)) {
-      status.textContent = '文本较大，统计已更新；继续输入时可能略有延迟。';
+    if (status) {
+      const summary = `已统计：字符 ${statistics.characters}；去空白字符 ${statistics.charactersWithoutWhitespace}；汉字 ${statistics.chineseCharacters}；英文词 ${statistics.englishWords}；行数 ${statistics.lines}；UTF-8 字节 ${statistics.utf8Bytes}。`;
+      status.textContent = shouldShowTextPerformanceNotice(statistics)
+        ? `${summary} 文本较大，继续输入时可能略有延迟。`
+        : summary;
       delete status.dataset.state;
-      status.dataset.performanceNotice = 'true';
-    } else if (status?.dataset.performanceNotice) {
-      status.textContent = '准备就绪';
-      delete status.dataset.state;
-      delete status.dataset.performanceNotice;
+      if (shouldShowTextPerformanceNotice(statistics)) status.dataset.performanceNotice = 'true';
+      else delete status.dataset.performanceNotice;
     }
   };
 

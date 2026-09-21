@@ -17,6 +17,11 @@ test('does not count one terminal newline as another visible line', () => {
   assert.equal(countText('first\nsecond\n').lines, 2);
 });
 
+test('does not count a terminal CRLF as a visible line while keeping CRLF-separated lines', () => {
+  assert.equal(countText('\r\n').lines, 0);
+  assert.equal(countText('first\r\nsecond\r\n').lines, 2);
+});
+
 test('counts Chinese, alphanumeric words, emoji, and UTF-8 bytes', () => {
   assert.deepEqual(countText('你好 alpha42\n🌙'), {
     characters: 12,

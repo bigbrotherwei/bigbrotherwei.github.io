@@ -4,7 +4,7 @@
 
 - `3ff7012 docs: document practical tool workflows`
 - `d71e2be docs: tighten tool QA evidence`
-- 本次第 2 轮审查修复追加提交待生成。
+- `abaf4a48fb05db399a8994ed1a57194cb37ee0a3 fix: keep filtered tool cards hidden`
 - 未推送远端，未创建 Pull Request。
 
 ## Documentation Fixes
@@ -81,3 +81,7 @@ npm run build
 
 - 本次 QA 基于本地开发服务。远端部署仍需在 PR 合并后由 GitHub Actions 完成并在公开站点抽查。
 - 本轮筛选 QA 同时记录 `hidden` 属性、computed `display` 和视觉可见标题，避免只检查 DOM 状态导致误判。
+
+## Final Review Fix Verification
+
+- 终审修复将另行记录在 `final-fix-report.md`，覆盖 JSON 不安全整数拒绝、工具明细实时播报收敛、CRLF 行数语义，以及桌面和移动端浏览器复查。

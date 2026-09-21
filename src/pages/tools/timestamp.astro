@@ -21,10 +21,10 @@ if (!tool) throw new Error('缺少时间戳工具注册信息');
     <button type="button" data-timestamp-action="clear">清空</button>
   </div>
   <dl class="tool-results tool-statistics" aria-label="时间戳转换结果">
-    <div><dt>本地时间</dt><dd><output id="timestamp-local">--</output></dd></div>
-    <div><dt>UTC ISO 时间</dt><dd><output id="timestamp-iso">--</output></dd></div>
-    <div><dt>秒时间戳</dt><dd><output id="timestamp-seconds">--</output></dd></div>
-    <div><dt>毫秒时间戳</dt><dd><output id="timestamp-milliseconds">--</output></dd></div>
+    <div><dt>本地时间</dt><dd><span id="timestamp-local" class="tool-result-value">--</span></dd></div>
+    <div><dt>UTC ISO 时间</dt><dd><span id="timestamp-iso" class="tool-result-value">--</span></dd></div>
+    <div><dt>秒时间戳</dt><dd><span id="timestamp-seconds" class="tool-result-value">--</span></dd></div>
+    <div><dt>毫秒时间戳</dt><dd><span id="timestamp-milliseconds" class="tool-result-value">--</span></dd></div>
   </dl>
 </ToolLayout>
 
@@ -34,10 +34,10 @@ if (!tool) throw new Error('缺少时间戳工具注册信息');
   const input = document.querySelector<HTMLInputElement>('#timestamp-input');
   const status = document.querySelector<HTMLElement>('#timestamp-status');
   const outputs = {
-    local: document.querySelector<HTMLOutputElement>('#timestamp-local'),
-    iso: document.querySelector<HTMLOutputElement>('#timestamp-iso'),
-    seconds: document.querySelector<HTMLOutputElement>('#timestamp-seconds'),
-    milliseconds: document.querySelector<HTMLOutputElement>('#timestamp-milliseconds'),
+    local: document.querySelector<HTMLElement>('#timestamp-local'),
+    iso: document.querySelector<HTMLElement>('#timestamp-iso'),
+    seconds: document.querySelector<HTMLElement>('#timestamp-seconds'),
+    milliseconds: document.querySelector<HTMLElement>('#timestamp-milliseconds'),
   };
   let unit: 'auto' | 'seconds' | 'milliseconds' = 'auto';
 
@@ -72,7 +72,7 @@ if (!tool) throw new Error('缺少时间戳工具注册信息');
     outputs.iso && (outputs.iso.textContent = result.value.iso);
     outputs.seconds && (outputs.seconds.textContent = String(result.value.seconds));
     outputs.milliseconds && (outputs.milliseconds.textContent = String(result.value.milliseconds));
-    showStatus('时间戳已转换', 'success');
+    showStatus(`已转换：本地时间 ${result.value.local}；UTC ISO 时间 ${result.value.iso}；秒时间戳 ${result.value.seconds}；毫秒时间戳 ${result.value.milliseconds}。`, 'success');
   };
 
   document.querySelectorAll<HTMLButtonElement>('[data-timestamp-unit]').forEach((button) => {

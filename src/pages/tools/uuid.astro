@@ -47,7 +47,8 @@ if (!tool) throw new Error('缺少 UUID 工具注册信息');
     uuids.forEach((uuid, index) => {
       const row = document.createElement('div');
       row.className = 'tool-result-row';
-      const value = document.createElement('output');
+      const value = document.createElement('code');
+      value.className = 'tool-result-value';
       value.textContent = uuid;
       const copyButton = document.createElement('button');
       copyButton.type = 'button';

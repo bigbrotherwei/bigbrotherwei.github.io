@@ -14,7 +14,7 @@ const englishWord = /(?:(?!\p{Script=Han})[\p{L}\p{N}])+/gu;
 
 export const countText = (input: string): TextStatistics => {
   const characters = Array.from(input);
-  const textWithoutTerminalNewline = input.endsWith('\n') ? input.slice(0, -1) : input;
+  const textWithoutTerminalNewline = input.replace(/\r?\n$/u, '');
 
   return {
     characters: characters.length,
