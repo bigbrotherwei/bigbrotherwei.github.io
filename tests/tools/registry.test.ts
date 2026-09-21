@@ -47,7 +47,7 @@ test('route verification rejects a registry route that has no page even when leg
       writeFileSync(join(toolDirectory, `${slug}.astro`), 'legacy route\n');
     }
 
-    const result = spawnSync(process.execPath, [fileURLToPath(verifierPath)], {
+    const result = spawnSync(process.execPath, ['--experimental-strip-types', fileURLToPath(verifierPath)], {
       cwd: fixtureRoot,
       encoding: 'utf8',
     });
