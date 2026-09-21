@@ -65,7 +65,7 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
 ## 实用工具
 
-工具箱位于 `/tools/`，当前已经上线六个纯前端工具：
+工具箱位于 `/tools/`，本阶段已实现六个纯前端工具：
 
 - `/tools/json/`：JSON 格式化、压缩与校验。
 - `/tools/base64/`：UTF-8 文本与 Base64 编码解码。
