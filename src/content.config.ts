@@ -40,8 +40,8 @@ const projects = defineCollection({
     tags: z.array(z.string()).default([]),
     featured: z.boolean().default(false),
     order: z.number().int(),
-    repository: z.string().url().optional(),
-    website: z.string().url().optional(),
+    repository: z.httpUrl().optional(),
+    website: z.httpUrl().optional(),
     background: z.enum(backgroundKeys),
   }),
 });

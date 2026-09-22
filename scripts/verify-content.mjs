@@ -182,11 +182,17 @@ if (exists('src/content.config.ts')) {
     "glob({ pattern: '**/*.md', base: './src/content/projects' })",
     'const projects = defineCollection',
     "status: z.enum(['维护中', '实验中', '已完成', '已归档'])",
+    'repository: z.httpUrl().optional()',
+    'website: z.httpUrl().optional()',
     'export const collections = { posts, topics, projects }',
   ]) {
     if (!contentConfig.includes(token)) {
       failures.push(`src/content.config.ts must include: ${token}`);
     }
+  }
+
+  if (contentConfig.includes('z.string().url()')) {
+    failures.push('src/content.config.ts must use z.httpUrl() instead of deprecated z.string().url()');
   }
 }
 
