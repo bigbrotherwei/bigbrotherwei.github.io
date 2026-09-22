@@ -371,9 +371,27 @@ if (exists('src/data/backgrounds.ts')) {
 
 if (exists('README.md')) {
   const readme = read('README.md');
-  for (const token of ['文章和专题', '发布顺序', '创建新专题', '创建新文章']) {
+  for (const token of [
+    '文章和专题',
+    '发布顺序',
+    '创建新专题',
+    '创建新文章',
+    '第六阶段范围',
+    '创建新项目',
+    '文章归档',
+    '标签页面',
+  ]) {
     if (!readme.includes(token)) {
       failures.push(`README.md must document: ${token}`);
+    }
+  }
+}
+
+if (exists('docs/writing-posts.zh.md')) {
+  const writingGuide = read('docs/writing-posts.zh.md');
+  for (const token of ['NFKC', '标签 slug', '标签冲突', '/tags/<标签-slug>/', '/archive/']) {
+    if (!writingGuide.includes(token)) {
+      failures.push(`docs/writing-posts.zh.md must document: ${token}`);
     }
   }
 }

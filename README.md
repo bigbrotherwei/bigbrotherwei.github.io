@@ -163,6 +163,58 @@ background: "post-json-tool-design"
 
 栏目页也使用同一背景注册表，但由对应 Astro 页面直接传入 key。所有场景保持原创手绘农场暮景的统一美术方向，各自采用不同地点和构图。
 
+## 项目内容
+
+项目使用 Markdown 管理，文件统一放在：
+
+```text
+src/content/projects/
+```
+
+### 创建新项目
+
+项目文件名就是公开地址中的 slug。例如 `my-project.md` 会生成 `/projects/my-project/`。可以从下面的完整 frontmatter 开始：
+
+```markdown
+---
+title: "项目名称"
+description: "用于项目列表和页面元信息的一句话介绍。"
+status: "维护中"
+startDate: 2026-09-22
+updatedDate: 2026-09-22
+tags:
+  - Astro
+  - TypeScript
+featured: false
+order: 2
+repository: "https://github.com/bigbrotherwei/example"
+website: "https://example.com"
+background: "project-example"
+---
+
+这里写项目背景、实现过程、当前状态和后续计划。
+```
+
+`status` 只允许 `维护中`、`实验中`、`已完成` 或 `已归档`。`repository` 和 `website` 可以省略；填写时必须是 HTTP(S) URL。每个手工维护的项目详情都要在 `src/data/backgrounds.ts` 登记唯一背景 key，并准备符合尺寸和体积要求的桌面、移动 WebP。
+
+新增项目后运行：
+
+```bash
+npm run verify:content
+npm run verify:visual-background
+npm run build
+```
+
+## 自动内容发现
+
+### 文章归档
+
+`/archive/` 会从所有已发布文章自动生成按年份和月份分组的文章归档。不要手工维护归档清单；修改文章的 `pubDate` 或 `draft` 后，下一次构建会自动更新。
+
+### 标签页面
+
+`/tags/` 和 `/tags/<标签-slug>/` 会从文章 frontmatter 的 `tags` 自动生成。文章详情中的标签也会链接到对应页面。标签名称应保持稳定，避免只修改大小写或空格；生成规则和冲突处理见 `docs/writing-posts.zh.md`。
+
 ## 第一阶段范围
 
 第一阶段只建立基础工程能力：
@@ -208,12 +260,28 @@ background: "post-json-tool-design"
 - `/topics/[slug]/` 渲染专题介绍和专题内文章路径。
 - 新增 `npm run verify:content`，并纳入 `npm run verify` 和 `npm run build`。
 
+## 第五阶段范围
+
+第五阶段完成六个纯前端实用工具、工具注册表、分类筛选、输入安全约束、单元测试和独立响应式背景。
+
+## 第六阶段范围
+
+第六阶段补齐内容发现和项目体系：
+
+- 新增项目 Content Collection 和项目详情页。
+- 新增自动文章归档、标签总览和标签详情页。
+- 文章标签改为可点击链接。
+- 文章详情新增更早一篇、更新一篇和相关推荐。
+- 完善项目页、关于页和内容维护说明。
+- 为项目详情、归档和标签页面增加原创响应式背景。
+- 新增内容发现单元测试，并扩展内容与背景静态校验。
+
 后续阶段会继续实现：
 
-- 实用工具具体功能
-- 项目页和关于页内容完善
 - 搜索
+- RSS、Sitemap、Canonical 和结构化数据
 - 暗色模式
+- 评论系统
 - 访问统计和当前在线人数
 
 ## 设计文档
@@ -227,3 +295,5 @@ background: "post-json-tool-design"
 - 中途视觉调整计划：`docs/superpowers/plans/2026-09-16-cozy-pixel-farm-background.md`
 - 第五阶段设计：`docs/superpowers/specs/2026-09-18-practical-tools-design.zh.md`
 - 第五阶段实现计划：`docs/superpowers/plans/2026-09-18-practical-tools.md`
+- 第六阶段设计：`docs/superpowers/specs/2026-09-22-phase-6-content-discovery-design.zh.md`
+- 第六阶段实现计划：`docs/superpowers/plans/2026-09-22-phase-6-content-discovery.md`
