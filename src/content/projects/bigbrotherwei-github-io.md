@@ -13,7 +13,7 @@ featured: true
 order: 1
 repository: "https://github.com/bigbrotherwei/bigbrotherwei.github.io"
 website: "https://bigbrotherwei.github.io"
-background: "projects-index"
+background: "project-personal-blog"
 ---
 
 这是 `bigbrotherwei.github.io` 的个人博客源码工程，使用 Astro、TypeScript 和 Markdown 内容体系构建，通过 GitHub Actions 发布到 GitHub Pages。

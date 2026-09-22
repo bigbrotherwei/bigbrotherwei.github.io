@@ -107,6 +107,8 @@ if (projectFiles.length < 1) {
 
 if (!projectFiles.some((projectPath) => projectPath === 'src/content/projects/bigbrotherwei-github-io.md')) {
   failures.push('Expected seed project: src/content/projects/bigbrotherwei-github-io.md');
+} else if (!read('src/content/projects/bigbrotherwei-github-io.md').includes('background: "project-personal-blog"')) {
+  failures.push('Seed project must use the project-personal-blog background');
 }
 
 const topics = new Map();
@@ -210,6 +212,35 @@ if (exists('src/pages/topics/index.astro')) {
   for (const token of ["getCollection('topics')", "getCollection('posts')", '/topics/']) {
     if (!topicsIndex.includes(token)) {
       failures.push(`src/pages/topics/index.astro must include: ${token}`);
+    }
+  }
+}
+
+if (exists('src/pages/projects/index.astro')) {
+  const projectsIndex = read('src/pages/projects/index.astro');
+  for (const token of ["getCollection('projects')", '/projects/${project.id}/', 'project.data.status', 'project.data.tags']) {
+    if (!projectsIndex.includes(token)) {
+      failures.push(`src/pages/projects/index.astro must include: ${token}`);
+    }
+  }
+}
+
+if (!exists('src/pages/projects/[slug].astro')) {
+  failures.push('Missing project detail route: src/pages/projects/[slug].astro');
+} else {
+  const projectDetail = read('src/pages/projects/[slug].astro');
+  for (const token of [
+    'export async function getStaticPaths()',
+    "getCollection('projects')",
+    'render(project)',
+    'backgroundKey={project.data.background}',
+    'project.data.repository &&',
+    'project.data.website &&',
+    'target="_blank"',
+    'rel="noreferrer"',
+  ]) {
+    if (!projectDetail.includes(token)) {
+      failures.push(`src/pages/projects/[slug].astro must include: ${token}`);
     }
   }
 }
