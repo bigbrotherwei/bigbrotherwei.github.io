@@ -6,6 +6,7 @@ const requiredPaths = [
   'src/content.config.ts',
   'src/content/posts',
   'src/content/topics',
+  'src/content/projects',
   'src/pages/posts/[slug].astro',
   'src/pages/topics/[slug].astro',
 ];
@@ -88,7 +89,9 @@ const markdownFiles = (directory) => {
 
 const topicFiles = markdownFiles('src/content/topics');
 const postFiles = markdownFiles('src/content/posts');
+const projectFiles = markdownFiles('src/content/projects');
 const topicDirectory = join(root, 'src/content/topics');
+const projectDirectory = join(root, 'src/content/projects');
 
 if (topicFiles.length < 2) {
   failures.push('Expected at least 2 topic markdown files');
@@ -96,6 +99,14 @@ if (topicFiles.length < 2) {
 
 if (postFiles.length < 3) {
   failures.push('Expected at least 3 post markdown files');
+}
+
+if (projectFiles.length < 1) {
+  failures.push('Expected at least 1 project markdown file');
+}
+
+if (!projectFiles.some((projectPath) => projectPath === 'src/content/projects/bigbrotherwei-github-io.md')) {
+  failures.push('Expected seed project: src/content/projects/bigbrotherwei-github-io.md');
 }
 
 const topics = new Map();
@@ -126,9 +137,53 @@ for (const postPath of postFiles) {
   }
 }
 
+const projectStatuses = new Set(['维护中', '实验中', '已完成', '已归档']);
+
+for (const projectPath of projectFiles) {
+  const data = parseFrontmatter(read(projectPath), projectPath);
+
+  for (const key of ['title', 'description', 'status', 'startDate', 'tags', 'featured', 'order', 'background']) {
+    if (!data[key] || (Array.isArray(data[key]) && data[key].length === 0)) {
+      failures.push(`${projectPath} missing required frontmatter: ${key}`);
+    }
+  }
+
+  if (data.status && !projectStatuses.has(data.status)) {
+    failures.push(`${projectPath} has invalid project status: ${data.status}`);
+  }
+
+  for (const key of ['repository', 'website']) {
+    if (!data[key]) {
+      continue;
+    }
+
+    try {
+      const url = new URL(data[key]);
+      if (!['http:', 'https:'].includes(url.protocol)) {
+        failures.push(`${projectPath} ${key} must use HTTP(S): ${data[key]}`);
+      }
+    } catch {
+      failures.push(`${projectPath} has invalid URL for ${key}: ${data[key]}`);
+    }
+  }
+
+  const projectId = relative(projectDirectory, join(root, projectPath)).replace(/\\/g, '/').replace(/\.md$/, '');
+  if (!projectId) {
+    failures.push(`${projectPath} must have a non-empty project id`);
+  }
+}
+
 if (exists('src/content.config.ts')) {
   const contentConfig = read('src/content.config.ts');
-  for (const token of ['defineCollection', "glob({ pattern: '**/*.md', base: './src/content/posts' })", "glob({ pattern: '**/*.md', base: './src/content/topics' })"]) {
+  for (const token of [
+    'defineCollection',
+    "glob({ pattern: '**/*.md', base: './src/content/posts' })",
+    "glob({ pattern: '**/*.md', base: './src/content/topics' })",
+    "glob({ pattern: '**/*.md', base: './src/content/projects' })",
+    'const projects = defineCollection',
+    "status: z.enum(['维护中', '实验中', '已完成', '已归档'])",
+    'export const collections = { posts, topics, projects }',
+  ]) {
     if (!contentConfig.includes(token)) {
       failures.push(`src/content.config.ts must include: ${token}`);
     }
