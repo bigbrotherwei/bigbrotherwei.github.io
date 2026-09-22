@@ -322,6 +322,34 @@ if (exists('src/pages/posts/index.astro')) {
   }
 }
 
+if (exists('src/pages/posts/[slug].astro')) {
+  const postDetail = read('src/pages/posts/[slug].astro');
+  for (const token of [
+    'buildTagIndex',
+    'findAdjacentPosts',
+    'findRelatedPosts',
+    'buildTagIndex(publishedPosts)',
+    'findAdjacentPosts(publishedPosts, post.id)',
+    'findRelatedPosts(publishedPosts, post)',
+    'href={`/tags/${tag.slug}/`}',
+    '更早一篇',
+    '更新一篇',
+    '相关推荐',
+    '<PostsSubnav active="posts"',
+    'relatedPosts.length > 0',
+  ]) {
+    if (!postDetail.includes(token)) {
+      failures.push(`src/pages/posts/[slug].astro must include: ${token}`);
+    }
+  }
+
+  for (const placeholder of ['暂无相关推荐', '没有相关推荐']) {
+    if (postDetail.includes(placeholder)) {
+      failures.push(`src/pages/posts/[slug].astro must not render a related-post placeholder: ${placeholder}`);
+    }
+  }
+}
+
 if (exists('src/data/backgrounds.ts')) {
   const backgrounds = read('src/data/backgrounds.ts');
   for (const token of [
