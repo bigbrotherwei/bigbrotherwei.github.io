@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import PageHero from '../../components/PageHero.astro';
+import PostsSubnav from '../../components/PostsSubnav.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const posts = (await getCollection('posts'))
@@ -25,6 +26,8 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
       title="文章"
       description="文章是按时间发布的单篇内容。它可以独立阅读，也可以通过 frontmatter 归入某个专题。"
     />
+
+    <PostsSubnav active="posts" />
 
     <section class="content-list" aria-label="文章列表">
       {posts.map((post) => (

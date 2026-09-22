@@ -1,6 +1,9 @@
 export const backgroundKeys = [
   'home',
   'posts-index',
+  'archive-index',
+  'tags-index',
+  'tag-detail',
   'topics-index',
   'tools-index',
   'projects-index',
@@ -36,6 +39,18 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'posts-index': {
     desktop: '/images/backgrounds/posts-reading-grove.webp',
     mobile: '/images/backgrounds/posts-reading-grove-mobile.webp',
+  },
+  'archive-index': {
+    desktop: '/images/backgrounds/archive-index.webp',
+    mobile: '/images/backgrounds/archive-index-mobile.webp',
+  },
+  'tags-index': {
+    desktop: '/images/backgrounds/tags-index.webp',
+    mobile: '/images/backgrounds/tags-index-mobile.webp',
+  },
+  'tag-detail': {
+    desktop: '/images/backgrounds/tag-detail.webp',
+    mobile: '/images/backgrounds/tag-detail-mobile.webp',
   },
   'topics-index': {
     desktop: '/images/backgrounds/topics-valley-crossroads.webp',

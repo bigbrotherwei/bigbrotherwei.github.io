@@ -1,0 +1,57 @@
+---
+import { getCollection } from 'astro:content';
+import PostsSubnav from '../../components/PostsSubnav.astro';
+import { buildTagIndex } from '../../lib/content/discovery';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('posts')).filter((post) => !post.data.draft);
+  const tags = buildTagIndex(posts);
+
+  return tags.map((tag) => ({
+    params: { slug: tag.slug },
+    props: { tag },
+  }));
+}
+
+const { tag } = Astro.props;
+const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  timeZone: 'UTC',
+}).format(date);
+---
+
+<BaseLayout
+  title={tag.label}
+  description={`浏览带有“${tag.label}”标签的文章。`}
+  backgroundKey="tag-detail"
+>
+  <main class="page-shell">
+    <article class="tag-detail">
+      <a class="back-link" href="/tags/">返回标签</a>
+      <header class="article-header">
+        <p class="eyebrow">Tag</p>
+        <h1>{tag.label}</h1>
+        <p>{tag.count} 篇已发布文章</p>
+      </header>
+
+      <PostsSubnav active="tags" />
+
+      <section class="tag-detail__posts" aria-label={`${tag.label} 标签文章`}>
+        {tag.posts.length > 0 ? tag.posts.map((post) => (
+          <article class="archive-post">
+            <time class="archive-post__date" datetime={post.data.pubDate.toISOString()}>
+              {formatDate(post.data.pubDate)}
+            </time>
+            <div class="archive-post__content">
+              <h2><a href={`/posts/${post.id}/`}>{post.data.title}</a></h2>
+              <p>{post.data.description}</p>
+            </div>
+          </article>
+        )) : <p class="discovery-empty">还没有可浏览的文章。</p>}
+      </section>
+    </article>
+  </main>
+</BaseLayout>

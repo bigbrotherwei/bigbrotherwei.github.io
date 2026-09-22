@@ -1,0 +1,69 @@
+---
+import { getCollection } from 'astro:content';
+import PostsSubnav from '../../components/PostsSubnav.astro';
+import PageHero from '../../components/PageHero.astro';
+import { buildArchiveGroups, buildTagIndex } from '../../lib/content/discovery';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('posts')).filter((post) => !post.data.draft);
+const archiveGroups = buildArchiveGroups(posts);
+const tagsByLabel = new Map(buildTagIndex(posts).map((tag) => [tag.label, tag]));
+const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  timeZone: 'UTC',
+}).format(date);
+const formatMonth = (month: number) => new Intl.DateTimeFormat('zh-CN', {
+  month: 'long',
+  timeZone: 'UTC',
+}).format(new Date(Date.UTC(2026, month - 1, 1)));
+---
+
+<BaseLayout
+  title="文章归档"
+  description="按年份和月份浏览已发布的文章。"
+  backgroundKey="archive-index"
+>
+  <main class="page-shell">
+    <PageHero
+      eyebrow="Archive"
+      title="文章归档"
+      description="按时间回看已经发布的文章和它们留下的线索。"
+    />
+
+    <PostsSubnav active="archive" />
+
+    <section class="archive" aria-label="文章归档列表">
+      {archiveGroups.length > 0 ? archiveGroups.map((group) => (
+        <section class="archive__year" aria-labelledby={`archive-year-${group.year}`}>
+          <h2 id={`archive-year-${group.year}`}>{group.year} 年</h2>
+          {group.months.map((month) => (
+            <section class="archive__month" aria-labelledby={`archive-month-${group.year}-${month.month}`}>
+              <h3 id={`archive-month-${group.year}-${month.month}`}>{formatMonth(month.month)}</h3>
+              <div class="archive__posts">
+                {month.posts.map((post) => (
+                  <article class="archive-post">
+                    <time class="archive-post__date" datetime={post.data.pubDate.toISOString()}>
+                      {formatDate(post.data.pubDate)}
+                    </time>
+                    <div class="archive-post__content">
+                      <h4><a href={`/posts/${post.id}/`}>{post.data.title}</a></h4>
+                      <p>{post.data.description}</p>
+                      <div class="tag-list archive-post__tags" aria-label={`${post.data.title} 标签`}>
+                        {post.data.tags.map((label) => {
+                          const tag = tagsByLabel.get(label);
+                          return tag && <a href={`/tags/${tag.slug}/`}>{tag.label}</a>;
+                        })}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </section>
+      )) : <p class="discovery-empty">还没有可归档的文章。</p>}
+    </section>
+  </main>
+</BaseLayout>

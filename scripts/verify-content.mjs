@@ -245,6 +245,102 @@ if (!exists('src/pages/projects/[slug].astro')) {
   }
 }
 
+if (!exists('src/components/PostsSubnav.astro')) {
+  failures.push('Missing posts subnavigation component: src/components/PostsSubnav.astro');
+} else {
+  const postsSubnav = read('src/components/PostsSubnav.astro');
+  for (const token of ['href="/posts/"', 'href="/archive/"', 'href="/tags/"', 'aria-current']) {
+    if (!postsSubnav.includes(token)) {
+      failures.push(`src/components/PostsSubnav.astro must include: ${token}`);
+    }
+  }
+}
+
+const postDiscoveryRoutes = [
+  {
+    path: 'src/pages/archive/index.astro',
+    tokens: [
+      "getCollection('posts')",
+      'buildArchiveGroups',
+      'buildTagIndex',
+      'filter((post) => !post.data.draft)',
+      '<PostsSubnav active="archive"',
+      'backgroundKey="archive-index"',
+      'href={`/posts/${post.id}/`}',
+      'href={`/tags/${tag.slug}/`}',
+      '还没有可归档的文章。',
+    ],
+  },
+  {
+    path: 'src/pages/tags/index.astro',
+    tokens: [
+      "getCollection('posts')",
+      'buildTagIndex',
+      'filter((post) => !post.data.draft)',
+      '<PostsSubnav active="tags"',
+      'backgroundKey="tags-index"',
+      'href={`/tags/${tag.slug}/`}',
+      '还没有可浏览的标签。',
+    ],
+  },
+  {
+    path: 'src/pages/tags/[slug].astro',
+    tokens: [
+      'export async function getStaticPaths()',
+      "getCollection('posts')",
+      'buildTagIndex',
+      'filter((post) => !post.data.draft)',
+      'params: { slug: tag.slug }',
+      '<PostsSubnav active="tags"',
+      'backgroundKey="tag-detail"',
+      'href={`/posts/${post.id}/`}',
+      '还没有可浏览的文章。',
+    ],
+  },
+];
+
+for (const { path, tokens } of postDiscoveryRoutes) {
+  if (!exists(path)) {
+    failures.push(`Missing discovery route: ${path}`);
+    continue;
+  }
+
+  const source = read(path);
+  for (const token of tokens) {
+    if (!source.includes(token)) {
+      failures.push(`${path} must include: ${token}`);
+    }
+  }
+}
+
+if (exists('src/pages/posts/index.astro')) {
+  const postsIndex = read('src/pages/posts/index.astro');
+  for (const token of ["import PostsSubnav from '../../components/PostsSubnav.astro'", '<PostsSubnav active="posts"']) {
+    if (!postsIndex.includes(token)) {
+      failures.push(`src/pages/posts/index.astro must include: ${token}`);
+    }
+  }
+}
+
+if (exists('src/data/backgrounds.ts')) {
+  const backgrounds = read('src/data/backgrounds.ts');
+  for (const token of [
+    "'archive-index'",
+    "'tags-index'",
+    "'tag-detail'",
+    '/images/backgrounds/archive-index.webp',
+    '/images/backgrounds/archive-index-mobile.webp',
+    '/images/backgrounds/tags-index.webp',
+    '/images/backgrounds/tags-index-mobile.webp',
+    '/images/backgrounds/tag-detail.webp',
+    '/images/backgrounds/tag-detail-mobile.webp',
+  ]) {
+    if (!backgrounds.includes(token)) {
+      failures.push(`src/data/backgrounds.ts must register: ${token}`);
+    }
+  }
+}
+
 if (exists('README.md')) {
   const readme = read('README.md');
   for (const token of ['文章和专题', '发布顺序', '创建新专题', '创建新文章']) {
