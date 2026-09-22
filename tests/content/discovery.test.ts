@@ -43,6 +43,26 @@ test('sorts equal dates deterministically and excludes drafts from archives', ()
   assert.deepEqual(buildArchiveGroups(posts).map(({ year }) => year), [2026]);
 });
 
+test('sorts archive years and months newest first', () => {
+  const groups = buildArchiveGroups([
+    post('november', '2025-11-01', []),
+    post('january', '2026-01-01', []),
+    post('september', '2026-09-01', []),
+  ]);
+
+  assert.deepEqual(groups.map(({ year }) => year), [2026, 2025]);
+  assert.deepEqual(groups[0]?.months.map(({ month }) => month), [9, 1]);
+});
+
+test('excludes drafts from tag indexes and adjacent navigation', () => {
+  const newer = post('newer', '2026-09-03', ['Astro']);
+  const draft = post('draft', '2026-09-02', ['Astro'], 'journal', true);
+  const older = post('older', '2026-09-01', ['Astro']);
+
+  assert.deepEqual(buildTagIndex([newer, draft, older])[0]?.posts.map(({ id }) => id), ['newer', 'older']);
+  assert.deepEqual(findAdjacentPosts([newer, draft, older], 'newer'), { older, newer: undefined });
+});
+
 test('returns explicit older and newer neighbors at collection boundaries', () => {
   const posts = [post('new', '2026-09-03', []), post('middle', '2026-09-02', []), post('old', '2026-09-01', [])];
   assert.deepEqual(findAdjacentPosts(posts, 'middle'), { older: posts[2], newer: posts[0] });
@@ -57,4 +77,17 @@ test('ranks shared topic and tags while excluding current, draft, and zero-score
   const unrelated = post('none', '2026-09-04', ['CSS'], 'other');
   const draft = post('draft', '2026-09-05', ['Astro'], 'build', true);
   assert.deepEqual(findRelatedPosts([current, sameTag, unrelated, sameTopic, draft], current).map(({ id }) => id), ['topic', 'tag']);
+});
+
+test('caps related posts at three and ranks shared tags before date', () => {
+  const current = post('current', '2026-09-01', ['Astro', 'TypeScript'], 'build');
+  const twoTagsOld = post('two-tags-old', '2026-08-01', ['Astro', 'TypeScript'], 'other');
+  const oneTagNew = post('one-tag-new', '2026-09-05', ['Astro'], 'other');
+  const oneTagOlder = post('one-tag-older', '2026-09-04', ['TypeScript'], 'other');
+  const fourth = post('fourth', '2026-09-03', ['Astro'], 'other');
+
+  assert.deepEqual(
+    findRelatedPosts([current, oneTagOlder, fourth, oneTagNew, twoTagsOld], current).map(({ id }) => id),
+    ['two-tags-old', 'one-tag-new', 'one-tag-older'],
+  );
 });

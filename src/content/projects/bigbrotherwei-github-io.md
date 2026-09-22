@@ -20,7 +20,7 @@ background: "project-personal-blog"
 
 项目采用功能分支和 Pull Request 工作流维护。每个阶段从 `master` 创建功能分支，在分支中完成改动并运行构建校验，经过 Review 后合并到 `master`，再由 GitHub Actions 自动发布站点。
 
-目前已经完成前五个阶段：建立 Astro 工程骨架和 GitHub Pages 发布流程，补齐首页与主导航，统一原创手绘农场暮景视觉，接入文章和专题 Content Collections，并完成六个纯前端实用工具。第六阶段继续完善项目、归档、标签和内容发现能力。
+目前已经完成前六个阶段：建立 Astro 工程骨架和 GitHub Pages 发布流程，补齐首页与主导航，统一原创手绘农场暮景视觉，接入文章和专题 Content Collections，完成六个纯前端实用工具，并交付归档、标签、项目和内容发现能力。
 
 当前内容系统支持文章、专题和项目使用 Markdown 管理，文章按发布时间浏览，专题提供连续阅读路径，标签用于细粒度主题索引。项目本身也通过 Markdown frontmatter 描述状态、日期、标签、链接和背景。
 
