@@ -12,7 +12,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <PageHero
       eyebrow="About"
       title="关于 bigbrotherwei"
-      description="这里会逐步整理我的技术兴趣、项目记录和正在关注的方向。语气保持自然一点，像翻开一本手账，而不是打开一份简历。"
+      description="这里记录我当前关注的方向，也说明这个博客如何被持续维护。它更像一本不断整理的技术手账，而不是一份固定的简历。"
     />
 
     <section class="sketch-grid" aria-label="关于内容">
@@ -22,15 +22,43 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <p>个人博客工程化、静态站点体验、开发者工具、自动化发布，以及把日常经验沉淀成可复用内容。</p>
       </article>
       <article class="sketch-card">
-        <p class="eyebrow">Stack</p>
-        <h2>常用技术</h2>
-        <p>Astro、TypeScript、GitHub Actions、Markdown，以及围绕个人效率和内容生产的一些轻量工具。</p>
+        <p class="eyebrow">Build</p>
+        <h2>博客如何构建</h2>
+        <p>站点使用 Astro、TypeScript 和 Markdown，通过功能分支与 Pull Request 维护，合并到 master 后由 GitHub Actions 发布到 GitHub Pages。</p>
+      </article>
+      <article class="sketch-card">
+        <p class="eyebrow">Shipped</p>
+        <h2>已经可以使用</h2>
+        <p>文章、专题和项目都由 Markdown 管理；文章支持归档、标签、前后篇与相关推荐，工具箱已经提供六个纯前端工具。</p>
       </article>
       <article class="sketch-card">
         <p class="eyebrow">Next</p>
         <h2>接下来</h2>
-        <p>先把文章系统、专题系统和实用工具页补完整，再慢慢补搜索、暗色模式和访问统计。</p>
+        <p>下一阶段会继续完善全站搜索和 SEO，暗色模式、评论、访问统计与在线人数则按独立阶段逐步推进。</p>
+      </article>
+      <article class="sketch-card">
+        <p class="eyebrow">Links</p>
+        <h2>公开链接</h2>
+        <p class="about-links">
+          <a href="https://github.com/bigbrotherwei" target="_blank" rel="noreferrer">GitHub 主页</a>
+          <a href="https://github.com/bigbrotherwei/bigbrotherwei.github.io" target="_blank" rel="noreferrer">博客源码</a>
+        </p>
       </article>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .about-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+  }
+
+  .about-links a {
+    color: var(--color-sky);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

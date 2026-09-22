@@ -29,4 +29,21 @@ const topics = defineCollection({
   }),
 });
 
-export const collections = { posts, topics };
+const projects = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/projects' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    status: z.enum(['维护中', '实验中', '已完成', '已归档']),
+    startDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    tags: z.array(z.string()).default([]),
+    featured: z.boolean().default(false),
+    order: z.number().int(),
+    repository: z.httpUrl().optional(),
+    website: z.httpUrl().optional(),
+    background: z.enum(backgroundKeys),
+  }),
+});
+
+export const collections = { posts, topics, projects };

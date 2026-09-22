@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import PostsSubnav from '../../components/PostsSubnav.astro';
+import PageHero from '../../components/PageHero.astro';
+import { buildTagIndex } from '../../lib/content/discovery';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = (await getCollection('posts')).filter((post) => !post.data.draft);
+const tags = buildTagIndex(posts);
+---
+
+<BaseLayout
+  title="标签"
+  description="按主题浏览已发布的文章。"
+  backgroundKey="tags-index"
+>
+  <main class="page-shell">
+    <PageHero
+      eyebrow="Tags"
+      title="标签"
+      description="从一个主题出发，找到散落在不同文章里的相关记录。"
+    />
+
+    <PostsSubnav active="tags" />
+
+    <section class="tag-index" aria-label="标签列表">
+      {tags.length > 0 ? (
+        <div class="tag-index__list">
+          {tags.map((tag) => (
+            <a class="tag-index__item" href={`/tags/${tag.slug}/`}>
+              <span>{tag.label}</span>
+              <span>{tag.count} 篇文章</span>
+            </a>
+          ))}
+        </div>
+      ) : <p class="discovery-empty">还没有可浏览的标签。</p>}
+    </section>
+  </main>
+</BaseLayout>

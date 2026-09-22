@@ -1,22 +1,30 @@
 ---
 import { getCollection, render } from 'astro:content';
+import PostsSubnav from '../../components/PostsSubnav.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { buildTagIndex, findAdjacentPosts, findRelatedPosts } from '../../lib/content/discovery';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts');
+  const publishedPosts = (await getCollection('posts')).filter((post) => !post.data.draft);
 
-  return posts
-    .filter((post) => !post.data.draft)
-    .map((post) => ({
-      params: { slug: post.id },
-      props: { post },
-    }));
+  return publishedPosts.map((post) => ({
+    params: { slug: post.id },
+    props: { post, publishedPosts },
+  }));
 }
 
-const { post } = Astro.props;
+const { post, publishedPosts } = Astro.props;
 const { Content } = await render(post);
 const topics = await getCollection('topics');
 const topic = topics.find((entry) => entry.id === post.data.topic);
+const tagIndex = buildTagIndex(publishedPosts);
+const tagsByLabel = new Map(tagIndex.map((tag) => [tag.label, tag]));
+const postTags = post.data.tags.flatMap((label) => {
+  const tag = tagsByLabel.get(label);
+  return tag ? [tag] : [];
+});
+const adjacentPosts = findAdjacentPosts(publishedPosts, post.id);
+const relatedPosts = findRelatedPosts(publishedPosts, post);
 const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   year: 'numeric',
   month: '2-digit',
@@ -37,12 +45,52 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
           {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
         </div>
         <div class="tag-list" aria-label="文章标签">
-          {post.data.tags.map((tag) => <span>{tag}</span>)}
+          {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
         </div>
       </header>
       <div class="article-body sketch-card">
         <Content />
       </div>
+
+      {(adjacentPosts.older || adjacentPosts.newer) && (
+        <nav class="article-adjacent" aria-label="文章前后篇">
+          {adjacentPosts.older && (
+            <a class="article-adjacent__link article-adjacent__link--older" href={`/posts/${adjacentPosts.older.id}/`}>
+              <span>更早一篇</span>
+              <strong>{adjacentPosts.older.data.title}</strong>
+            </a>
+          )}
+          {adjacentPosts.newer && (
+            <a class="article-adjacent__link article-adjacent__link--newer" href={`/posts/${adjacentPosts.newer.id}/`}>
+              <span>更新一篇</span>
+              <strong>{adjacentPosts.newer.data.title}</strong>
+            </a>
+          )}
+        </nav>
+      )}
+
+      {relatedPosts.length > 0 && (
+        <section class="article-related" aria-labelledby="related-posts-title">
+          <div class="section-heading section-heading--compact">
+            <p class="eyebrow">Keep Reading</p>
+            <h2 id="related-posts-title">相关推荐</h2>
+          </div>
+          <div class="content-list">
+            {relatedPosts.map((relatedPost) => (
+              <a class="sketch-card content-card" href={`/posts/${relatedPost.id}/`}>
+                <div class="content-card__meta">
+                  <time datetime={relatedPost.data.pubDate.toISOString()}>{formatDate(relatedPost.data.pubDate)}</time>
+                  <span>{relatedPost.data.topic === post.data.topic ? '同专题' : '相关标签'}</span>
+                </div>
+                <h3>{relatedPost.data.title}</h3>
+                <p>{relatedPost.data.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <PostsSubnav active="posts" />
     </article>
   </main>
 </BaseLayout>

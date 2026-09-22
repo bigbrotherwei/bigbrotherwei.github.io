@@ -9,8 +9,9 @@
     "verify:content": "node scripts/verify-content.mjs",
     "verify:visual-background": "node scripts/verify-visual-background.mjs",
     "verify:quotes": "node scripts/verify-quotes.mjs",
+    "verify:discovery": "node --experimental-strip-types --test tests/content/*.test.ts",
     "verify:tools": "node --experimental-strip-types --test tests/tools/*.test.ts && node --experimental-strip-types scripts/verify-tools.mjs",
-    "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:visual-background && npm run verify:content && npm run verify:tools",
+    "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:visual-background && npm run verify:content && npm run verify:discovery && npm run verify:tools",
     "build": "npm run verify && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "astro": "ASTRO_TELEMETRY_DISABLED=1 astro"

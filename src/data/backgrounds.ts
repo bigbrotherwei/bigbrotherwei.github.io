@@ -1,9 +1,13 @@
 export const backgroundKeys = [
   'home',
   'posts-index',
+  'archive-index',
+  'tags-index',
+  'tag-detail',
   'topics-index',
   'tools-index',
   'projects-index',
+  'project-personal-blog',
   'about',
   'post-blog-rebuild-roadmap',
   'post-github-pages-workflow',
@@ -36,6 +40,18 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
     desktop: '/images/backgrounds/posts-reading-grove.webp',
     mobile: '/images/backgrounds/posts-reading-grove-mobile.webp',
   },
+  'archive-index': {
+    desktop: '/images/backgrounds/archive-index.webp',
+    mobile: '/images/backgrounds/archive-index-mobile.webp',
+  },
+  'tags-index': {
+    desktop: '/images/backgrounds/tags-index.webp',
+    mobile: '/images/backgrounds/tags-index-mobile.webp',
+  },
+  'tag-detail': {
+    desktop: '/images/backgrounds/tag-detail.webp',
+    mobile: '/images/backgrounds/tag-detail-mobile.webp',
+  },
   'topics-index': {
     desktop: '/images/backgrounds/topics-valley-crossroads.webp',
     mobile: '/images/backgrounds/topics-valley-crossroads-mobile.webp',
@@ -47,6 +63,10 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'projects-index': {
     desktop: '/images/backgrounds/projects-timber-yard.webp',
     mobile: '/images/backgrounds/projects-timber-yard-mobile.webp',
+  },
+  'project-personal-blog': {
+    desktop: '/images/backgrounds/project-personal-blog.webp',
+    mobile: '/images/backgrounds/project-personal-blog-mobile.webp',
   },
   about: {
     desktop: '/images/backgrounds/about-lakeside-garden.webp',

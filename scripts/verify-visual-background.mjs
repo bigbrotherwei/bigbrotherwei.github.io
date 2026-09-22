@@ -19,6 +19,7 @@ const routePaths = [
   'src/pages/about.astro',
   'src/pages/posts/[slug].astro',
   'src/pages/topics/[slug].astro',
+  'src/pages/projects/[slug].astro',
 ];
 const failures = [];
 const stripComments = (source) => source.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
@@ -268,6 +269,9 @@ const expectedContentBackgrounds = {
     'blog-rebuild.md': 'topic-blog-rebuild',
     'developer-toolbox.md': 'topic-developer-toolbox',
   },
+  projects: {
+    'bigbrotherwei-github-io.md': 'project-personal-blog',
+  },
 };
 
 const claimedBackgrounds = new Map(
@@ -304,6 +308,7 @@ for (const [collection, expectedEntries] of Object.entries(expectedContentBackgr
 for (const [routePath, expression] of [
   ['src/pages/posts/[slug].astro', 'backgroundKey={post.data.background}'],
   ['src/pages/topics/[slug].astro', 'backgroundKey={topic.data.background}'],
+  ['src/pages/projects/[slug].astro', 'backgroundKey={project.data.background}'],
 ]) {
   const source = readFileSync(join(root, routePath), 'utf8');
   if (!source.includes(expression)) {

@@ -1,0 +1,13 @@
+---
+interface Props {
+  active: 'posts' | 'archive' | 'tags';
+}
+
+const { active } = Astro.props;
+---
+
+<nav class="posts-subnav" aria-label="文章浏览">
+  <a href="/posts/" aria-current={active === 'posts' ? 'page' : undefined}>全部文章</a>
+  <a href="/archive/" aria-current={active === 'archive' ? 'page' : undefined}>归档</a>
+  <a href="/tags/" aria-current={active === 'tags' ? 'page' : undefined}>标签</a>
+</nav>
