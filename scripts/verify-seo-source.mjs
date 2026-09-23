@@ -45,6 +45,7 @@ const nonSearchableSources = [
   'src/pages/tools/index.astro',
   'src/pages/archive/index.astro',
   'src/pages/tags/index.astro',
+  'src/pages/tags/[slug].astro',
   'src/pages/about.astro',
 ];
 
