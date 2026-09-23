@@ -61,20 +61,22 @@ const structuredData = [
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/posts/">返回文章</a>
-      <header class="article-header">
-        <p class="eyebrow">Post</p>
-        <h1>{post.data.title}</h1>
-        <p>{post.data.description}</p>
-        <div class="content-card__meta">
-          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-          {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
+      <div data-pagefind-body>
+        <header class="article-header" data-pagefind-meta="type:文章">
+          <p class="eyebrow">Post</p>
+          <h1>{post.data.title}</h1>
+          <p>{post.data.description}</p>
+          <div class="content-card__meta">
+            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
+          </div>
+          <div class="tag-list" aria-label="文章标签">
+            {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
+          </div>
+        </header>
+        <div class="article-body sketch-card">
+          <Content />
         </div>
-        <div class="tag-list" aria-label="文章标签">
-          {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
-        </div>
-      </header>
-      <div class="article-body sketch-card">
-        <Content />
       </div>
 
       {(adjacentPosts.older || adjacentPosts.newer) && (

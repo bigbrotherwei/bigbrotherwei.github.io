@@ -13,7 +13,9 @@
     "verify:tools": "node --experimental-strip-types --test tests/tools/*.test.ts && node --experimental-strip-types scripts/verify-tools.mjs",
     "verify:seo": "node --experimental-strip-types --test tests/seo/*.test.ts && node scripts/verify-seo-source.mjs",
     "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:visual-background && npm run verify:content && npm run verify:discovery && npm run verify:tools && npm run verify:seo",
-    "build": "npm run verify && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "build:astro": "npm run verify && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "index:search": "pagefind --site dist",
+    "build": "npm run build:astro && npm run index:search",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "astro": "ASTRO_TELEMETRY_DISABLED=1 astro"
   },
@@ -25,6 +27,7 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@types/node": "^26.6.1"
+    "@types/node": "^26.6.1",
+    "pagefind": "^1.5.2"
   }
 }

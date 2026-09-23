@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
@@ -31,6 +31,22 @@ const feedSource = readSource('src/lib/feed.ts');
 const rssSource = readSource('src/pages/rss.xml.ts');
 const robotsSource = readSource('src/pages/robots.txt.ts');
 const configSource = readSource('astro.config.mjs');
+const searchableTemplates = new Map([
+  ['src/pages/posts/[slug].astro', 'type:文章'],
+  ['src/pages/topics/[slug].astro', 'type:专题'],
+  ['src/pages/projects/[slug].astro', 'type:项目'],
+  ['src/components/tools/ToolLayout.astro', 'type:工具'],
+]);
+const nonSearchableSources = [
+  'src/pages/search/index.astro',
+  'src/pages/posts/index.astro',
+  'src/pages/topics/index.astro',
+  'src/pages/projects/index.astro',
+  'src/pages/tools/index.astro',
+  'src/pages/archive/index.astro',
+  'src/pages/tags/index.astro',
+  'src/pages/about.astro',
+];
 
 for (const token of requiredLayoutTokens) {
   assertIncludes(layoutSource, token, 'BaseLayout');
@@ -54,5 +70,32 @@ assertIncludes(configSource, 'news: false', 'Astro config');
 assertIncludes(configSource, 'video: false', 'Astro config');
 assertIncludes(configSource, 'xhtml: false', 'Astro config');
 assertIncludes(configSource, 'image: false', 'Astro config');
+
+const pagefindBoundaryErrors = [];
+
+for (const [path, typeMetadata] of searchableTemplates) {
+  const source = readSource(path);
+  if (!source.includes('data-pagefind-body')) {
+    pagefindBoundaryErrors.push(`${path} is missing data-pagefind-body`);
+  }
+  if (!source.includes(`data-pagefind-meta="${typeMetadata}"`)) {
+    pagefindBoundaryErrors.push(`${path} is missing data-pagefind-meta="${typeMetadata}"`);
+  }
+}
+
+for (const path of nonSearchableSources) {
+  if (!existsSync(resolve(root, path))) {
+    continue;
+  }
+
+  const source = readSource(path);
+  if (source.includes('data-pagefind-body')) {
+    throw new Error(`${path} must not define a Pagefind searchable body`);
+  }
+}
+
+if (pagefindBoundaryErrors.length > 0) {
+  throw new Error(pagefindBoundaryErrors.join('\n'));
+}
 
 console.log('SEO source contracts verified.');
