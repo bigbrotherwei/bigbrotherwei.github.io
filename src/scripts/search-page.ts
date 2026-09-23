@@ -159,7 +159,10 @@ export const mountSearchPage = (
   };
 
   input.addEventListener('focus', () => {
-    void getPagefind().catch(setError);
+    const request = requestGuard.begin();
+    void getPagefind().catch(() => {
+      if (requestGuard.isCurrent(request)) setError();
+    });
   });
   input.addEventListener('input', scheduleSearch);
   setIdle();
