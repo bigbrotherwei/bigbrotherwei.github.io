@@ -2,8 +2,7 @@ export type JsonLdScalar = string | number | boolean | null;
 export type JsonLdValue =
   | JsonLdScalar
   | { readonly [key: string]: JsonLdValue }
-  | readonly JsonLdValue[]
-  | BlogPostingJsonLd;
+  | readonly JsonLdValue[];
 
 type JsonLdObject = { readonly [key: string]: JsonLdValue };
 
@@ -25,7 +24,7 @@ export interface WebsiteJsonLd extends JsonLdObject {
   readonly author: JsonLdAuthor;
 }
 
-export interface BlogPostingJsonLd {
+export interface BlogPostingJsonLd extends JsonLdObject {
   readonly '@context': 'https://schema.org';
   readonly '@type': 'BlogPosting';
   readonly headline: string;

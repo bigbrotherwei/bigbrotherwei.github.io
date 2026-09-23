@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   buildBlogPostingJsonLd,
@@ -8,6 +9,17 @@ import {
   serializeJsonLd,
 } from '../../src/lib/seo.ts';
 import type { JsonLdValue } from '../../src/lib/seo.ts';
+
+const seoSource = readFileSync(new URL('../../src/lib/seo.ts', import.meta.url), 'utf8');
+
+test('keeps JSON-LD values narrow and concrete schemas structurally assignable', () => {
+  const valueType = seoSource.match(/export type JsonLdValue =([\s\S]*?);\n\ntype JsonLdObject/u)?.[1] ?? '';
+
+  assert.doesNotMatch(valueType, /BlogPostingJsonLd/u);
+  assert.match(seoSource, /export interface WebsiteJsonLd extends JsonLdObject/u);
+  assert.match(seoSource, /export interface BlogPostingJsonLd extends JsonLdObject/u);
+  assert.match(seoSource, /export interface BreadcrumbListJsonLd extends JsonLdObject/u);
+});
 
 test('removes query strings and hashes from canonical URLs', () => {
   assert.equal(
