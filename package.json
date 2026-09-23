@@ -11,7 +11,7 @@
     "verify:quotes": "node scripts/verify-quotes.mjs",
     "verify:discovery": "node --experimental-strip-types --test tests/content/*.test.ts",
     "verify:tools": "node --experimental-strip-types --test tests/tools/*.test.ts && node --experimental-strip-types scripts/verify-tools.mjs",
-    "verify:seo": "node --experimental-strip-types --test tests/seo/*.test.ts",
+    "verify:seo": "node --experimental-strip-types --test tests/seo/*.test.ts && node scripts/verify-seo-source.mjs",
     "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:visual-background && npm run verify:content && npm run verify:discovery && npm run verify:tools && npm run verify:seo",
     "build": "npm run verify && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
