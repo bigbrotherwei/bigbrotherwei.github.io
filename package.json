@@ -25,6 +25,7 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.2",
+    "lucide-astro": "^0.556.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

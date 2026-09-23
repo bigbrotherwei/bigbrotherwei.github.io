@@ -1,0 +1,49 @@
+---
+import PageHero from '../../components/PageHero.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="站内搜索"
+  description="在文章、专题、工具和项目中查找内容。搜索词只在当前浏览器中处理。"
+  robots="noindex,follow"
+  backgroundKey="search-index"
+>
+  <main class="page-shell search-page">
+    <PageHero
+      eyebrow="Search"
+      title="站内搜索"
+      description="搜索文章、专题、工具与项目。输入内容只在浏览器中处理。"
+    />
+
+    <section class="search-panel" aria-label="站内搜索">
+      <label class="search-panel__label" for="site-search">搜索关键词</label>
+      <input
+        id="site-search"
+        class="search-panel__input"
+        type="search"
+        placeholder="例如 Astro、博客、JSON"
+        autocomplete="off"
+        enterkeyhint="search"
+        data-search-input
+      />
+
+      <p class="search-panel__status" data-search-status role="status">输入关键词开始搜索</p>
+
+      <div class="search-results" data-search-results hidden></div>
+      <p class="search-state" data-search-idle>可搜索已发布的文章、专题、工具和项目。</p>
+      <p class="search-state" data-search-empty hidden>没有找到匹配内容，试试更短或不同的关键词。</p>
+      <p class="search-state search-state--error" data-search-error hidden>搜索暂时不可用，请稍后重试。</p>
+
+      <noscript>
+        <p class="search-state search-state--error">站内搜索需要启用 JavaScript。</p>
+      </noscript>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  import { mountSearchPage } from '../../scripts/search-page';
+
+  mountSearchPage(document);
+</script>

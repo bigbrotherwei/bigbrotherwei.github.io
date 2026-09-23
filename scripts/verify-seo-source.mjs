@@ -31,6 +31,9 @@ const feedSource = readSource('src/lib/feed.ts');
 const rssSource = readSource('src/pages/rss.xml.ts');
 const robotsSource = readSource('src/pages/robots.txt.ts');
 const configSource = readSource('astro.config.mjs');
+const navSource = readSource('src/components/SiteNav.astro');
+const searchScriptSource = readSource('src/scripts/search-page.ts');
+const searchPagePath = 'src/pages/search/index.astro';
 const searchableTemplates = new Map([
   ['src/pages/posts/[slug].astro', 'type:文章'],
   ['src/pages/topics/[slug].astro', 'type:专题'],
@@ -71,6 +74,41 @@ assertIncludes(configSource, 'news: false', 'Astro config');
 assertIncludes(configSource, 'video: false', 'Astro config');
 assertIncludes(configSource, 'xhtml: false', 'Astro config');
 assertIncludes(configSource, 'image: false', 'Astro config');
+
+assertIncludes(navSource, "import { Search } from 'lucide-astro'", 'site navigation');
+assertIncludes(navSource, 'href="/search/"', 'site navigation');
+assertIncludes(navSource, 'aria-label="搜索"', 'site navigation');
+assertIncludes(navSource, 'title="搜索"', 'site navigation');
+
+if (!existsSync(resolve(root, searchPagePath))) {
+  throw new Error(`Missing search page: ${searchPagePath}`);
+}
+
+const searchPageSource = readSource(searchPagePath);
+for (const token of [
+  'robots="noindex,follow"',
+  'backgroundKey="search-index"',
+  '<noscript>',
+  'for="site-search"',
+  'data-search-input',
+  'data-search-status',
+  'data-search-results',
+  'data-search-idle',
+  'data-search-empty',
+  'data-search-error',
+  'mountSearchPage(document)',
+]) {
+  assertIncludes(searchPageSource, token, 'search page');
+}
+
+for (const [source, label] of [
+  [searchPageSource, 'search page'],
+  [searchScriptSource, 'search script'],
+]) {
+  if (source.includes('innerHTML')) {
+    throw new Error(`${label} must not use innerHTML`);
+  }
+}
 
 const pagefindBoundaryErrors = [];
 
