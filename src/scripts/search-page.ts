@@ -70,6 +70,7 @@ export const mountSearchPage = (
   const requestGuard = createSearchRequestGuard();
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
   let pagefindPromise: Promise<PagefindClient> | undefined;
+  let inputRevision = 0;
 
   status.setAttribute('aria-live', 'polite');
 
@@ -141,6 +142,7 @@ export const mountSearchPage = (
   };
 
   const scheduleSearch = (): void => {
+    inputRevision += 1;
     const query = input.value.trim();
     const request = requestGuard.begin();
 
@@ -159,9 +161,9 @@ export const mountSearchPage = (
   };
 
   input.addEventListener('focus', () => {
-    const request = requestGuard.begin();
+    const focusInputRevision = inputRevision;
     void getPagefind().catch(() => {
-      if (requestGuard.isCurrent(request)) setError();
+      if (inputRevision === focusInputRevision) setError();
     });
   });
   input.addEventListener('input', scheduleSearch);

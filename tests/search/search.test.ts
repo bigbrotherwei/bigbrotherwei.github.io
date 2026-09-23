@@ -50,6 +50,10 @@ const flushPromises = async (): Promise<void> => {
   await Promise.resolve();
 };
 
+const waitForSearchStart = async (): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, 200));
+};
+
 test('maps a Pagefind record without interpreting its excerpt as HTML', () => {
   assert.deepEqual(toSearchViewResult({
     url: '/posts/hello/',
@@ -115,4 +119,30 @@ test('keeps a cleared query idle when its focus-triggered Pagefind load fails', 
   assert.equal(document.idle.hidden, false);
   assert.equal(document.error.hidden, true);
   assert.equal(document.status.textContent, '输入关键词开始搜索');
+});
+
+test('keeps an in-flight non-empty search current after refocus', async () => {
+  const document = new SearchTestDocument();
+  let resolveSearch: (response: { readonly results: readonly [] }) => void = () => {};
+  const pendingSearch = new Promise<{ readonly results: readonly [] }>((resolve) => {
+    resolveSearch = resolve;
+  });
+  let searchCalls = 0;
+
+  mountSearchPage(document as unknown as Document, () => Promise.resolve({
+    search: () => {
+      searchCalls += 1;
+      return pendingSearch;
+    },
+  }));
+  document.input.value = 'Astro';
+  document.input.dispatch('input');
+  await waitForSearchStart();
+  document.input.dispatch('focus');
+  resolveSearch({ results: [] });
+  await flushPromises();
+
+  assert.equal(searchCalls, 1);
+  assert.equal(document.empty.hidden, false);
+  assert.equal(document.status.textContent, '未找到匹配内容');
 });
