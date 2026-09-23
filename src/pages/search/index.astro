@@ -42,8 +42,13 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   </main>
 </BaseLayout>
 
-<script>
-  import { mountSearchPage } from '../../scripts/search-page';
+<script is:inline type="module">
+  window.__loadPagefind = () => import('/pagefind/pagefind.js');
+</script>
 
-  mountSearchPage(document);
+<script>
+  import { mountSearchPage, type PagefindLoader } from '../../scripts/search-page';
+
+  const pagefindLoader = (window as typeof window & { __loadPagefind: PagefindLoader }).__loadPagefind;
+  mountSearchPage(document, pagefindLoader);
 </script>

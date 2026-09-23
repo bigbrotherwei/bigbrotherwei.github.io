@@ -96,7 +96,9 @@ for (const token of [
   'data-search-idle',
   'data-search-empty',
   'data-search-error',
-  'mountSearchPage(document)',
+  'window.__loadPagefind',
+  "import('/pagefind/pagefind.js')",
+  'mountSearchPage(document, pagefindLoader)',
 ]) {
   assertIncludes(searchPageSource, token, 'search page');
 }

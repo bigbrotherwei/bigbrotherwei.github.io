@@ -13,16 +13,11 @@ interface PagefindClient {
   search(query: string): Promise<{ readonly results: readonly PagefindResult[] }>;
 }
 
-type PagefindLoader = () => Promise<PagefindClient>;
+export type PagefindLoader = () => Promise<PagefindClient>;
 type SearchState = 'idle' | 'loading' | 'results' | 'empty' | 'error';
 
 const SEARCH_DEBOUNCE_MS = 180;
 const MAX_RESULT_RECORDS = 20;
-
-const defaultPagefindLoader: PagefindLoader = () =>
-  // @ts-expect-error Pagefind is emitted into dist after Astro checks source modules.
-  import(/* @vite-ignore */ '/pagefind/pagefind.js') as unknown as Promise<PagefindClient>;
-
 const requireElement = <ElementType extends Element>(document: Document, selector: string): ElementType => {
   const element = document.querySelector<ElementType>(selector);
 
@@ -59,7 +54,7 @@ const createResultElement = (document: Document, result: SearchViewResult): HTML
 
 export const mountSearchPage = (
   document: Document,
-  loadPagefind: PagefindLoader = defaultPagefindLoader,
+  loadPagefind: PagefindLoader,
 ): void => {
   const input = requireElement<HTMLInputElement>(document, '[data-search-input]');
   const status = requireElement<HTMLElement>(document, '[data-search-status]');
