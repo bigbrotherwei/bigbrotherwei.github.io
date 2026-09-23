@@ -27,6 +27,10 @@ const requiredLayoutTokens = [
 const layoutSource = readSource('src/layouts/BaseLayout.astro');
 const homeSource = readSource('src/pages/index.astro');
 const postSource = readSource('src/pages/posts/[slug].astro');
+const feedSource = readSource('src/lib/feed.ts');
+const rssSource = readSource('src/pages/rss.xml.ts');
+const robotsSource = readSource('src/pages/robots.txt.ts');
+const configSource = readSource('astro.config.mjs');
 
 for (const token of requiredLayoutTokens) {
   assertIncludes(layoutSource, token, 'BaseLayout');
@@ -36,5 +40,19 @@ assertIncludes(homeSource, 'buildWebsiteJsonLd', 'homepage');
 assertIncludes(postSource, 'buildBlogPostingJsonLd', 'post detail');
 assertIncludes(postSource, 'buildBreadcrumbJsonLd', 'post detail');
 assertIncludes(postSource, 'pageType="article"', 'post detail');
+
+assertIncludes(feedSource, '!post.data.draft', 'RSS feed mapping');
+assertIncludes(rssSource, "getCollection('posts')", 'RSS route');
+assertIncludes(rssSource, "@astrojs/rss", 'RSS route');
+assertIncludes(rssSource, '<language>zh-CN</language>', 'RSS route');
+assertIncludes(robotsSource, 'User-agent: *', 'robots route');
+assertIncludes(robotsSource, 'Allow: /', 'robots route');
+assertIncludes(robotsSource, "new URL('/sitemap-index.xml', context.site!)", 'robots route');
+assertIncludes(configSource, "@astrojs/sitemap", 'Astro config');
+assertIncludes(configSource, "page !== 'https://bigbrotherwei.github.io/search/'", 'Astro config');
+assertIncludes(configSource, 'news: false', 'Astro config');
+assertIncludes(configSource, 'video: false', 'Astro config');
+assertIncludes(configSource, 'xhtml: false', 'Astro config');
+assertIncludes(configSource, 'image: false', 'Astro config');
 
 console.log('SEO source contracts verified.');
