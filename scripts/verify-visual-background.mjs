@@ -89,6 +89,16 @@ if (!backdropSource.includes('aria-hidden="true"')) {
   failures.push('Decorative farm backdrop must be hidden from assistive technology');
 }
 
+for (const token of [
+  'class="ambient-motion" aria-hidden="true"',
+  'ambient-motion__meteor',
+  'ambient-motion__petal',
+]) {
+  if (!backdropSource.includes(token)) {
+    failures.push(`Shared backdrop must render decorative ambient motion: ${token}`);
+  }
+}
+
 const layoutSource = readFileSync(layoutPath, 'utf8');
 const layoutWithoutComments = stripComments(layoutSource);
 const layoutBodyMatch = layoutWithoutComments.match(/<body\b[^>]*>([\s\S]*?)<\/body>/);
@@ -160,6 +170,14 @@ if (existsSync(registryPath)) {
 }
 
 const stylesSource = readFileSync(stylesPath, 'utf8');
+if (!/\.ambient-motion\s*\{[^}]*pointer-events:\s*none;/u.test(stylesSource)) {
+  failures.push('Ambient motion must not intercept pointer input');
+}
+
+if (!/@media\s*\(prefers-reduced-motion:\s*reduce\)\s*\{[\s\S]*?\.ambient-motion\s*\{[^}]*display:\s*none;/u.test(stylesSource)) {
+  failures.push('Ambient motion must stop when reduced motion is requested');
+}
+
 for (const token of [
   '.hand-painted-farm-backdrop',
   'var(--background-image)',

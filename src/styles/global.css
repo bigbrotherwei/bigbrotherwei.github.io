@@ -80,6 +80,7 @@ main {
 
 .hand-painted-farm-backdrop::after {
   position: absolute;
+  z-index: 1;
   inset: 0;
   content: "";
   background:
@@ -93,10 +94,132 @@ body.home .hand-painted-farm-backdrop::after {
     radial-gradient(circle at 50% 46%, rgba(5, 14, 20, 0.06), rgba(5, 14, 20, 0.3) 72%);
 }
 
+.ambient-motion {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-motion__meteor {
+  position: absolute;
+  top: 13%;
+  left: 82%;
+  width: 118px;
+  height: 2px;
+  opacity: 0;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 237, 200, 0.58) 58%, #fff8d9);
+  box-shadow: 0 0 7px rgba(255, 223, 157, 0.4);
+  animation: meteor-pass 19s linear infinite;
+}
+
+.ambient-motion__meteor:nth-child(2) {
+  top: 18%;
+  left: 93%;
+  width: 85px;
+  animation-delay: -11s;
+  animation-duration: 27s;
+}
+
+.ambient-motion__petal {
+  position: absolute;
+  top: -5%;
+  left: 9%;
+  width: 13px;
+  height: 9px;
+  opacity: 0;
+  border: 1px solid rgba(126, 65, 72, 0.55);
+  border-radius: 85% 18% 76% 24%;
+  background: radial-gradient(circle at 28% 28%, #ffe8de, #e9a6a2 58%, #ad6875);
+  box-shadow: 0 1px 3px rgba(54, 27, 37, 0.2);
+  animation: petal-fall 23s linear infinite;
+}
+
+.ambient-motion__petal:nth-child(2) {
+  left: 28%;
+  width: 10px;
+  height: 7px;
+  animation-delay: -18s;
+  animation-duration: 29s;
+}
+
+.ambient-motion__petal:nth-child(3) {
+  left: 47%;
+  animation-delay: -9s;
+  animation-duration: 26s;
+}
+
+.ambient-motion__petal:nth-child(4) {
+  left: 69%;
+  width: 11px;
+  height: 8px;
+  animation-delay: -22s;
+  animation-duration: 31s;
+}
+
+.ambient-motion__petal:nth-child(5) {
+  left: 84%;
+  animation-delay: -13s;
+  animation-duration: 28s;
+}
+
+.ambient-motion__petal:nth-child(6) {
+  left: 57%;
+  width: 9px;
+  height: 6px;
+  animation-delay: -25s;
+  animation-duration: 34s;
+}
+
+@keyframes meteor-pass {
+  0%, 77% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(-24deg);
+  }
+
+  80% {
+    opacity: 0.9;
+  }
+
+  85%, 100% {
+    opacity: 0;
+    transform: translate3d(-30vw, 15vh, 0) rotate(-24deg);
+  }
+}
+
+@keyframes petal-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -4vh, 0) rotate(0deg);
+  }
+
+  8%, 72% {
+    opacity: 0.68;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(13vw, 110vh, 0) rotate(480deg);
+  }
+}
+
 @media (max-width: 640px) {
   .hand-painted-farm-backdrop {
     background-image: var(--background-image-mobile);
     background-position: var(--background-position-mobile);
+  }
+
+  .ambient-motion__meteor:nth-child(2),
+  .ambient-motion__petal:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-motion {
+    display: none;
   }
 }
 
