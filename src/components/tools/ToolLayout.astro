@@ -16,8 +16,10 @@ const { title, description, backgroundKey, statusId = 'tool-status' } = Astro.pr
 <BaseLayout title={title} description={description} backgroundKey={backgroundKey}>
   <main class="page-shell tool-page">
     <a class="back-link" href="/tools/">返回工具箱</a>
-    <PageHero eyebrow="Tools" title={title} description={description} />
-    <p class="tool-privacy-note">输入内容只在浏览器中处理，不会上传或保存。</p>
+    <div data-pagefind-body data-pagefind-meta="type:工具">
+      <PageHero eyebrow="Tools" title={title} description={description} />
+      <p class="tool-privacy-note">输入内容只在浏览器中处理，不会上传或保存。</p>
+    </div>
     <section class="tool-workspace" aria-describedby={statusId} aria-label={`${title} 工作台`}>
       <slot />
     </section>

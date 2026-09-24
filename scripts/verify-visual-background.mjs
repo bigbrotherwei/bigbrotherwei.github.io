@@ -16,6 +16,7 @@ const routePaths = [
   'src/pages/topics/index.astro',
   'src/pages/tools/index.astro',
   'src/pages/projects/index.astro',
+  'src/pages/search/index.astro',
   'src/pages/about.astro',
   'src/pages/posts/[slug].astro',
   'src/pages/topics/[slug].astro',
@@ -194,6 +195,7 @@ const pageBackgroundRequirements = {
   'src/pages/topics/index.astro': 'topics-index',
   'src/pages/tools/index.astro': 'tools-index',
   'src/pages/projects/index.astro': 'projects-index',
+  'src/pages/search/index.astro': 'search-index',
   'src/pages/about.astro': 'about',
   'src/pages/tools/json.astro': 'tool-json',
   'src/pages/tools/base64.astro': 'tool-base64',
@@ -230,6 +232,11 @@ const expectedToolAssets = {
   },
 };
 
+const expectedSearchAssets = {
+  desktop: '/images/backgrounds/search-index.webp',
+  mobile: '/images/backgrounds/search-index-mobile.webp',
+};
+
 for (const [routePath, key] of Object.entries(pageBackgroundRequirements)) {
   const source = readFileSync(join(root, routePath), 'utf8');
   if (!hasExplicitBackgroundKey(source, key)) {
@@ -239,6 +246,22 @@ for (const [routePath, key] of Object.entries(pageBackgroundRequirements)) {
 
 if (existsSync(registryPath)) {
   const registrySource = readFileSync(registryPath, 'utf8');
+  const searchEntryStart = registrySource.indexOf("  'search-index': {");
+  const searchEntryEnd = registrySource.indexOf('\n  },', searchEntryStart);
+  const searchEntrySource = searchEntryStart === -1 || searchEntryEnd === -1
+    ? ''
+    : registrySource.slice(searchEntryStart, searchEntryEnd);
+
+  if (!searchEntrySource) {
+    failures.push('Missing required unique search background key: search-index');
+  } else {
+    for (const [variant, asset] of Object.entries(expectedSearchAssets)) {
+      if (!searchEntrySource.includes(`${variant}: '${asset}'`)) {
+        failures.push(`Search background must register its dedicated ${variant} asset`);
+      }
+    }
+  }
+
   for (const [key, assets] of Object.entries(expectedToolAssets)) {
     const entryStart = registrySource.indexOf(`  '${key}': {`);
     const entryEnd = registrySource.indexOf('\n  },', entryStart);

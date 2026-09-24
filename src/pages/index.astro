@@ -1,14 +1,16 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getDailyQuote, quotes } from '../data/quotes';
+import { buildWebsiteJsonLd } from '../lib/seo';
 
 const dailyQuote = getDailyQuote();
 const quoteAuthor = dailyQuote.source
   ? `-- ${dailyQuote.author}《${dailyQuote.source}》`
   : `-- ${dailyQuote.author}`;
+const structuredData = buildWebsiteJsonLd({ site: Astro.site! });
 ---
 
-<BaseLayout title="bigbrotherwei" bodyClass="home" backgroundKey="home">
+<BaseLayout title="bigbrotherwei" bodyClass="home" backgroundKey="home" {structuredData}>
   <main>
     <section class="home-hero">
       <section class="hero-content" aria-labelledby="site-title">

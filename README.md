@@ -36,6 +36,8 @@ npm run build
 npm run preview
 ```
 
+`npm run build` 会依次执行静态校验、Astro 类型检查与页面生成、Pagefind 索引生成，以及最终产物校验。不要只运行 `astro build` 作为发布前检查，否则搜索索引和 RSS、Sitemap、Canonical 等发布契约不会被完整验证。
+
 ## 发布
 
 站点设计为通过 GitHub Actions 发布到 GitHub Pages。
@@ -215,6 +217,15 @@ npm run build
 
 `/tags/` 和 `/tags/<标签-slug>/` 会从文章 frontmatter 的 `tags` 自动生成。文章详情中的标签也会链接到对应页面。标签名称应保持稳定，避免只修改大小写或空格；生成规则和冲突处理见 `docs/writing-posts.zh.md`。
 
+## 搜索与订阅
+
+- `/search/`：使用 Pagefind 在浏览器内搜索已发布的文章、专题、工具和项目详情；查询词不会发送到外部服务。
+- `/rss.xml`：仅包含已发布文章的标题、摘要、日期、分类和链接。
+- `/sitemap-index.xml`：Sitemap 入口；搜索页使用 `noindex,follow`，不进入 Sitemap。
+- `/robots.txt`：允许抓取公开页面并声明 Sitemap 地址。
+
+Pagefind 在 Astro 静态页面生成后执行。索引只收录带 `data-pagefind-body` 的详情页，草稿、列表、归档、标签、关于和搜索页不会进入索引。发布前必须运行完整的 `npm run build`；最终的 `verify:dist` 会交叉校验 HTML 元数据、JSON-LD、RSS、Sitemap、robots 和 Pagefind 产物。
+
 ## 第一阶段范围
 
 第一阶段只建立基础工程能力：
@@ -276,10 +287,23 @@ npm run build
 - 为项目详情、归档和标签页面增加原创响应式背景。
 - 新增内容发现单元测试，并扩展内容与背景静态校验。
 
-后续阶段会继续实现：
+## 第七阶段范围
 
-- 搜索
-- RSS、Sitemap、Canonical 和结构化数据
+第七阶段完善内容发现和对外发布信息：
+
+- 新增中文站内搜索页和导航搜索入口，使用 Pagefind 生成纯静态索引。
+- 搜索范围覆盖文章、专题、工具和项目详情，并排除草稿与聚合页面。
+- 新增 RSS、Sitemap 和 robots 路由。
+- 全站输出 Canonical、Open Graph、Twitter Card；首页和文章输出 JSON-LD。
+- 搜索页使用独立的桌面、移动端原创夜间手绘背景。
+- 新增生产产物校验，防止部署缺少索引、订阅或 SEO 元数据。
+
+## 第八阶段占位
+
+第八阶段用于动态体验增强。GitHub Pages 仍可通过浏览器端 JavaScript 实现动画、交互组件、Canvas 效果和本地状态；需要服务端数据时再单独设计 API 或 Serverless 边界。
+
+后续候选需求包括：
+
 - 暗色模式
 - 评论系统
 - 访问统计和当前在线人数
@@ -297,3 +321,5 @@ npm run build
 - 第五阶段实现计划：`docs/superpowers/plans/2026-09-18-practical-tools.md`
 - 第六阶段设计：`docs/superpowers/specs/2026-09-22-phase-6-content-discovery-design.zh.md`
 - 第六阶段实现计划：`docs/superpowers/plans/2026-09-22-phase-6-content-discovery.md`
+- 第七阶段设计：`docs/superpowers/specs/2026-09-23-phase-7-search-seo-design.zh.md`
+- 第七阶段实现计划：`docs/superpowers/plans/2026-09-23-phase-7-search-seo.md`

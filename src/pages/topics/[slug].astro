@@ -34,14 +34,16 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/topics/">返回专题</a>
-      <header class="article-header">
-        <p class="eyebrow">{topic.data.status}</p>
-        <h1>{topic.data.title}</h1>
-        <p>{topic.data.description}</p>
-      </header>
+      <div data-pagefind-body>
+        <header class="article-header" data-pagefind-meta="type:专题">
+          <p class="eyebrow">{topic.data.status}</p>
+          <h1>{topic.data.title}</h1>
+          <p>{topic.data.description}</p>
+        </header>
 
-      <div class="article-body sketch-card">
-        <Content />
+        <div class="article-body sketch-card">
+          <Content />
+        </div>
       </div>
 
       <section class="topic-posts" aria-label="专题文章">

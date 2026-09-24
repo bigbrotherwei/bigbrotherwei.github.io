@@ -1,8 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
 import PostsSubnav from '../../components/PostsSubnav.astro';
+import { pageBackgrounds } from '../../data/backgrounds';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { buildTagIndex, findAdjacentPosts, findRelatedPosts } from '../../lib/content/discovery';
+import { buildBlogPostingJsonLd, buildBreadcrumbJsonLd } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const publishedPosts = (await getCollection('posts')).filter((post) => !post.data.draft);
@@ -30,26 +32,51 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   month: '2-digit',
   day: '2-digit',
 }).format(date);
+const structuredData = [
+  buildBlogPostingJsonLd({
+    site: Astro.site!,
+    path: `/posts/${post.id}/`,
+    title: post.data.title,
+    description: post.data.description,
+    publishedAt: post.data.pubDate,
+    ...(post.data.updatedDate ? { updatedAt: post.data.updatedDate } : {}),
+    tags: post.data.tags,
+    imagePath: pageBackgrounds[post.data.background].desktop,
+  }),
+  buildBreadcrumbJsonLd([
+    { name: '首页', path: '/' },
+    { name: '文章', path: '/posts/' },
+    { name: post.data.title, path: `/posts/${post.id}/` },
+  ], Astro.site!),
+];
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} backgroundKey={post.data.background}>
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  backgroundKey={post.data.background}
+  pageType="article"
+  {structuredData}
+>
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/posts/">返回文章</a>
-      <header class="article-header">
-        <p class="eyebrow">Post</p>
-        <h1>{post.data.title}</h1>
-        <p>{post.data.description}</p>
-        <div class="content-card__meta">
-          <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-          {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
+      <div data-pagefind-body>
+        <header class="article-header" data-pagefind-meta="type:文章">
+          <p class="eyebrow">Post</p>
+          <h1>{post.data.title}</h1>
+          <p>{post.data.description}</p>
+          <div class="content-card__meta">
+            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
+          </div>
+          <div class="tag-list" aria-label="文章标签">
+            {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
+          </div>
+        </header>
+        <div class="article-body sketch-card">
+          <Content />
         </div>
-        <div class="tag-list" aria-label="文章标签">
-          {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
-        </div>
-      </header>
-      <div class="article-body sketch-card">
-        <Content />
       </div>
 
       {(adjacentPosts.older || adjacentPosts.newer) && (

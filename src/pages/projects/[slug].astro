@@ -24,35 +24,37 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/projects/">返回项目</a>
-      <header class="article-header">
-        <p class="eyebrow">{project.data.status}</p>
-        <h1>{project.data.title}</h1>
-        <p>{project.data.description}</p>
-        <div class="content-card__meta">
-          <time datetime={project.data.startDate.toISOString()}>开始于 {formatDate(project.data.startDate)}</time>
-          {project.data.updatedDate && (
-            <time datetime={project.data.updatedDate.toISOString()}>
-              更新于 {formatDate(project.data.updatedDate)}
-            </time>
-          )}
-        </div>
-        <div class="tag-list" aria-label="项目标签">
-          {project.data.tags.map((tag) => <span>{tag}</span>)}
-        </div>
-        {(project.data.repository || project.data.website) && (
-          <div class="content-card__meta" aria-label="项目链接">
-            {project.data.repository && (
-              <a href={project.data.repository} target="_blank" rel="noreferrer">查看仓库</a>
-            )}
-            {project.data.website && (
-              <a href={project.data.website} target="_blank" rel="noreferrer">访问网站</a>
+      <div data-pagefind-body>
+        <header class="article-header" data-pagefind-meta="type:项目">
+          <p class="eyebrow">{project.data.status}</p>
+          <h1>{project.data.title}</h1>
+          <p>{project.data.description}</p>
+          <div class="content-card__meta">
+            <time datetime={project.data.startDate.toISOString()}>开始于 {formatDate(project.data.startDate)}</time>
+            {project.data.updatedDate && (
+              <time datetime={project.data.updatedDate.toISOString()}>
+                更新于 {formatDate(project.data.updatedDate)}
+              </time>
             )}
           </div>
-        )}
-      </header>
+          <div class="tag-list" aria-label="项目标签">
+            {project.data.tags.map((tag) => <span>{tag}</span>)}
+          </div>
+          {(project.data.repository || project.data.website) && (
+            <div class="content-card__meta" aria-label="项目链接">
+              {project.data.repository && (
+                <a href={project.data.repository} target="_blank" rel="noreferrer">查看仓库</a>
+              )}
+              {project.data.website && (
+                <a href={project.data.website} target="_blank" rel="noreferrer">访问网站</a>
+              )}
+            </div>
+          )}
+        </header>
 
-      <div class="article-body sketch-card">
-        <Content />
+        <div class="article-body sketch-card">
+          <Content />
+        </div>
       </div>
     </article>
   </main>

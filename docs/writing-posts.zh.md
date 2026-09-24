@@ -121,6 +121,18 @@ const message = '代码块需要注明语言';
 
 建议刚开始写时使用 `draft: true`，确认内容和页面效果后再改为 `false`。
 
+### 字段如何进入搜索、RSS 和 SEO
+
+- `title`：用于文章页标题、站内搜索结果、RSS 条目标题和社交分享标题。
+- `description`：用于列表与搜索摘要、RSS 摘要、页面 description、Open Graph、Twitter Card 和文章结构化数据。
+- `pubDate`：决定文章列表、归档和 RSS 的发布时间与排序。
+- `updatedDate`：填写后进入文章结构化数据的修改时间；不填写时不会伪造日期。
+- `tags`：生成标签页，也作为 RSS 分类和文章结构化数据关键词。
+- `draft`：设为 `true` 后不会生成公开详情页，也不会进入搜索、RSS、归档或标签页。
+- `background`：决定页面桌面/移动背景，同时作为文章社交分享图。
+
+专题、工具和项目详情会进入站内搜索，但 RSS 只发布文章。搜索索引、RSS、Sitemap 和页面元数据都在生产构建中生成，因此发布前必须运行完整的 `npm run build`，不能用单独的 `astro build` 替代。
+
 ## 4. 正文图片如何保存
 
 正文插图建议按文章 slug 单独建目录：
@@ -281,6 +293,8 @@ npm run verify:content
 npm run verify:visual-background
 npm run build
 ```
+
+最后一条命令会生成 Pagefind 搜索索引，并运行 `verify:dist` 检查文章的 Canonical、社交元数据、JSON-LD、RSS、Sitemap 和搜索边界。
 
 推荐发布流程：
 

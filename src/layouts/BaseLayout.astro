@@ -2,6 +2,7 @@
 import HandPaintedFarmBackdrop from '../components/HandPaintedFarmBackdrop.astro';
 import SiteNav from '../components/SiteNav.astro';
 import { pageBackgrounds, type BackgroundKey } from '../data/backgrounds';
+import { buildCanonicalUrl, serializeJsonLd, type JsonLdValue } from '../lib/seo';
 import '../styles/global.css';
 
 interface Props {
@@ -9,6 +10,10 @@ interface Props {
   description?: string;
   bodyClass?: string;
   backgroundKey?: BackgroundKey;
+  canonicalPath?: string;
+  robots?: string;
+  pageType?: 'website' | 'article';
+  structuredData?: JsonLdValue | readonly JsonLdValue[];
 }
 
 const {
@@ -16,10 +21,18 @@ const {
   description = 'bigbrotherwei 的个人博客，记录技术、项目、工具和思考。',
   bodyClass = '',
   backgroundKey = 'home',
+  canonicalPath,
+  robots,
+  pageType = 'website',
+  structuredData,
 } = Astro.props;
 
 const siteTitle = title === 'bigbrotherwei' ? title : `${title} | bigbrotherwei`;
 const background = pageBackgrounds[backgroundKey];
+const site = Astro.site ?? 'https://bigbrotherwei.github.io';
+const canonicalUrl = buildCanonicalUrl(Astro.site ?? 'https://bigbrotherwei.github.io', canonicalPath ?? Astro.url);
+const socialImageUrl = buildCanonicalUrl(Astro.site ?? 'https://bigbrotherwei.github.io', background.desktop);
+const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structuredData : [structuredData]) : [];
 ---
 
 <html lang="zh-CN">
@@ -27,9 +40,25 @@ const background = pageBackgrounds[backgroundKey];
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {robots && <meta name="robots" content={robots} />}
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content={pageType} />
+    <meta property="og:title" content={siteTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="bigbrotherwei" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={siteTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <link rel="alternate" type="application/rss+xml" title="bigbrotherwei RSS" href={buildCanonicalUrl(site, '/rss.xml')} />
+    <link rel="sitemap" type="application/xml" href={buildCanonicalUrl(site, '/sitemap-index.xml')} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preload" as="image" href={background.desktop} media="(min-width: 640.01px)" fetchpriority="high" />
     <link rel="preload" as="image" href={background.mobile} media="(max-width: 640px)" fetchpriority="high" />
+    {jsonLdItems.map((item) => <script is:inline type="application/ld+json" set:html={serializeJsonLd(item)} />)}
     <title>{siteTitle}</title>
   </head>
   <body class={bodyClass}>

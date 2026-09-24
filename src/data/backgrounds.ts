@@ -7,6 +7,7 @@ export const backgroundKeys = [
   'topics-index',
   'tools-index',
   'projects-index',
+  'search-index',
   'project-personal-blog',
   'about',
   'post-blog-rebuild-roadmap',
@@ -63,6 +64,12 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'projects-index': {
     desktop: '/images/backgrounds/projects-timber-yard.webp',
     mobile: '/images/backgrounds/projects-timber-yard-mobile.webp',
+  },
+  'search-index': {
+    desktop: '/images/backgrounds/search-index.webp',
+    mobile: '/images/backgrounds/search-index-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
   },
   'project-personal-blog': {
     desktop: '/images/backgrounds/project-personal-blog.webp',
