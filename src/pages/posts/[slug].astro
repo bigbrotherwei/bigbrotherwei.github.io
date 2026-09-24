@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import { ArrowUp, ChevronDown, ListTree, Tag } from 'lucide-astro';
 import PostsSubnav from '../../components/PostsSubnav.astro';
 import { pageBackgrounds } from '../../data/backgrounds';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -16,7 +17,8 @@ export async function getStaticPaths() {
 }
 
 const { post, publishedPosts } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const tocHeadings = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 const topics = await getCollection('topics');
 const topic = topics.find((entry) => entry.id === post.data.topic);
 const tagIndex = buildTagIndex(publishedPosts);
@@ -58,6 +60,7 @@ const structuredData = [
   pageType="article"
   {structuredData}
 >
+  <progress class="reading-progress" max="100" value="0" aria-label="文章阅读进度" data-reading-progress></progress>
   <main class="page-shell">
     <article class="article-page">
       <a class="back-link" href="/posts/">返回文章</a>
@@ -70,12 +73,42 @@ const structuredData = [
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
             {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
           </div>
-          <div class="tag-list" aria-label="文章标签">
-            {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
-          </div>
+          {postTags.length > 0 && (
+            <div class="tag-list article-tags" aria-label="文章标签">
+              <span class="article-tags__label" data-pagefind-ignore><Tag aria-hidden="true" size={15} />标签</span>
+              {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
+            </div>
+          )}
         </header>
-        <div class="article-body sketch-card">
-          <Content />
+        <div class="article-reading-layout">
+          {tocHeadings.length > 0 && (
+            <aside class="article-toc" data-pagefind-ignore>
+              <details open>
+                <summary>
+                  <ListTree aria-hidden="true" size={17} />
+                  <span>本篇目录</span>
+                  <ChevronDown class="article-toc__chevron" aria-hidden="true" size={15} />
+                </summary>
+                <nav aria-label="文章目录">
+                  {tocHeadings.map((heading, index) => (
+                    <a
+                      href={`#${heading.slug}`}
+                      data-article-toc-link
+                      data-heading-id={heading.slug}
+                      data-depth={heading.depth}
+                      aria-current={index === 0 ? 'location' : undefined}
+                    >
+                      <span class="article-toc__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                      <span>{heading.text}</span>
+                    </a>
+                  ))}
+                </nav>
+              </details>
+            </aside>
+          )}
+          <div class="article-body sketch-card" data-article-body>
+            <Content />
+          </div>
         </div>
       </div>
 
@@ -120,4 +153,13 @@ const structuredData = [
       <PostsSubnav active="posts" />
     </article>
   </main>
+  <button class="back-to-top" type="button" aria-label="返回顶部" title="返回顶部" data-back-to-top hidden>
+    <ArrowUp aria-hidden="true" size={20} strokeWidth={2.2} />
+  </button>
+
+  <script>
+    import { mountArticleReading } from '../../scripts/article-reading';
+
+    mountArticleReading(document, window);
+  </script>
 </BaseLayout>
