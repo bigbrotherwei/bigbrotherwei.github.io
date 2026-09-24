@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
-import { ArrowUp } from 'lucide-astro';
+import { ArrowUp, ChevronDown, ListTree, Tag } from 'lucide-astro';
 import PostsSubnav from '../../components/PostsSubnav.astro';
 import { pageBackgrounds } from '../../data/backgrounds';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -73,15 +73,22 @@ const structuredData = [
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
             {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
           </div>
-          <div class="tag-list" aria-label="文章标签">
-            {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
-          </div>
+          {postTags.length > 0 && (
+            <div class="tag-list article-tags" aria-label="文章标签">
+              <span class="article-tags__label" data-pagefind-ignore><Tag aria-hidden="true" size={15} />标签</span>
+              {postTags.map((tag) => <a href={`/tags/${tag.slug}/`}>{tag.label}</a>)}
+            </div>
+          )}
         </header>
         <div class="article-reading-layout">
           {tocHeadings.length > 0 && (
             <aside class="article-toc" data-pagefind-ignore>
               <details open>
-                <summary>本篇目录</summary>
+                <summary>
+                  <ListTree aria-hidden="true" size={17} />
+                  <span>本篇目录</span>
+                  <ChevronDown class="article-toc__chevron" aria-hidden="true" size={15} />
+                </summary>
                 <nav aria-label="文章目录">
                   {tocHeadings.map((heading, index) => (
                     <a
@@ -91,7 +98,8 @@ const structuredData = [
                       data-depth={heading.depth}
                       aria-current={index === 0 ? 'location' : undefined}
                     >
-                      {heading.text}
+                      <span class="article-toc__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                      <span>{heading.text}</span>
                     </a>
                   ))}
                 </nav>
