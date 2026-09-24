@@ -42,15 +42,24 @@ const requireSingle = (items, route, label) => {
   return items[0];
 };
 
+const requireAttribute = (element, name, route, label) => {
+  if (!element) return undefined;
+  const value = attribute(element, name);
+  if (!value) failures.push(`${route} ${label} must provide ${name}.`);
+  return value;
+};
+
 const requireSiteUrl = (value, route, label) => {
-  if (!value) return;
+  if (!value) return undefined;
   try {
     const url = new URL(value);
     if (url.protocol !== 'https:' || url.origin !== siteOrigin) {
       failures.push(`${route} ${label} must use ${siteOrigin}: ${value}`);
     }
+    return url;
   } catch {
     failures.push(`${route} ${label} must be an absolute HTTPS URL: ${value}`);
+    return undefined;
   }
 };
 
@@ -106,10 +115,20 @@ for (const path of htmlFiles) {
   void twitterCard;
   void twitterTitle;
   void twitterDescription;
-  requireSiteUrl(attribute(canonical ?? '', 'href'), route, 'canonical');
-  requireSiteUrl(attribute(ogUrl ?? '', 'content'), route, 'og:url');
-  requireSiteUrl(attribute(ogImage ?? '', 'content'), route, 'og:image');
-  requireSiteUrl(attribute(twitterImage ?? '', 'content'), route, 'twitter:image');
+  const canonicalHref = requireAttribute(canonical, 'href', route, 'canonical link');
+  const canonicalUrl = requireSiteUrl(canonicalHref, route, 'canonical');
+  requireSiteUrl(requireAttribute(ogUrl, 'content', route, 'og:url meta'), route, 'og:url');
+  requireSiteUrl(requireAttribute(ogImage, 'content', route, 'og:image meta'), route, 'og:image');
+  requireSiteUrl(requireAttribute(twitterImage, 'content', route, 'twitter:image meta'), route, 'twitter:image');
+
+  if (canonicalUrl && canonicalHref) {
+    if (/[?#]/u.test(canonicalHref)) {
+      failures.push(`${route} canonical must not contain a query or hash: ${canonicalUrl.href}`);
+    }
+    if (canonicalUrl.pathname !== new URL(route, siteOrigin).pathname) {
+      failures.push(`${route} canonical must match generated route ${siteOrigin}${route}: ${canonicalUrl.href}`);
+    }
+  }
 
   const robots = elementsByAttribute(html, 'meta', 'name', 'robots');
   if (route === '/search/') {

@@ -20,12 +20,15 @@ const fallback = (value: string | undefined, defaultValue: string): string =>
   value?.trim() || defaultValue;
 
 export const toSearchViewResult = (data: PagefindSearchResultData): SearchViewResult => {
-  if (!data.url.startsWith('/') || data.url.startsWith('//') || data.url.startsWith('/\\')) {
+  const siteUrl = new URL('https://search.local/');
+  const resultUrl = new URL(data.url, siteUrl);
+
+  if (!data.url.startsWith('/') || resultUrl.origin !== siteUrl.origin) {
     throw new Error(`Pagefind result URL must be root-relative: ${data.url}`);
   }
 
   return Object.freeze({
-    url: data.url,
+    url: `${resultUrl.pathname}${resultUrl.search}${resultUrl.hash}`,
     title: fallback(data.meta.title, '未命名内容'),
     type: fallback(data.meta.type, '内容'),
     excerpt: data.plain_excerpt,

@@ -40,15 +40,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       </noscript>
     </section>
   </main>
+
+  <script is:inline type="module">
+    window.__loadPagefind = () => import('/pagefind/pagefind.js');
+  </script>
+
+  <script>
+    import { mountSearchPage, type PagefindLoader } from '../../scripts/search-page';
+
+    const pagefindLoader = (window as typeof window & { __loadPagefind: PagefindLoader }).__loadPagefind;
+    mountSearchPage(document, pagefindLoader);
+  </script>
 </BaseLayout>
-
-<script is:inline type="module">
-  window.__loadPagefind = () => import('/pagefind/pagefind.js');
-</script>
-
-<script>
-  import { mountSearchPage, type PagefindLoader } from '../../scripts/search-page';
-
-  const pagefindLoader = (window as typeof window & { __loadPagefind: PagefindLoader }).__loadPagefind;
-  mountSearchPage(document, pagefindLoader);
-</script>

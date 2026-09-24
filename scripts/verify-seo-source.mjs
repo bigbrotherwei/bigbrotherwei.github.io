@@ -103,6 +103,13 @@ for (const token of [
   assertIncludes(searchPageSource, token, 'search page');
 }
 
+const searchLayoutClose = searchPageSource.lastIndexOf('</BaseLayout>');
+const trailingSearchScript = [...searchPageSource.matchAll(/<script\b/gu)]
+  .some((match) => (match.index ?? -1) > searchLayoutClose);
+if (searchLayoutClose < 0 || trailingSearchScript) {
+  throw new Error('search page scripts must render inside BaseLayout');
+}
+
 for (const [source, label] of [
   [searchPageSource, 'search page'],
   [searchScriptSource, 'search script'],

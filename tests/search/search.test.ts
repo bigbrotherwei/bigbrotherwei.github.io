@@ -5,9 +5,18 @@ import { mountSearchPage } from '../../src/scripts/search-page.ts';
 
 class SearchTestElement {
   readonly listeners = new Map<string, (() => void)[]>();
+  readonly attributes = new Map<string, string>();
+  readonly tagName: string;
+  children: SearchTestElement[] = [];
+  className = '';
   hidden = false;
+  href = '';
   value = '';
   textContent = '';
+
+  constructor(tagName = 'div') {
+    this.tagName = tagName;
+  }
 
   addEventListener(type: string, listener: () => void): void {
     this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
@@ -17,9 +26,17 @@ class SearchTestElement {
     this.listeners.get(type)?.forEach((listener) => listener());
   }
 
-  replaceChildren(..._children: SearchTestElement[]): void {}
+  append(...children: SearchTestElement[]): void {
+    this.children.push(...children);
+  }
 
-  setAttribute(_name: string, _value: string): void {}
+  replaceChildren(...children: SearchTestElement[]): void {
+    this.children = children;
+  }
+
+  setAttribute(name: string, value: string): void {
+    this.attributes.set(name, value);
+  }
 }
 
 class SearchTestDocument {
@@ -42,6 +59,10 @@ class SearchTestDocument {
   querySelector(selector: string): SearchTestElement | null {
     return this.elements.get(selector) ?? null;
   }
+
+  createElement(tagName: string): SearchTestElement {
+    return new SearchTestElement(tagName);
+  }
 }
 
 const flushPromises = async (): Promise<void> => {
@@ -53,6 +74,22 @@ const flushPromises = async (): Promise<void> => {
 const waitForSearchStart = async (): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, 200));
 };
+
+const deferred = <Value>() => {
+  let resolve: (value: Value) => void = () => {};
+  const promise = new Promise<Value>((fulfill) => {
+    resolve = fulfill;
+  });
+  return { promise, resolve };
+};
+
+const pagefindResult = (title: string, url: string) => ({
+  data: () => Promise.resolve({
+    url,
+    plain_excerpt: `<b>${title} excerpt</b>`,
+    meta: { title, type: '文章' },
+  }),
+});
 
 test('maps a Pagefind record without interpreting its excerpt as HTML', () => {
   assert.deepEqual(toSearchViewResult({
@@ -84,6 +121,17 @@ test('rejects a Pagefind result outside the site root', () => {
   assert.throws(
     () => toSearchViewResult({
       url: 'https://example.com/posts/hello/',
+      plain_excerpt: 'plain text',
+      meta: { title: 'Hello', type: '文章' },
+    }),
+    /root-relative/u,
+  );
+});
+
+test('rejects control characters that parse as a cross-origin result URL', () => {
+  assert.throws(
+    () => toSearchViewResult({
+      url: '/\n/example.com',
       plain_excerpt: 'plain text',
       meta: { title: 'Hello', type: '文章' },
     }),
@@ -145,4 +193,67 @@ test('keeps an in-flight non-empty search current after refocus', async () => {
   assert.equal(searchCalls, 1);
   assert.equal(document.empty.hidden, false);
   assert.equal(document.status.textContent, '未找到匹配内容');
+});
+
+test('does not let an older query overwrite newer search results', async () => {
+  const document = new SearchTestDocument();
+  const olderResponse = deferred<{ readonly results: readonly ReturnType<typeof pagefindResult>[] }>();
+  const queries: string[] = [];
+
+  mountSearchPage(document as unknown as Document, () => Promise.resolve({
+    search: (query: string) => {
+      queries.push(query);
+      return query === 'old'
+        ? olderResponse.promise
+        : Promise.resolve({ results: [pagefindResult('New result', '/posts/new/')] });
+    },
+  }));
+
+  document.input.value = 'old';
+  document.input.dispatch('input');
+  await waitForSearchStart();
+  document.input.value = 'new';
+  document.input.dispatch('input');
+  await waitForSearchStart();
+  await flushPromises();
+
+  olderResponse.resolve({ results: [pagefindResult('Old result', '/posts/old/')] });
+  await flushPromises();
+
+  const article = document.results.children[0];
+  const heading = article?.children[1];
+  const link = heading?.children[0];
+  assert.deepEqual(queries, ['old', 'new']);
+  assert.equal(link?.textContent, 'New result');
+  assert.equal(link?.href, '/posts/new/');
+  assert.equal(document.status.textContent, '找到 1 条结果');
+});
+
+test('renders non-empty search results as DOM nodes with literal excerpt text', async () => {
+  const document = new SearchTestDocument();
+
+  mountSearchPage(document as unknown as Document, () => Promise.resolve({
+    search: () => Promise.resolve({
+      results: [pagefindResult('Hello', '/posts/hello/')],
+    }),
+  }));
+
+  document.input.value = 'hello';
+  document.input.dispatch('input');
+  await waitForSearchStart();
+  await flushPromises();
+
+  const article = document.results.children[0];
+  const [type, heading, excerpt] = article?.children ?? [];
+  const link = heading?.children[0];
+  assert.equal(document.results.hidden, false);
+  assert.equal(article?.tagName, 'article');
+  assert.equal(type?.tagName, 'span');
+  assert.equal(type?.textContent, '文章');
+  assert.equal(heading?.tagName, 'h2');
+  assert.equal(link?.tagName, 'a');
+  assert.equal(link?.href, '/posts/hello/');
+  assert.equal(link?.textContent, 'Hello');
+  assert.equal(excerpt?.tagName, 'p');
+  assert.equal(excerpt?.textContent, '<b>Hello excerpt</b>');
 });
