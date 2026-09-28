@@ -52,6 +52,8 @@ npm run preview
 
 GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
+文章评论需要仓库所有者另外开启 GitHub Discussions、安装 Giscus App，并设置四项公开的 GitHub Actions Repository Variables。具体步骤和上线检查见[文章评论配置](docs/comments-setup.zh.md)；读者可在站点的 `/privacy/` 查看[隐私说明](src/pages/privacy.astro)。未配置时文章仍可阅读和发布，评论区会显示“评论未开放”。
+
 ## 维护流程
 
 后续维护采用功能分支和 PR 流程：

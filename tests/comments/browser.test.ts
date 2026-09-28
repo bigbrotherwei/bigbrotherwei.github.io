@@ -86,6 +86,8 @@ test('script is absent until click, then configured once for article pathname ma
   assert.equal(status.textContent, '评论加载中…');
   button.dispatch('click');
   assert.equal(embed.children.length, 1);
+  script.dispatch('load');
+  assert.equal(status.textContent, '评论组件已连接，内容可能仍在加载。');
 });
 
 test('script error restores retry and shows Discussions fallback', () => {

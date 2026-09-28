@@ -33,7 +33,7 @@ export function mountArticleComments(document: Document): void {
     script.crossOrigin = 'anonymous';
     for (const [name, value] of attributes) script.setAttribute(name, value!);
     script.addEventListener('load', () => {
-      status.textContent = '评论已加载';
+      status.textContent = '评论组件已连接，内容可能仍在加载。';
       button.hidden = true;
     });
     script.addEventListener('error', () => {
