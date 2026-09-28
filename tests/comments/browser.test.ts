@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mountArticleComments } from '../../src/scripts/article-comments.ts';
 
-type Listener = () => void;
+type Listener = (event?: unknown) => void;
 
 class ElementStub {
   tagName: string;
@@ -22,8 +22,9 @@ class ElementStub {
   getAttribute(name: string): string | null { return this.attributes.get(name) ?? null; }
   addEventListener(name: string, listener: Listener): void { this.listeners.set(name, listener); }
   appendChild(child: ElementStub): void { this.children.push(child); }
+  replaceChildren(): void { this.children = []; }
   remove(): void { /* Replaced by the parent in the test fixture below. */ }
-  dispatch(name: string): void { this.listeners.get(name)?.(); }
+  dispatch(name: string, event?: unknown): void { this.listeners.get(name)?.(event); }
 }
 
 function fixture(configured = true) {
@@ -56,15 +57,17 @@ function fixture(configured = true) {
     ['[data-comment-fallback]', fallback],
     ['[data-comment-embed]', embed],
   ]);
+  const window = new ElementStub('window');
   const document = {
     querySelector: (selector: string) => nodes.get(selector) ?? null,
     createElement: (tagName: string) => new ElementStub(tagName),
+    defaultView: window,
   } as unknown as Document;
-  return { document, button, status, fallback, embed };
+  return { document, window, button, status, fallback, embed };
 }
 
 test('script is absent until click, then configured once for article pathname mapping', () => {
-  const { document, button, status, embed } = fixture();
+  const { document, button, status, fallback, embed } = fixture();
   mountArticleComments(document);
   assert.equal(embed.children.length, 0);
 
@@ -87,7 +90,41 @@ test('script is absent until click, then configured once for article pathname ma
   button.dispatch('click');
   assert.equal(embed.children.length, 1);
   script.dispatch('load');
-  assert.equal(status.textContent, '评论组件已连接，内容可能仍在加载。');
+  assert.equal(button.hidden, false);
+  assert.equal(button.disabled, false);
+  assert.equal(fallback.hidden, false);
+  assert.match(status.textContent, /评论/);
+  embed.appendChild(new ElementStub('div'));
+  button.dispatch('click');
+  assert.equal(embed.children.length, 1, 'retry replaces the previous embed');
+  assert.notEqual(embed.children[0], script);
+});
+
+test('trusted Giscus error after script load restores retry and fallback', () => {
+  const { document, window, button, status, fallback, embed } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  embed.children[0].dispatch('load');
+  window.dispatch('message', { origin: 'https://other.example', data: { giscus: { error: 'failed' } } });
+  assert.doesNotMatch(status.textContent, /加载失败/);
+  window.dispatch('message', { origin: 'https://giscus.app', data: { giscus: { error: 'failed' } } });
+  assert.match(status.textContent, /加载失败/);
+  assert.equal(button.disabled, false);
+  assert.equal(button.hidden, false);
+  assert.equal(fallback.hidden, false);
+  button.dispatch('click');
+  assert.equal(embed.children.length, 1);
+});
+
+test('script load cannot overwrite an earlier Giscus failure', () => {
+  const { document, window, button, status, embed } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const script = embed.children[0];
+  window.dispatch('message', { origin: 'https://giscus.app', data: { giscus: { error: 'failed' } } });
+  script.dispatch('load');
+  assert.match(status.textContent, /加载失败/);
+  assert.equal(button.disabled, false);
 });
 
 test('script error restores retry and shows Discussions fallback', () => {

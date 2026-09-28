@@ -20,12 +20,33 @@ export function mountArticleComments(document: Document): void {
   if (attributes.some(([, value]) => !value)) return;
 
   let loading = false;
+  let attempt = 0;
+  const showFailure = () => {
+    attempt += 1;
+    embed.replaceChildren();
+    loading = false;
+    button.disabled = false;
+    button.hidden = false;
+    button.textContent = '重试加载评论';
+    status.textContent = '评论加载失败，请重试或前往 GitHub Discussions。';
+    fallback.hidden = false;
+  };
+
+  document.defaultView?.addEventListener('message', (event: MessageEvent) => {
+    if (event.origin !== 'https://giscus.app') return;
+    const data = event.data;
+    if (!data || typeof data !== 'object' || !data.giscus || typeof data.giscus !== 'object') return;
+    if (typeof data.giscus.error === 'string') showFailure();
+  });
+
   button.addEventListener('click', () => {
-    if (loading || button.hidden) return;
+    if (loading) return;
+    const currentAttempt = ++attempt;
     loading = true;
     button.disabled = true;
     status.textContent = '评论加载中…';
-    fallback.hidden = true;
+    fallback.hidden = false;
+    embed.replaceChildren();
 
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
@@ -33,16 +54,14 @@ export function mountArticleComments(document: Document): void {
     script.crossOrigin = 'anonymous';
     for (const [name, value] of attributes) script.setAttribute(name, value!);
     script.addEventListener('load', () => {
-      status.textContent = '评论组件已连接，内容可能仍在加载。';
-      button.hidden = true;
-    });
-    script.addEventListener('error', () => {
-      script.remove();
+      if (currentAttempt !== attempt) return;
       loading = false;
       button.disabled = false;
       button.textContent = '重试加载评论';
-      status.textContent = '评论加载失败，请重试或前往 GitHub Discussions。';
-      fallback.hidden = false;
+      status.textContent = '评论组件已加载；若评论未显示，可重试或前往 GitHub Discussions。';
+    });
+    script.addEventListener('error', () => {
+      if (currentAttempt === attempt) showFailure();
     });
     embed.appendChild(script);
   });

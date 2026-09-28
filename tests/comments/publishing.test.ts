@@ -15,8 +15,46 @@ const publicVariables = [
 
 test('Pages build receives all four public Giscus variables', () => {
   const workflow = readFileSync(path.join(root, '.github/workflows/deploy.yml'), 'utf8');
+  const actionEnv = workflow.match(/^ {8}uses: withastro\/action@v5\n {8}env:\n((?: {10}[^\n]+\n)+)/m)?.[1];
+  assert.ok(actionEnv, 'withastro/action must have an env block');
   for (const variable of publicVariables) {
-    assert.match(workflow, new RegExp(`^\\s+${variable}: \\x24\\{\\{ vars\\.${variable} \\}\\}$`, 'm'));
+    assert.match(actionEnv, new RegExp(`^ {10}${variable}: \\x24\\{\\{ vars\\.${variable} \\}\\}$`, 'm'));
+  }
+});
+
+test('configured publishing still waits for a click and includes Giscus attributes', () => {
+  const output = mkdtempSync(path.join(tmpdir(), 'comments-configured-'));
+  try {
+    const env = {
+      ...process.env,
+      ASTRO_TELEMETRY_DISABLED: '1',
+      PUBLIC_GISCUS_REPO: 'bigbrotherwei/bigbrotherwei.github.io',
+      PUBLIC_GISCUS_REPO_ID: 'R_kgDOExample',
+      PUBLIC_GISCUS_CATEGORY: 'Comments',
+      PUBLIC_GISCUS_CATEGORY_ID: 'DIC_kwDOExample',
+    };
+    const result = spawnSync(path.join(root, 'node_modules/.bin/astro'), ['build', '--outDir', output], {
+      cwd: root, env, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
+    });
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    const posts = readdirSync(path.join(output, 'posts'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory());
+    assert.ok(posts.length > 0);
+    for (const post of posts) {
+      const article = readFileSync(path.join(output, 'posts', post.name, 'index.html'), 'utf8');
+      assert.match(article, /<button[^>]+data-comment-load/, post.name);
+      assert.match(article, /data-repo="bigbrotherwei\/bigbrotherwei\.github\.io"/, post.name);
+      assert.match(article, /data-repo-id="R_kgDOExample"/, post.name);
+      assert.match(article, /data-category="Comments"/, post.name);
+      assert.match(article, /data-category-id="DIC_kwDOExample"/, post.name);
+      assert.match(article, /data-mapping="pathname"/, post.name);
+      assert.match(article, /data-strict="1"/, post.name);
+      assert.match(article, /data-lang="zh-CN"/, post.name);
+      assert.ok(!/<script[^>]+src=["']https:\/\/giscus\.app\/client\.js/.test(article), `${post.name}: eager Giscus script`);
+      assert.ok(!/<iframe[^>]+src=["']https:\/\/giscus\.app/.test(article), `${post.name}: eager Giscus iframe`);
+    }
+  } finally {
+    rmSync(output, { recursive: true, force: true });
   }
 });
 
