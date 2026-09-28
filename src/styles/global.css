@@ -64,6 +64,23 @@ main {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  animation: page-content-enter 260ms ease-out backwards;
+}
+
+@keyframes page-content-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html:has(:target) main {
+  animation: none;
 }
 
 .hand-painted-farm-backdrop {
@@ -263,11 +280,29 @@ body.home .site-nav {
 .site-nav__links a {
   position: relative;
   opacity: 0.82;
+  transition: color 180ms ease, opacity 180ms ease, background-color 180ms ease;
 }
 
-.site-nav__links a:hover {
+.site-nav__links a:not(.site-nav__icon-link)::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.28rem;
+  left: 0;
+  height: 2px;
+  background: var(--color-farm-gold);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.site-nav__links a:is(:hover, :focus-visible) {
   opacity: 1;
   color: var(--color-warm);
+}
+
+.site-nav__links a:not(.site-nav__icon-link):is(:hover, :focus-visible)::after {
+  transform: scaleX(1);
 }
 
 .site-nav__icon-link {
@@ -368,18 +403,43 @@ body.home .site-nav {
   border-radius: 6px;
   font-size: 0.94rem;
   font-weight: 800;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
 .posts-subnav a:hover,
+.posts-subnav a:focus-visible,
 .posts-subnav a[aria-current="page"] {
   color: var(--color-ink);
   background: var(--color-farm-cream);
   border-color: var(--color-farm-cream);
 }
 
+.posts-subnav a:focus-visible {
+  outline-color: var(--color-farm-gold);
+}
+
 .content-card {
   display: grid;
   gap: 0.75rem;
+}
+
+a.sketch-card {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+a.sketch-card:is(:hover, :focus-visible) {
+  transform: translateY(-3px);
+  border-color: rgba(244, 197, 111, 0.95);
+  box-shadow: 10px 13px 0 rgba(17, 35, 51, 0.18);
+}
+
+a.sketch-card:focus-visible {
+  outline: 3px solid var(--color-teal);
+  outline-offset: 4px;
+}
+
+a.sketch-card:active {
+  transform: translateY(-1px);
 }
 
 .content-card h2,
@@ -417,6 +477,11 @@ body.home .site-nav {
   margin-bottom: 1.4rem;
   color: rgba(255, 250, 241, 0.78);
   font-weight: 800;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.back-link:is(:hover, :focus-visible) {
+  transform: translateX(-3px);
 }
 
 .article-page {
@@ -822,6 +887,23 @@ html:has(.article-toc) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  main {
+    animation: none;
+  }
+
+  .site-nav__links a,
+  .site-nav__links a:not(.site-nav__icon-link)::after,
+  .posts-subnav a,
+  a.sketch-card,
+  .back-link {
+    transition: none;
+  }
+
+  a.sketch-card:is(:hover, :focus-visible, :active),
+  .back-link:is(:hover, :focus-visible) {
+    transform: none;
+  }
+
   html:has(.article-toc) {
     scroll-behavior: auto;
   }
