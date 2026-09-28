@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import { ArrowUp, ChevronDown, ListTree, Tag } from 'lucide-astro';
+import ArticleComments from '../../components/ArticleComments.astro';
 import PostsSubnav from '../../components/PostsSubnav.astro';
 import { pageBackgrounds } from '../../data/backgrounds';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -150,6 +151,7 @@ const structuredData = [
         </section>
       )}
 
+      <ArticleComments />
       <PostsSubnav active="posts" />
     </article>
   </main>
