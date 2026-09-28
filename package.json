@@ -15,6 +15,7 @@
     "verify:search": "node --experimental-strip-types --test tests/search/*.test.ts",
     "verify:reading": "node --experimental-strip-types --test tests/reading/*.test.ts",
     "verify:comments": "node --experimental-strip-types --test tests/comments/*.test.ts",
+    "verify:worker": "vitest run --config worker/vitest.config.ts",
     "verify:dist": "node scripts/verify-dist.mjs",
     "verify": "npm run verify:assets && npm run verify:quotes && npm run verify:visual-background && npm run verify:content && npm run verify:discovery && npm run verify:tools && npm run verify:seo && npm run verify:search && npm run verify:reading && npm run verify:comments",
     "build:astro": "npm run verify && ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
@@ -32,7 +33,11 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "@cloudflare/workers-types": "^5.20260928.1",
     "@types/node": "^26.6.1",
-    "pagefind": "^1.5.2"
+    "pagefind": "^1.5.2",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.142.0"
   }
 }
