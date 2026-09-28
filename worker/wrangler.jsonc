@@ -1,6 +1,11 @@
 {
   "name": "blog-analytics",
+  "main": "src/index.ts",
   "compatibility_date": "2026-08-22",
+  "vars": {
+    "ALLOWED_ORIGINS": "https://bigbrotherwei.github.io,http://localhost:4321"
+  },
+  "triggers": { "crons": ["0 * * * *"] },
   "d1_databases": [
     {
       "binding": "DB",
