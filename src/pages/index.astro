@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteStats from '../components/SiteStats.astro';
 import { getDailyQuote, quotes } from '../data/quotes';
 import { buildWebsiteJsonLd } from '../lib/seo';
 
@@ -20,6 +21,8 @@ const structuredData = buildWebsiteJsonLd({ site: Astro.site! });
         <p class="quote-author" data-quote-author>{quoteAuthor}</p>
       </section>
     </section>
+
+    <SiteStats />
 
     <section class="home-sections">
       <div class="page-shell">
