@@ -21,9 +21,11 @@ export function mountArticleComments(document: Document): void {
 
   let loading = false;
   let attempt = 0;
+  let currentScript: HTMLScriptElement | undefined;
   const showFailure = () => {
     attempt += 1;
     embed.replaceChildren();
+    currentScript = undefined;
     loading = false;
     button.disabled = false;
     button.hidden = false;
@@ -40,6 +42,16 @@ export function mountArticleComments(document: Document): void {
     if (typeof data.giscus.error === 'string') showFailure();
   });
 
+  document.addEventListener('themechange', (event) => {
+    const theme = (event as CustomEvent<{ theme?: unknown }>).detail?.theme;
+    if (theme !== 'light' && theme !== 'dark') return;
+    currentScript?.setAttribute('data-theme', theme);
+    embed.querySelector<HTMLIFrameElement>('iframe')?.contentWindow?.postMessage(
+      { giscus: { setConfig: { theme } } },
+      'https://giscus.app',
+    );
+  });
+
   button.addEventListener('click', () => {
     if (loading) return;
     const currentAttempt = ++attempt;
@@ -54,6 +66,8 @@ export function mountArticleComments(document: Document): void {
     script.async = true;
     script.crossOrigin = 'anonymous';
     for (const [name, value] of attributes) script.setAttribute(name, value!);
+    script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+    currentScript = script;
     script.addEventListener('load', () => {
       if (currentAttempt !== attempt) return;
       loading = false;
