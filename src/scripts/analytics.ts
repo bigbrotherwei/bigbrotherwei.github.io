@@ -31,7 +31,12 @@ export function mountAnalytics(document: Document, window: Window, apiUrl: strin
     }
   };
 
-  post('visit', { path: window.location.pathname, visitorId });
+  try {
+    const path = decodeURI(window.location.pathname);
+    if (!path.includes('%')) post('visit', { path, visitorId });
+  } catch {
+    // Ignore malformed URL escapes while keeping presence available.
+  }
 
   let interval: number | null = null;
   const updatePresence = (): void => {

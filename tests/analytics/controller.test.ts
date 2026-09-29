@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readVisitorId } from '../../src/lib/analytics.ts';
 import { mountAnalytics } from '../../src/scripts/analytics.ts';
+import { normalizeSitePath } from '../../worker/src/validation.ts';
 
 const uuid = '9ac6f2b7-a42b-4cbf-86b8-6539fcf0a010';
 const apiUrl = 'https://analytics.example.test/api/';
@@ -18,7 +19,7 @@ function storageFixture(): Storage {
   };
 }
 
-function fixture(options: { visible?: boolean; storage?: Storage; fetch?: typeof fetch } = {}) {
+function fixture(options: { visible?: boolean; storage?: Storage; fetch?: typeof fetch; pathname?: string } = {}) {
   let visibilityState = options.visible === false ? 'hidden' : 'visible';
   const listeners = new Map<string, () => void>();
   const intervals = new Map<number, { callback: () => void; delay: number }>();
@@ -30,7 +31,7 @@ function fixture(options: { visible?: boolean; storage?: Storage; fetch?: typeof
     addEventListener: (name: string, listener: () => void) => { listeners.set(name, listener); },
   } as unknown as Document;
   const window = {
-    location: { pathname: '/posts/example/' },
+    location: { pathname: options.pathname ?? '/posts/example/' },
     localStorage: storage,
     crypto: { randomUUID: () => uuid },
     fetch: (url: string, init: RequestInit) => {
@@ -62,6 +63,23 @@ test('navigation sends one visit with pathname and no visitor ID in URL', () => 
   assert.deepEqual(JSON.parse(app.requests[0].init.body as string), { path: '/posts/example/', visitorId: uuid });
   assert.equal(app.requests[0].init.method, 'POST');
   assert.equal((app.requests[0].init.headers as Record<string, string>)['Content-Type'], 'application/json');
+});
+
+test('encoded published Chinese tag path becomes a Worker-accepted visit path', () => {
+  const pathname = new URL('https://bigbrotherwei.github.io/tags/博客重构/').pathname;
+  const app = fixture({ pathname });
+  mountAnalytics(app.document, app.window, apiUrl);
+  const path = JSON.parse(app.requests[0].init.body as string).path;
+  assert.equal(path, '/tags/博客重构/');
+  assert.equal(normalizeSitePath(path), '/tags/博客重构/');
+});
+
+test('encoded separators and malformed escapes are not sent as visits', () => {
+  for (const pathname of ['/tags/博客%2F重构/', '/tags/博客%252F重构/', '/tags/%E5%BD/']) {
+    const app = fixture({ pathname });
+    assert.doesNotThrow(() => mountAnalytics(app.document, app.window, apiUrl));
+    assert.equal(app.requests.some(({ url }) => url.endsWith('/visit')), false);
+  }
 });
 
 test('visible tab sends an immediate heartbeat and repeats every 30 seconds', () => {
