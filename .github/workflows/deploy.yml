@@ -30,6 +30,7 @@ jobs:
           PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
           PUBLIC_GISCUS_CATEGORY: ${{ vars.PUBLIC_GISCUS_CATEGORY }}
           PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
+          PUBLIC_ANALYTICS_API_URL: ${{ vars.PUBLIC_ANALYTICS_API_URL }}
         with:
           node-version: 22.12.0
           package-manager: npm
