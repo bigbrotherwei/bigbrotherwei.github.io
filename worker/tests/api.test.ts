@@ -81,6 +81,27 @@ test("invalid origin, media type, body size, ID, route and path never alter coun
   expect(await totals()).toEqual(before);
 });
 
+test.each([undefined, "10"])("oversized streamed body is canceled with Content-Length %s", async (length) => {
+  let canceled = false;
+  let produced = 0;
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      produced++;
+      controller.enqueue(new Uint8Array(2049));
+      if (produced === 10) controller.close();
+    },
+    cancel() { canceled = true; },
+  });
+  const headers: Record<string, string> = { Origin: origin, "Content-Type": "application/json" };
+  if (length) headers["Content-Length"] = length;
+  const response = await worker.fetch(new Request("https://analytics.example/visit", {
+    method: "POST", headers, body,
+  }), workerEnv);
+  expect(response.status).toBe(400);
+  expect(canceled).toBe(true);
+  expect(produced).toBeLessThan(4);
+});
+
 test("duplicate at four seconds does not move the five-second eligibility boundary", async () => {
   const id = "267b64d9-f06e-4383-8cef-f47733c02ec1";
   const before = await totals();

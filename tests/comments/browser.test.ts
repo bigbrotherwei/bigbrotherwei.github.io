@@ -13,6 +13,7 @@ class ElementStub {
   async = false;
   crossOrigin = '';
   children: ElementStub[] = [];
+  contentWindow = {};
   attributes = new Map<string, string>();
   listeners = new Map<string, Listener>();
 
@@ -23,6 +24,7 @@ class ElementStub {
   addEventListener(name: string, listener: Listener): void { this.listeners.set(name, listener); }
   appendChild(child: ElementStub): void { this.children.push(child); }
   replaceChildren(): void { this.children = []; }
+  querySelector(selector: string): ElementStub | null { return selector === 'iframe' ? this.children.find((child) => child.tagName === 'iframe') ?? null : null; }
   remove(): void { /* Replaced by the parent in the test fixture below. */ }
   dispatch(name: string, event?: unknown): void { this.listeners.get(name)?.(event); }
 }
@@ -105,9 +107,11 @@ test('trusted Giscus error after script load restores retry and fallback', () =>
   mountArticleComments(document);
   button.dispatch('click');
   embed.children[0].dispatch('load');
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
   window.dispatch('message', { origin: 'https://other.example', data: { giscus: { error: 'failed' } } });
   assert.doesNotMatch(status.textContent, /加载失败/);
-  window.dispatch('message', { origin: 'https://giscus.app', data: { giscus: { error: 'failed' } } });
+  window.dispatch('message', { origin: 'https://giscus.app', source: iframe.contentWindow, data: { giscus: { error: 'failed' } } });
   assert.match(status.textContent, /加载失败/);
   assert.equal(button.disabled, false);
   assert.equal(button.hidden, false);
@@ -121,10 +125,28 @@ test('script load cannot overwrite an earlier Giscus failure', () => {
   mountArticleComments(document);
   button.dispatch('click');
   const script = embed.children[0];
-  window.dispatch('message', { origin: 'https://giscus.app', data: { giscus: { error: 'failed' } } });
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  window.dispatch('message', { origin: 'https://giscus.app', source: iframe.contentWindow, data: { giscus: { error: 'failed' } } });
   script.dispatch('load');
   assert.match(status.textContent, /加载失败/);
   assert.equal(button.disabled, false);
+});
+
+test('error from removed Giscus iframe cannot fail a retry', () => {
+  const { document, window, button, status, embed } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const oldFrame = new ElementStub('iframe');
+  embed.appendChild(oldFrame);
+  window.dispatch('message', { origin: 'https://giscus.app', source: oldFrame.contentWindow, data: { giscus: { error: 'initial' } } });
+  button.dispatch('click');
+  const currentFrame = new ElementStub('iframe');
+  embed.appendChild(currentFrame);
+  window.dispatch('message', { origin: 'https://giscus.app', source: oldFrame.contentWindow, data: { giscus: { error: 'old' } } });
+  assert.doesNotMatch(status.textContent, /加载失败/);
+  window.dispatch('message', { origin: 'https://giscus.app', source: currentFrame.contentWindow, data: { giscus: { error: 'current' } } });
+  assert.match(status.textContent, /加载失败/);
 });
 
 test('script error restores retry and shows Discussions fallback', () => {

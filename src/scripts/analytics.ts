@@ -1,5 +1,29 @@
 import { readVisitorId } from '../lib/analytics.ts';
 
+const visits = new WeakMap<Window, Promise<boolean>>();
+
+export function navigationVisit(window: Window, base: URL): Promise<boolean> {
+  const existing = visits.get(window);
+  if (existing) return existing;
+  const visit = (async () => {
+    try {
+      const visitorId = readVisitorId(window.localStorage, () => window.crypto.randomUUID());
+      const path = decodeURI(window.location.pathname);
+      if (!visitorId || path.includes('%')) return false;
+      const response = await window.fetch(new URL('visit', base).href, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, visitorId }),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  })();
+  visits.set(window, visit);
+  return visit;
+}
+
 export function mountAnalytics(document: Document, window: Window, apiUrl: string): void {
   if (!apiUrl?.trim()) return;
 
@@ -31,12 +55,7 @@ export function mountAnalytics(document: Document, window: Window, apiUrl: strin
     }
   };
 
-  try {
-    const path = decodeURI(window.location.pathname);
-    if (!path.includes('%')) post('visit', { path, visitorId });
-  } catch {
-    // Ignore malformed URL escapes while keeping presence available.
-  }
+  void navigationVisit(window, base);
 
   let interval: number | null = null;
   const updatePresence = (): void => {

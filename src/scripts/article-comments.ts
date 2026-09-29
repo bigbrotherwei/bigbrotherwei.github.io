@@ -34,6 +34,7 @@ export function mountArticleComments(document: Document): void {
 
   document.defaultView?.addEventListener('message', (event: MessageEvent) => {
     if (event.origin !== 'https://giscus.app') return;
+    if (event.source !== embed.querySelector('iframe')?.contentWindow) return;
     const data = event.data;
     if (!data || typeof data !== 'object' || !data.giscus || typeof data.giscus !== 'object') return;
     if (typeof data.giscus.error === 'string') showFailure();

@@ -23,8 +23,27 @@ async function readBody(request: Request, keys: string[]): Promise<Record<string
   const length = Number(request.headers.get("Content-Length"));
   if (length > 2048) return null;
   try {
-    const text = await request.text();
-    if (new TextEncoder().encode(text).length > 2048) return null;
+    if (!request.body) return null;
+    const reader = request.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > 2048) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(size);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     const value: unknown = JSON.parse(text);
     if (!value || typeof value !== "object" || Array.isArray(value)) return null;
     const record = value as Record<string, unknown>;

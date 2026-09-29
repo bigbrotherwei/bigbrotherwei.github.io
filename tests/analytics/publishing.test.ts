@@ -48,6 +48,12 @@ test('Pages passes the public API URL from a repository variable to the Astro bu
   assert.doesNotMatch(workflow, /VISITOR_HMAC_KEY|CLOUDFLARE_API_TOKEN|wrangler/);
 });
 
+test('pull requests run local Worker and D1 tests without deployment credentials', () => {
+  const workflow = readFileSync(path.join(root, '.github/workflows/deploy.yml'), 'utf8');
+  assert.match(workflow, /pull_request:[\s\S]*?jobs:[\s\S]*?npm run verify:worker/);
+  assert.doesNotMatch(workflow, /CLOUDFLARE_API_TOKEN|VISITOR_HMAC_KEY/);
+});
+
 test('configured build exposes only the public API URL, never the Worker HMAC secret', () => {
   const built = build(publicUrl);
   try {
