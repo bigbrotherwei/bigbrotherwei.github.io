@@ -65,5 +65,10 @@ const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structured
     <HandPaintedFarmBackdrop background={background} />
     <SiteNav />
     <slot />
+    <script>
+      import { mountAnalytics } from '../scripts/analytics';
+
+      mountAnalytics(document, window, import.meta.env.PUBLIC_ANALYTICS_API_URL ?? '');
+    </script>
   </body>
 </html>

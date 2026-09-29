@@ -17,6 +17,21 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Test Worker with local D1
+        run: npm run verify:worker
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -25,6 +40,12 @@ jobs:
 
       - name: Install, build, and upload site
         uses: withastro/action@v5
+        env:
+          PUBLIC_GISCUS_REPO: ${{ vars.PUBLIC_GISCUS_REPO }}
+          PUBLIC_GISCUS_REPO_ID: ${{ vars.PUBLIC_GISCUS_REPO_ID }}
+          PUBLIC_GISCUS_CATEGORY: ${{ vars.PUBLIC_GISCUS_CATEGORY }}
+          PUBLIC_GISCUS_CATEGORY_ID: ${{ vars.PUBLIC_GISCUS_CATEGORY_ID }}
+          PUBLIC_ANALYTICS_API_URL: ${{ vars.PUBLIC_ANALYTICS_API_URL }}
         with:
           node-version: 22.12.0
           package-manager: npm

@@ -52,6 +52,10 @@ npm run preview
 
 GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
+文章评论需要仓库所有者另外开启 GitHub Discussions、安装 Giscus App，并设置四项公开的 GitHub Actions Repository Variables。具体步骤和上线检查见[文章评论配置](docs/comments-setup.zh.md)；读者可在站点的 `/privacy/` 查看[隐私说明](src/pages/privacy.astro)。未配置时文章仍可阅读和发布，评论区会显示“评论未开放”。
+
+访问统计由单独的 Cloudflare Worker 和 D1 提供，不随 Pages workflow 自动部署。手动创建、迁移、发布、验收与回退步骤见[访问统计部署指南](docs/analytics-setup.zh.md)。仓库变量 `PUBLIC_ANALYTICS_API_URL` 未设置或 API 不可用时，静态页面照常发布和阅读，统计数字显示“暂不可用”。
+
 ## 维护流程
 
 后续维护采用功能分支和 PR 流程：
@@ -76,7 +80,7 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 - `/tools/uuid/`：使用浏览器安全随机能力生成 UUID v4。
 - `/tools/text-counter/`：统计字符、汉字、英文词、行数和 UTF-8 字节数。
 
-所有工具输入、转换结果和复制操作都只在当前浏览器中处理：工具页不发送网络请求、不上传内容、不写入本地持久化存储，也不记录输入内容。不要把需要后端、第三方接口或上传文件的功能伪装成现有工具的扩展；此类需求应单独设计隐私提示和服务边界。
+工具输入和转换结果只在当前浏览器中处理，不会作为工具数据上传。页面仍可能发送访问统计请求；需要后端、第三方接口或上传文件的工具应单独说明隐私提示和服务边界。
 
 工具改动的基础验证命令：
 

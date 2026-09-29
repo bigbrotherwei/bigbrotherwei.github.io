@@ -1,6 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import { ArrowUp, ChevronDown, ListTree, Tag } from 'lucide-astro';
+import ArticleComments from '../../components/ArticleComments.astro';
+import ArticleReads from '../../components/ArticleReads.astro';
 import PostsSubnav from '../../components/PostsSubnav.astro';
 import { pageBackgrounds } from '../../data/backgrounds';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -73,6 +75,7 @@ const structuredData = [
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
             {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
           </div>
+          <ArticleReads path={`/posts/${post.id}/`} />
           {postTags.length > 0 && (
             <div class="tag-list article-tags" aria-label="文章标签">
               <span class="article-tags__label" data-pagefind-ignore><Tag aria-hidden="true" size={15} />标签</span>
@@ -150,6 +153,7 @@ const structuredData = [
         </section>
       )}
 
+      <ArticleComments />
       <PostsSubnav active="posts" />
     </article>
   </main>
