@@ -79,7 +79,31 @@ export function mountTheme(document: Document, window: Window): void {
     });
   }
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !menu.hidden) closeMenu(true);
+    if (menu.hidden) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeMenu(true);
+      return;
+    }
+    if (event.key === 'Tab') {
+      closeMenu();
+      return;
+    }
+    const index = choices.indexOf(event.target as HTMLButtonElement);
+    if (index < 0) return;
+    let next: number;
+    switch (event.key) {
+      case 'ArrowDown': next = (index + 1) % choices.length; break;
+      case 'ArrowUp': next = (index - 1 + choices.length) % choices.length; break;
+      case 'Home': next = 0; break;
+      case 'End': next = choices.length - 1; break;
+      default: return;
+    }
+    event.preventDefault();
+    choices[next].focus();
+  });
+  document.addEventListener('focusin', (event) => {
+    if (!menu.hidden && event.target && !menu.contains(event.target as Node) && !toggle.contains(event.target as Node)) closeMenu();
   });
   document.addEventListener('click', (event) => {
     if (!menu.hidden && event.target && !menu.contains(event.target as Node) && !toggle.contains(event.target as Node)) closeMenu();

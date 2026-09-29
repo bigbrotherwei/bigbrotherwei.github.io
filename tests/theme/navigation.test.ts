@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { parse } from '@astrojs/compiler';
+import postcss from 'postcss';
 import { mountTheme } from '../../src/scripts/theme.ts';
 
 type Node = { type: string; name?: string; attributes?: Array<{ name: string; value: string }>; children?: Node[] };
@@ -39,13 +40,14 @@ class Element {
   listeners = new Map<string, Listener>();
   hidden = false;
   focused = false;
+  focusCount = 0;
   parent?: Element;
   constructor(value?: string) { this.value = value; }
   getAttribute(name: string) { return this.attributes.get(name) ?? null; }
   setAttribute(name: string, value: string) { this.attributes.set(name, value); }
   addEventListener(name: string, listener: Listener) { this.listeners.set(name, listener); }
   fire(name: string, event: any = {}) { this.listeners.get(name)?.({ target: this, ...event }); }
-  focus() { this.focused = true; }
+  focus() { this.focused = true; this.focusCount += 1; }
   contains(target: Element) { return target === this || target.parent === this; }
 }
 
@@ -68,7 +70,7 @@ function fixture(preference = 'system', dark = false) {
     querySelectorAll: (selector: string) => selector === '[data-theme-choice]' ? choices : [],
     addEventListener: (name: string, listener: Listener) => { documentListeners.set(name, listener); },
     dispatchEvent: (event: { type: string }) => { documentListeners.get(event.type)?.(event); return true; },
-    fire: (name: string, event: any) => documentListeners.get(name)?.(event),
+    fire: (name: string, event: any) => documentListeners.get(name)?.({ preventDefault: () => {}, ...event }),
   };
   const storage = new Map<string, string>();
   const window = { localStorage: {
@@ -110,4 +112,62 @@ test('outside click closes menu while a click on a choice stays inside', () => {
   assert.equal(app.menu.hidden, false);
   app.document.fire('click', { target: new Element() });
   assert.equal(app.menu.hidden, true);
+});
+
+test('arrow keys wrap through choices, and Home and End focus the boundaries', () => {
+  const app = fixture('dark');
+  app.toggle.fire('click');
+  let prevented = 0;
+  const press = (key: string, target: Element) => app.document.fire('keydown', {
+    key, target, preventDefault: () => { prevented += 1; },
+  });
+  press('ArrowDown', app.choices[2]);
+  assert.equal(app.choices[0].focusCount, 1);
+  press('ArrowUp', app.choices[0]);
+  assert.equal(app.choices[2].focusCount, 2);
+  press('Home', app.choices[2]);
+  assert.equal(app.choices[0].focusCount, 2);
+  press('End', app.choices[0]);
+  assert.equal(app.choices[2].focusCount, 3);
+  assert.equal(prevented, 4);
+  assert.equal(app.menu.hidden, false);
+});
+
+test('Tab and focus leaving the control close the menu without stealing focus', () => {
+  const app = fixture();
+  app.toggle.fire('click');
+  let prevented = false;
+  app.document.fire('keydown', { key: 'Tab', target: app.choices[0], preventDefault: () => { prevented = true; } });
+  assert.equal(app.menu.hidden, true);
+  assert.equal(prevented, false);
+  assert.equal(app.toggle.focused, false);
+
+  app.toggle.fire('click');
+  app.document.fire('focusin', { target: new Element() });
+  assert.equal(app.menu.hidden, true);
+  assert.equal(app.toggle.getAttribute('aria-expanded'), 'false');
+});
+
+test('Escape prevents default and returns focus to the trigger from any choice', () => {
+  const app = fixture();
+  app.toggle.fire('click');
+  let prevented = false;
+  app.document.fire('keydown', { key: 'Escape', target: app.choices[1], preventDefault: () => { prevented = true; } });
+  assert.equal(app.menu.hidden, true);
+  assert.equal(app.toggle.focused, true);
+  assert.equal(prevented, true);
+});
+
+test('narrow navigation positions the menu within the viewport rather than its wrapped button', () => {
+  const css = postcss.parse(readFileSync(new URL('../../src/styles/global.css', import.meta.url), 'utf8'));
+  const mobile = css.nodes.find((node) => node.type === 'atrule' && node.name === 'media' && node.params === '(max-width: 760px)');
+  assert.ok(mobile && mobile.type === 'atrule');
+  const declarations = (selector: string) => {
+    const rule = mobile.nodes?.find((node) => node.type === 'rule' && node.selector === selector);
+    assert.ok(rule && rule.type === 'rule', `${selector} has a mobile rule`);
+    return Object.fromEntries(rule.nodes?.filter((node) => node.type === 'decl').map((node) => [node.prop, node.value]) ?? []);
+  };
+  assert.equal(declarations('.site-nav__theme').position, 'static');
+  assert.equal(declarations('.site-nav__theme-menu').right, '1rem');
+  assert.equal(declarations('.site-nav__theme-menu').width, 'min(10.5rem, calc(100vw - 2rem))');
 });

@@ -1297,6 +1297,16 @@ html:has(.article-toc) {
     flex-basis: 2.25rem;
   }
 
+  .site-nav__theme {
+    position: static;
+  }
+
+  .site-nav__theme-menu {
+    top: 100%;
+    right: 1rem;
+    width: min(10.5rem, calc(100vw - 2rem));
+  }
+
   .page-shell {
     width: min(100% - 1.25rem, 1120px);
     padding-top: 9.5rem;
