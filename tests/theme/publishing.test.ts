@@ -79,3 +79,27 @@ test('home card text uses the reading theme while article metadata stays legible
 test('about page links follow the reading theme', () => {
   assert.equal(declarations(aboutCss, '.about-links a').color, 'var(--color-accent)');
 });
+
+test('night-scene section eyebrows use scene text while surface eyebrows keep reading accents', () => {
+  assert.equal(declarations(css, '.section-heading--compact .eyebrow').color, 'var(--color-scene-link)');
+  assert.equal(declarations(css, '.privacy-page header .eyebrow').color, 'var(--color-scene-link)');
+  assert.equal(declarations(css, '.article-comments .section-heading--compact .eyebrow').color, 'var(--color-accent)');
+  assert.equal(declarations(css, '.eyebrow').color, 'var(--color-accent)');
+  assert.ok(contrast(declarations(css, ':root')['--color-scene-link'], '#0b1629') >= 4.5);
+});
+
+test('scene links have a visible focus ring in light and dark mode', () => {
+  assert.equal(declarations(css, '.site-nav a:focus-visible').outline, '3px solid var(--color-scene-focus)');
+  assert.equal(declarations(css, '.back-link:focus-visible').outline, '3px solid var(--color-scene-focus)');
+  assert.ok(contrast(declarations(css, ':root')['--color-scene-focus'], '#0b1629') >= 3);
+  assert.equal(declarations(css, ':root[data-theme="dark"]')['--color-scene-focus'], undefined);
+});
+
+test('card metadata hover stays readable on both reading panels', () => {
+  assert.equal(declarations(css, '.content-card__meta a:hover').color, 'var(--color-meta-hover)');
+  assert.equal(declarations(css, '.article-header .content-card__meta a:hover').color, 'var(--color-scene-text)');
+  for (const theme of [':root', ':root[data-theme="dark"]']) {
+    const tokens = declarations(css, theme);
+    assert.ok(contrast(tokens['--color-meta-hover'], tokens['--color-panel']) >= 4.5, `${theme} metadata hover contrast`);
+  }
+});
