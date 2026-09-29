@@ -42,5 +42,46 @@ export function mountTheme(document: Document, window: Window): void {
       // The DOM still reflects the selected preference for this page.
     }
     update();
+    syncChoices();
+  });
+
+  const toggle = document.querySelector?.<HTMLButtonElement>('[data-theme-toggle]');
+  const menu = document.querySelector?.<HTMLElement>('[data-theme-menu]');
+  const choices = Array.from(document.querySelectorAll?.<HTMLButtonElement>('[data-theme-choice]') ?? []);
+  const syncChoices = (): void => {
+    for (const choice of choices) {
+      choice.setAttribute('aria-checked', String(choice.getAttribute('data-theme-choice') === preference));
+    }
+  };
+  if (!toggle || !menu || choices.length === 0) return;
+  syncChoices();
+
+  const closeMenu = (restoreFocus = false): void => {
+    menu.hidden = true;
+    toggle.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) toggle.focus();
+  };
+  toggle.addEventListener('click', () => {
+    if (!menu.hidden) {
+      closeMenu();
+      return;
+    }
+    menu.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+    (choices.find((choice) => choice.getAttribute('aria-checked') === 'true') ?? choices[0]).focus();
+  });
+  for (const choice of choices) {
+    choice.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('themepreferencechange', {
+        detail: { preference: choice.getAttribute('data-theme-choice') },
+      }));
+      closeMenu(true);
+    });
+  }
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !menu.hidden) closeMenu(true);
+  });
+  document.addEventListener('click', (event) => {
+    if (!menu.hidden && event.target && !menu.contains(event.target as Node) && !toggle.contains(event.target as Node)) closeMenu();
   });
 }

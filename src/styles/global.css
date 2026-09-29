@@ -319,6 +319,58 @@ body.home .site-nav {
   background: rgba(255, 250, 241, 0.12);
 }
 
+.site-nav__theme {
+  position: relative;
+  flex: 0 0 2.25rem;
+}
+
+.site-nav__theme-toggle {
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.site-nav__theme-menu {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  z-index: 21;
+  width: 10.5rem;
+  padding: 0.3rem;
+  color: var(--color-ink);
+  background: #fffaf1;
+  border: 1px solid rgba(17, 35, 51, 0.2);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(8, 18, 31, 0.22);
+}
+
+.site-nav__theme-menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.6rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.site-nav__theme-menu button:is(:hover, :focus-visible),
+.site-nav__theme-menu button[aria-checked="true"] {
+  background: #e9f1eb;
+}
+
+.site-nav__theme-menu button:focus-visible,
+.site-nav__theme-toggle:focus-visible {
+  outline: 3px solid var(--color-farm-gold);
+  outline-offset: 2px;
+}
+
 .page-shell {
   width: min(1120px, calc(100% - 2rem));
   margin: 0 auto;
