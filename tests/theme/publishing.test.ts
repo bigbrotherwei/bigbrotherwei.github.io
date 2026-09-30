@@ -88,6 +88,17 @@ test('dark reading text and controls meet contrast on their actual surfaces', ()
   }
 });
 
+test('dark filled controls have a visible boundary against panels', () => {
+  const dark = declarations(css, ':root[data-theme="dark"]');
+  const boundary = dark['--color-action-border'] ?? dark['--color-action'];
+  assert.ok(contrast(boundary, dark['--color-panel']) >= 3, 'filled control boundary on panel');
+  assert.ok(contrast(boundary, dark['--color-panel-soft']) >= 3, 'filled control boundary on soft panel');
+  assert.equal(declarations(toolsCss, '.tool-toolbar button').border, '1px solid var(--color-action-border)');
+  assert.equal(declarations(toolsCss, ".tool-segmented button[aria-pressed='true']")['border-color'], 'var(--color-action-border)');
+  assert.equal(declarations(catalogCss, ".tool-tags button[aria-pressed='true']")['border-color'], 'var(--color-action-border)');
+  assert.equal(declarations(css, '.article-comments__load').border, '1px solid var(--color-action-border)');
+});
+
 test('reading and tool surfaces consume semantic theme tokens', () => {
   for (const selector of ['.sketch-card', '.article-toc', '.tag-index__item', '.article-adjacent__link', '.search-panel', '.search-result', '.site-stats', '.article-reads', '.article-comments']) {
     assert.match(JSON.stringify(declarations(css, selector)), /var\(--color-/);

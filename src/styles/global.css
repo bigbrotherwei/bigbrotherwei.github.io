@@ -16,6 +16,7 @@
   --color-focus: #276b68;
   --color-action: #245d5b;
   --color-action-hover: #194844;
+  --color-action-border: var(--color-action);
   --color-action-text: #ffffff;
   --color-meta-hover: #6d2d20;
   --color-scene-text: #fffaf1;
@@ -59,6 +60,7 @@
   --color-focus: #f4c56f;
   --color-action: #7a3c34;
   --color-action-hover: #8b483e;
+  --color-action-border: #f3aa87;
   --color-action-text: #fffaf1;
   --color-meta-hover: #ffe0c8;
   --color-surface: var(--color-panel);
@@ -1200,7 +1202,7 @@ html:has(.article-toc) {
   gap: 0.5rem;
   min-height: 2.75rem;
   padding: 0.55rem 0.9rem;
-  border: 1px solid var(--color-action);
+  border: 1px solid var(--color-action-border);
   border-radius: 6px;
   background: var(--color-action);
   color: var(--color-action-text);
