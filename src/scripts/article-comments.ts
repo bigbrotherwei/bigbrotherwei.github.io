@@ -22,7 +22,6 @@ export function mountArticleComments(document: Document): void {
   let loading = false;
   let attempt = 0;
   let currentScript: HTMLScriptElement | undefined;
-  let initialTheme: 'light' | 'dark' = 'light';
   let readyFrame: HTMLIFrameElement | null = null;
   const effectiveTheme = () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   const sendTheme = (frame: HTMLIFrameElement, theme: 'light' | 'dark') => {
@@ -60,8 +59,7 @@ export function mountArticleComments(document: Document): void {
     const frame = embed.querySelector<HTMLIFrameElement>('iframe');
     if (!currentScript || !frame || event.target !== frame || readyFrame === frame) return;
     readyFrame = frame;
-    const theme = effectiveTheme();
-    if (theme !== initialTheme) sendTheme(frame, theme);
+    sendTheme(frame, effectiveTheme());
   }, true);
 
   button.addEventListener('click', () => {
@@ -79,8 +77,7 @@ export function mountArticleComments(document: Document): void {
     script.async = true;
     script.crossOrigin = 'anonymous';
     for (const [name, value] of attributes) script.setAttribute(name, value!);
-    initialTheme = effectiveTheme();
-    script.setAttribute('data-theme', initialTheme);
+    script.setAttribute('data-theme', effectiveTheme());
     currentScript = script;
     script.addEventListener('load', () => {
       if (currentAttempt !== attempt) return;

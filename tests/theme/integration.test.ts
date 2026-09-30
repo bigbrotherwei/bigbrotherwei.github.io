@@ -70,6 +70,9 @@ test('theme controller updates an already loaded Giscus frame when system appear
   systemDark = true;
   mediaChange?.();
   assert.equal(root.getAttribute('data-theme'), 'dark');
-  assert.deepEqual(messages, [{ data: { giscus: { setConfig: { theme: 'dark' } } }, origin: 'https://giscus.app' }]);
+  assert.deepEqual(messages, [
+    { data: { giscus: { setConfig: { theme: 'light' } } }, origin: 'https://giscus.app' },
+    { data: { giscus: { setConfig: { theme: 'dark' } } }, origin: 'https://giscus.app' },
+  ]);
   assert.equal(embedChildren[1], frame);
 });
