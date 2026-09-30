@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { toolCategories, tools } from '../../src/data/tools.ts';
 
-test('publishes six uniquely addressable tools', () => {
-  assert.equal(tools.length, 6);
+test('publishes seven uniquely addressable tools', () => {
+  assert.equal(tools.length, 7);
   assert.equal(new Set(tools.map((tool) => tool.slug)).size, tools.length);
 
   for (const tool of tools) {

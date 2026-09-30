@@ -1,0 +1,223 @@
+---
+import { ArrowDown, ArrowUp, FileDown, Trash2, X } from 'lucide-astro';
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'images-pdf');
+if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-images-pdf" statusId="images-pdf-status">
+  <div class="tool-fields">
+    <div class="tool-field">
+      <label for="images-pdf-input">选择图片</label>
+      <input id="images-pdf-input" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+    </div>
+    <div class="tool-field">
+      <label for="images-pdf-name">下载文件名</label>
+      <input id="images-pdf-name" type="text" value="images.pdf" maxlength="120" autocomplete="off" />
+    </div>
+  </div>
+  <div id="images-pdf-drop" class="tool-drop-zone" tabindex="0" role="button" aria-label="将 JPEG、PNG 或 WebP 图片拖到这里，或按回车选择图片">
+    将图片拖到这里
+  </div>
+  <p class="tool-hint">支持 JPEG、PNG、WebP；最多 20 张，每张不超过 20 MiB，总计不超过 100 MiB。</p>
+  <ol id="images-pdf-list" class="tool-image-list" aria-label="PDF 页面顺序"></ol>
+  <template id="images-pdf-item-template">
+    <li class="tool-image-row">
+      <img class="tool-image-thumb" alt="" />
+      <div class="tool-image-meta"><strong></strong><span></span></div>
+      <div class="tool-image-actions">
+        <button type="button" data-move="up" aria-label="上移" title="上移"><ArrowUp size={18} aria-hidden="true" /></button>
+        <button type="button" data-move="down" aria-label="下移" title="下移"><ArrowDown size={18} aria-hidden="true" /></button>
+        <button type="button" data-remove aria-label="移除" title="移除"><X size={18} aria-hidden="true" /></button>
+      </div>
+    </li>
+  </template>
+  <div class="tool-toolbar">
+    <button type="button" id="images-pdf-build"><FileDown size={18} aria-hidden="true" />生成并下载 PDF</button>
+    <button type="button" id="images-pdf-clear"><Trash2 size={18} aria-hidden="true" />清空</button>
+  </div>
+</ToolLayout>
+
+<script>
+  import { buildImagesPdf, validateImageFiles } from '../../lib/tools/images-pdf.ts';
+  import type { NormalizedImage } from '../../lib/tools/images-pdf.ts';
+
+  interface QueueItem { file: File; url: string; width: number; height: number }
+  const input = document.querySelector<HTMLInputElement>('#images-pdf-input')!;
+  const nameInput = document.querySelector<HTMLInputElement>('#images-pdf-name')!;
+  const drop = document.querySelector<HTMLElement>('#images-pdf-drop')!;
+  const list = document.querySelector<HTMLOListElement>('#images-pdf-list')!;
+  const template = document.querySelector<HTMLTemplateElement>('#images-pdf-item-template')!;
+  const buildButton = document.querySelector<HTMLButtonElement>('#images-pdf-build')!;
+  const clearButton = document.querySelector<HTMLButtonElement>('#images-pdf-clear')!;
+  const status = document.querySelector<HTMLElement>('#images-pdf-status')!;
+  const queue: QueueItem[] = [];
+  let busy = false;
+
+  const showStatus = (message: string, state: 'idle' | 'success' | 'error' = 'idle') => {
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  const setBusy = (value: boolean) => {
+    busy = value;
+    for (const control of [input, nameInput, buildButton, clearButton, ...list.querySelectorAll<HTMLButtonElement>('button')]) {
+      control.disabled = value;
+    }
+    drop.setAttribute('aria-disabled', String(value));
+  };
+
+  const render = () => {
+    list.replaceChildren();
+    queue.forEach((item, index) => {
+      const row = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
+      const thumb = row.querySelector('img')!;
+      thumb.src = item.url;
+      thumb.alt = `${item.file.name} 预览`;
+      row.querySelector('strong')!.textContent = item.file.name;
+      row.querySelector('span')!.textContent = `${item.width} × ${item.height} · ${(item.file.size / 1024 / 1024).toFixed(2)} MiB`;
+      const up = row.querySelector<HTMLButtonElement>('[data-move="up"]')!;
+      const down = row.querySelector<HTMLButtonElement>('[data-move="down"]')!;
+      up.disabled = index === 0;
+      down.disabled = index === queue.length - 1;
+      up.setAttribute('aria-label', `上移 ${item.file.name}`);
+      down.setAttribute('aria-label', `下移 ${item.file.name}`);
+      row.querySelector<HTMLButtonElement>('[data-remove]')!.setAttribute('aria-label', `移除 ${item.file.name}`);
+      up.addEventListener('click', () => move(index, -1));
+      down.addEventListener('click', () => move(index, 1));
+      row.querySelector('[data-remove]')!.addEventListener('click', () => remove(index));
+      list.append(row);
+    });
+    buildButton.disabled = busy || queue.length === 0;
+    clearButton.disabled = busy || queue.length === 0;
+  };
+
+  const move = (index: number, offset: number) => {
+    if (busy) return;
+    const [item] = queue.splice(index, 1);
+    queue.splice(index + offset, 0, item);
+    render();
+    list.querySelectorAll<HTMLButtonElement>(`[data-move="${offset < 0 ? 'up' : 'down'}"]`)[index + offset]?.focus();
+    showStatus(`已调整 ${item.file.name} 的页序`);
+  };
+
+  const remove = (index: number) => {
+    if (busy) return;
+    const [item] = queue.splice(index, 1);
+    URL.revokeObjectURL(item.url);
+    render();
+    showStatus(`已移除 ${item.file.name}`);
+  };
+
+  const addFiles = async (incoming: readonly File[]) => {
+    if (busy || incoming.length === 0) return;
+    const checked = validateImageFiles([...queue.map((item) => item.file), ...incoming]);
+    if (!checked.ok) {
+      showStatus(checked.error, 'error');
+      return;
+    }
+    setBusy(true);
+    let accepted = 0;
+    const errors: string[] = [];
+    for (const file of incoming) {
+      try {
+        const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+        const { width, height } = bitmap;
+        bitmap.close();
+        if (width * height > 30_000_000 || width <= 0 || height <= 0) throw new Error('像素超过 30 MP 或尺寸无效');
+        queue.push({ file, url: URL.createObjectURL(file), width, height });
+        accepted += 1;
+      } catch (error) {
+        errors.push(`${file.name}：${error instanceof Error ? error.message : '图片无法解码或已损坏'}`);
+      }
+    }
+    setBusy(false);
+    render();
+    showStatus(errors.length ? errors.join('；') : `已加入 ${accepted} 张图片，共 ${queue.length} 张。`, errors.length ? 'error' : 'success');
+  };
+
+  input.addEventListener('change', async () => {
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+    await addFiles(files);
+  });
+  drop.addEventListener('click', () => { if (!busy) input.click(); });
+  drop.addEventListener('keydown', (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && !busy) { event.preventDefault(); input.click(); }
+  });
+  drop.addEventListener('dragover', (event) => { event.preventDefault(); if (!busy) drop.dataset.dragging = 'true'; });
+  drop.addEventListener('dragleave', () => { delete drop.dataset.dragging; });
+  drop.addEventListener('drop', (event) => {
+    event.preventDefault();
+    delete drop.dataset.dragging;
+    if (!busy) void addFiles(Array.from(event.dataTransfer?.files ?? []));
+  });
+
+  clearButton.addEventListener('click', () => {
+    if (busy) return;
+    queue.forEach((item) => URL.revokeObjectURL(item.url));
+    queue.length = 0;
+    input.value = '';
+    render();
+    showStatus('已清空图片队列');
+  });
+
+  buildButton.addEventListener('click', async () => {
+    if (busy) return;
+    const checked = validateImageFiles(queue.map((item) => item.file));
+    if (!checked.ok) { showStatus(checked.error, 'error'); return; }
+    setBusy(true);
+    const normalized: NormalizedImage[] = [];
+    try {
+      for (const [index, item] of queue.entries()) {
+        showStatus(`正在处理第 ${index + 1}/${queue.length} 张：${item.file.name}`);
+        let bitmap: ImageBitmap;
+        try { bitmap = await createImageBitmap(item.file, { imageOrientation: 'from-image' }); }
+        catch { throw new Error(`${item.file.name}：图片无法解码或已损坏`); }
+        const { width, height } = bitmap;
+        if (width * height > 30_000_000) { bitmap.close(); throw new Error(`${item.file.name}：像素超过 30 MP`); }
+        const maxWidth = width > height ? 2339 : 1654;
+        const maxHeight = width > height ? 1654 : 2339;
+        const scale = Math.min(1, maxWidth / width, maxHeight / height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        const context = canvas.getContext('2d');
+        if (!context) { bitmap.close(); throw new Error('浏览器无法创建画布'); }
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+        const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((result) => result ? resolve(result) : reject(new Error('JPEG 编码失败')), 'image/jpeg', 0.88));
+        normalized.push({ name: item.file.name, bytes: new Uint8Array(await blob.arrayBuffer()), width: canvas.width, height: canvas.height });
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+      showStatus('正在生成 PDF…');
+      const pdfBytes = await buildImagesPdf(normalized);
+      const pdf = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
+      const url = URL.createObjectURL(pdf);
+      const anchor = document.createElement('a');
+      const typedName = nameInput.value.trim().replace(/[\\/:*?"<>|]/g, '-').replace(/^\.+/, '');
+      anchor.download = `${typedName.replace(/\.pdf$/i, '') || 'images'}.pdf`;
+      anchor.href = url;
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      showStatus(`已生成 ${queue.length} 页 PDF：${anchor.download}`, 'success');
+    } catch (error) {
+      showStatus(error instanceof Error ? error.message : 'PDF 生成失败，请调整图片后重试。', 'error');
+    } finally {
+      normalized.length = 0;
+      setBusy(false);
+      render();
+    }
+  });
+
+  window.addEventListener('pagehide', () => queue.forEach((item) => URL.revokeObjectURL(item.url)));
+  render();
+</script>

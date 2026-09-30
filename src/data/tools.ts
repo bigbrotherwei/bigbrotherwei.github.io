@@ -1,6 +1,6 @@
 import type { BackgroundKey } from './backgrounds';
 
-export type ToolCategory = 'text' | 'encoding' | 'time' | 'development';
+export type ToolCategory = 'text' | 'encoding' | 'time' | 'development' | 'file';
 
 export interface ToolCategoryDefinition {
   value: ToolCategory | 'all';
@@ -23,9 +23,19 @@ export const toolCategories: readonly ToolCategoryDefinition[] = [
   { value: 'encoding', label: '编码' },
   { value: 'time', label: '时间' },
   { value: 'development', label: '开发' },
+  { value: 'file', label: '文件' },
 ];
 
 export const tools: readonly ToolDefinition[] = [
+  {
+    slug: 'images-pdf',
+    href: '/tools/images-pdf/',
+    title: '图片合并 PDF',
+    description: '按顺序将图片排入 A4 页面，合并下载为 PDF。',
+    category: 'file',
+    backgroundKey: 'tool-images-pdf',
+    searchTerms: '图片 照片 合并 pdf jpeg png webp 文件',
+  },
   {
     slug: 'json',
     href: '/tools/json/',
