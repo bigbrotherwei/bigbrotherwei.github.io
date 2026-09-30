@@ -41,7 +41,7 @@ if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
 </ToolLayout>
 
 <script>
-  import { buildImagesPdf, normalizeImage, restoreQueueFocus, validateImageFiles, validateImageFileSignatures } from '../../lib/tools/images-pdf.ts';
+  import { buildImagesPdf, normalizeImage, restoreQueueFocus, startPdfDownload, validateImageFiles, validateImageFileSignatures } from '../../lib/tools/images-pdf.ts';
   import type { NormalizedImage } from '../../lib/tools/images-pdf.ts';
 
   interface QueueItem { file: File; url: string; width: number; height: number }
@@ -191,17 +191,10 @@ if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
       showStatus('正在生成 PDF…');
       const pdfBytes = await buildImagesPdf(normalized);
       const pdf = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
-      const url = URL.createObjectURL(pdf);
-      downloadUrls.add(url);
-      const anchor = document.createElement('a');
       const typedName = nameInput.value.trim().replace(/[\\/:*?"<>|]/g, '-').replace(/^\.+/, '');
-      anchor.download = `${typedName.replace(/\.pdf$/i, '') || 'images'}.pdf`;
-      anchor.href = url;
-      document.body.append(anchor);
-      anchor.click();
-      anchor.remove();
-      window.setTimeout(() => { URL.revokeObjectURL(url); downloadUrls.delete(url); }, 60_000);
-      showStatus(`已生成 ${queue.length} 页 PDF：${anchor.download}`, 'success');
+      const filename = `${typedName.replace(/\.pdf$/i, '') || 'images'}.pdf`;
+      startPdfDownload(pdf, filename, downloadUrls);
+      showStatus(`已生成 ${queue.length} 页 PDF：${filename}`, 'success');
     } catch (error) {
       showStatus(error instanceof Error ? error.message : 'PDF 生成失败，请调整图片后重试。', 'error');
     } finally {

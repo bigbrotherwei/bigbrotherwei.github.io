@@ -27,7 +27,7 @@ if (!existsSync(join(root, registryPath))) {
   const pageContracts = {
     'images-pdf': {
       logicModule: 'images-pdf.ts',
-      logicCalls: ['validateImageFiles', 'validateImageFileSignatures', 'normalizeImage', 'restoreQueueFocus', 'buildImagesPdf'],
+      logicCalls: ['validateImageFiles', 'validateImageFileSignatures', 'normalizeImage', 'restoreQueueFocus', 'buildImagesPdf', 'startPdfDownload'],
       toolResultCalls: ['validateImageFiles', 'validateImageFileSignatures'],
     },
     json: {

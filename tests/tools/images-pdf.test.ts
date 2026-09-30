@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PDFDict, PDFDocument, PDFName, PDFRawStream } from 'pdf-lib';
-import { buildImagesPdf, normalizeImage, placeImage, restoreQueueFocus, validateImageFiles, validateImageFileSignatures } from '../../src/lib/tools/images-pdf.ts';
+import { buildImagesPdf, normalizeImage, placeImage, restoreQueueFocus, startPdfDownload, validateImageFiles, validateImageFileSignatures } from '../../src/lib/tools/images-pdf.ts';
 
 const mib = 1024 * 1024;
 const file = (name: string, type = 'image/jpeg', size = 8) =>
@@ -75,6 +75,26 @@ test('writes twenty A4 pages with distinct JPEG content in queue order', async (
   }
 });
 
+test('preserves a nonrepeating order of three distinct landscape JPEGs', async () => {
+  const { readFileSync } = await import('node:fs');
+  const bytes = (name: string) => new Uint8Array(readFileSync(new URL(`../fixtures/${name}`, import.meta.url)));
+  const ordered = [bytes('tiny-green.jpg'), bytes('tiny.jpg'), bytes('tiny-blue.jpg')];
+  const pdf = await PDFDocument.load(await buildImagesPdf(ordered.map((image, index) => ({
+    name: `${index}.jpg`, bytes: image, width: 2, height: 1,
+  }))));
+  assert.equal(pdf.getPageCount(), 3);
+  for (const [index, expected] of ordered.entries()) {
+    const resources = pdf.getPage(index).node.Resources();
+    assert.ok(resources);
+    const images = resources.lookup(PDFName.of('XObject'), PDFDict);
+    assert.ok(images);
+    assert.equal(images.entries().length, 1);
+    const embedded = pdf.context.lookup(images.entries()[0][1]);
+    assert.ok(embedded instanceof PDFRawStream);
+    assert.deepEqual(embedded.getContents(), expected);
+  }
+});
+
 test('reports damaged JPEG bytes during PDF creation', async () => {
   await assert.rejects(buildImagesPdf([{ name: 'broken.jpg', bytes: new Uint8Array([1, 2]), width: 1, height: 1 }]), /broken\.jpg/);
 });
@@ -135,4 +155,29 @@ test('restores focus to enabled queue controls or the upload input', () => {
   assert.equal(focused, 'down');
   restoreQueueFocus({ children: [] } as unknown as HTMLElement, 0, 'remove', fallback as HTMLElement);
   assert.equal(focused, 'upload');
+});
+
+test('releases the download URL and anchor when clicking the download throws', () => {
+  const active = new Set<string>();
+  const released: string[] = [];
+  let removed = false;
+  let scheduled = false;
+  const anchor = {
+    download: '', href: '',
+    click: () => { throw new Error('download blocked'); },
+    remove: () => { removed = true; },
+  };
+  assert.throws(() => startPdfDownload(new Blob(['pdf']), 'images.pdf', active, {
+    createObjectURL: () => 'blob:test',
+    revokeObjectURL: (url) => { released.push(url); },
+    createAnchor: () => anchor as unknown as HTMLAnchorElement,
+    appendAnchor: () => {},
+    scheduleRevoke: () => { scheduled = true; },
+  }), /download blocked/);
+  assert.equal(anchor.download, 'images.pdf');
+  assert.equal(anchor.href, 'blob:test');
+  assert.equal(removed, true);
+  assert.equal(scheduled, false);
+  assert.deepEqual(released, ['blob:test']);
+  assert.equal(active.size, 0);
 });

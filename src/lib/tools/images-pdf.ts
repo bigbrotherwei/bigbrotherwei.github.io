@@ -98,6 +98,48 @@ export const restoreQueueFocus = (
   (preferred ?? buttons.find((button) => !button.disabled) ?? fallback).focus();
 };
 
+interface PdfDownloadBrowser {
+  createObjectURL(blob: Blob): string;
+  revokeObjectURL(url: string): void;
+  createAnchor(): HTMLAnchorElement;
+  appendAnchor(anchor: HTMLAnchorElement): void;
+  scheduleRevoke(revoke: () => void): void;
+}
+
+export const startPdfDownload = (
+  pdf: Blob,
+  filename: string,
+  activeUrls: Set<string>,
+  browser: PdfDownloadBrowser = {
+    createObjectURL: (blob) => URL.createObjectURL(blob),
+    revokeObjectURL: (url) => URL.revokeObjectURL(url),
+    createAnchor: () => document.createElement('a'),
+    appendAnchor: (anchor) => document.body.append(anchor),
+    scheduleRevoke: (revoke) => { window.setTimeout(revoke, 60_000); },
+  },
+) => {
+  let url: string | undefined;
+  let anchor: HTMLAnchorElement | undefined;
+  let scheduled = false;
+  const release = () => {
+    if (url && activeUrls.delete(url)) browser.revokeObjectURL(url);
+  };
+  try {
+    url = browser.createObjectURL(pdf);
+    activeUrls.add(url);
+    anchor = browser.createAnchor();
+    anchor.download = filename;
+    anchor.href = url;
+    browser.appendAnchor(anchor);
+    anchor.click();
+    browser.scheduleRevoke(release);
+    scheduled = true;
+  } finally {
+    try { anchor?.remove(); }
+    finally { if (!scheduled) release(); }
+  }
+};
+
 export const placeImage = (width: number, height: number, pageWidth: number, pageHeight: number, margin: number) => {
   if (![width, height, pageWidth, pageHeight, margin].every(Number.isFinite)
     || width <= 0 || height <= 0 || margin < 0 || pageWidth <= 2 * margin || pageHeight <= 2 * margin) {
