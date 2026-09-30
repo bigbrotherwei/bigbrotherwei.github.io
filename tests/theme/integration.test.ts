@@ -16,6 +16,7 @@ test('theme controller updates an already loaded Giscus frame when system appear
   ]);
   const embedChildren: Array<{ tagName: string; attributes?: Map<string, string>; contentWindow?: unknown }> = [];
   const buttonListeners = new Map<string, () => void>();
+  const embedListeners = new Map<string, (event: { target: unknown }) => void>();
   const documentListeners = new Map<string, (event: unknown) => void>();
   const messages: Array<{ data: unknown; origin: string }> = [];
   const frame = {
@@ -33,6 +34,7 @@ test('theme controller updates an already loaded Giscus frame when system appear
     replaceChildren: () => { embedChildren.length = 0; },
     appendChild: (child: typeof embedChildren[number]) => { embedChildren.push(child); },
     querySelector: (selector: string) => selector === 'iframe' ? embedChildren.find((child) => child.tagName === 'iframe') ?? null : null,
+    addEventListener: (name: string, listener: (event: { target: unknown }) => void) => { embedListeners.set(name, listener); },
   };
   const nodes = new Map<string, unknown>([
     ['[data-article-comments]', section], ['[data-comment-load]', button],
@@ -64,6 +66,7 @@ test('theme controller updates an already loaded Giscus frame when system appear
   buttonListeners.get('click')?.();
   assert.equal(embedChildren[0].attributes?.get('data-theme'), 'light');
   embedChildren.push(frame);
+  embedListeners.get('load')?.({ target: frame });
   systemDark = true;
   mediaChange?.();
   assert.equal(root.getAttribute('data-theme'), 'dark');

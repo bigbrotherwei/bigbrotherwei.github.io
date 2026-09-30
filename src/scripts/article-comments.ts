@@ -22,10 +22,17 @@ export function mountArticleComments(document: Document): void {
   let loading = false;
   let attempt = 0;
   let currentScript: HTMLScriptElement | undefined;
+  let initialTheme: 'light' | 'dark' = 'light';
+  let readyFrame: HTMLIFrameElement | null = null;
+  const effectiveTheme = () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const sendTheme = (frame: HTMLIFrameElement, theme: 'light' | 'dark') => {
+    frame.contentWindow?.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+  };
   const showFailure = () => {
     attempt += 1;
     embed.replaceChildren();
     currentScript = undefined;
+    readyFrame = null;
     loading = false;
     button.disabled = false;
     button.hidden = false;
@@ -46,11 +53,16 @@ export function mountArticleComments(document: Document): void {
     const theme = (event as CustomEvent<{ theme?: unknown }>).detail?.theme;
     if (theme !== 'light' && theme !== 'dark') return;
     currentScript?.setAttribute('data-theme', theme);
-    embed.querySelector<HTMLIFrameElement>('iframe')?.contentWindow?.postMessage(
-      { giscus: { setConfig: { theme } } },
-      'https://giscus.app',
-    );
+    if (readyFrame && readyFrame === embed.querySelector('iframe')) sendTheme(readyFrame, theme);
   });
+
+  embed.addEventListener('load', (event) => {
+    const frame = embed.querySelector<HTMLIFrameElement>('iframe');
+    if (!currentScript || !frame || event.target !== frame || readyFrame === frame) return;
+    readyFrame = frame;
+    const theme = effectiveTheme();
+    if (theme !== initialTheme) sendTheme(frame, theme);
+  }, true);
 
   button.addEventListener('click', () => {
     if (loading) return;
@@ -60,13 +72,15 @@ export function mountArticleComments(document: Document): void {
     status.textContent = '评论加载中…';
     fallback.hidden = false;
     embed.replaceChildren();
+    readyFrame = null;
 
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
     script.async = true;
     script.crossOrigin = 'anonymous';
     for (const [name, value] of attributes) script.setAttribute(name, value!);
-    script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+    initialTheme = effectiveTheme();
+    script.setAttribute('data-theme', initialTheme);
     currentScript = script;
     script.addEventListener('load', () => {
       if (currentAttempt !== attempt) return;
