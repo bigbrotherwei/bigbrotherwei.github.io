@@ -408,7 +408,11 @@ body.home .site-nav {
   background: var(--color-code);
 }
 
-.site-nav__theme-menu button:focus-visible,
+.site-nav__theme-menu button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .site-nav__theme-toggle:focus-visible {
   outline: 3px solid var(--color-farm-gold);
   outline-offset: 2px;

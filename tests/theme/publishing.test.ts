@@ -95,6 +95,15 @@ test('scene links have a visible focus ring in light and dark mode', () => {
   assert.equal(declarations(css, ':root[data-theme="dark"]')['--color-scene-focus'], undefined);
 });
 
+test('theme menu focus ring contrasts with both menu backgrounds', () => {
+  assert.equal(declarations(css, '.site-nav__theme-menu button:focus-visible').outline, '3px solid var(--color-focus)');
+  for (const theme of [':root', ':root[data-theme="dark"]']) {
+    const tokens = declarations(css, theme);
+    assert.ok(contrast(tokens['--color-focus'], tokens['--color-panel']) >= 3, `${theme} menu panel focus contrast`);
+    assert.ok(contrast(tokens['--color-focus'], tokens['--color-code']) >= 3, `${theme} selected option focus contrast`);
+  }
+});
+
 test('card metadata hover stays readable on both reading panels', () => {
   assert.equal(declarations(css, '.content-card__meta a:hover').color, 'var(--color-meta-hover)');
   assert.equal(declarations(css, '.article-header .content-card__meta a:hover').color, 'var(--color-scene-text)');

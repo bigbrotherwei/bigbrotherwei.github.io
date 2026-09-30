@@ -171,7 +171,7 @@ test('iframe load reconciles a switch back to the click-time theme', () => {
   }]);
 });
 
-test('theme switched before iframe readiness is reconciled once with the latest effective theme', () => {
+test('theme switched before iframe readiness is reconciled on each iframe load', () => {
   const { document, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
   button.dispatch('click');
@@ -189,8 +189,27 @@ test('theme switched before iframe readiness is reconciled once with the latest 
   assert.deepEqual(iframe.messages, [{
     data: { giscus: { setConfig: { theme: 'dark' } } },
     origin: 'https://giscus.app',
+  }, {
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
   }]);
   assert.deepEqual(embed.children, [script, iframe]);
+});
+
+test('reloaded Giscus iframe receives the effective theme again', () => {
+  const { document, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  embed.dispatch('load', { target: iframe });
+  changeTheme('dark');
+  embed.dispatch('load', { target: iframe });
+  assert.deepEqual(iframe.messages.at(-1), {
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
+  });
+  assert.equal(iframe.messages.length, 3);
 });
 
 test('late iframe load from a failed attempt cannot update a retry', () => {

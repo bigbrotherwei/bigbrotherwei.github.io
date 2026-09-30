@@ -57,7 +57,7 @@ export function mountArticleComments(document: Document): void {
 
   embed.addEventListener('load', (event) => {
     const frame = embed.querySelector<HTMLIFrameElement>('iframe');
-    if (!currentScript || !frame || event.target !== frame || readyFrame === frame) return;
+    if (!currentScript || !frame || event.target !== frame) return;
     readyFrame = frame;
     sendTheme(frame, effectiveTheme());
   }, true);
