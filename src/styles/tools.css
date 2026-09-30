@@ -295,6 +295,73 @@
 
 .tool-toolbar button:has(svg) { display: inline-flex; align-items: center; gap: 0.45rem; }
 
+.tool-markdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.tool-markdown-grid #markdown-input {
+  min-height: 30rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 400;
+}
+
+.tool-markdown-grid .tool-toolbar { margin-top: 0.25rem; }
+.tool-markdown-grid input[type='file'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  opacity: 0;
+}
+
+.tool-file-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.9rem;
+  color: var(--color-action-text);
+  background: var(--color-action);
+  border: 1px solid var(--color-action-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+}
+
+.tool-file-button:has(+ input[type='file']:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.tool-markdown-output { min-width: 0; }
+.tool-markdown-output h2 {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  color: var(--color-muted);
+}
+
+.tool-markdown-preview {
+  min-height: 30rem;
+  padding: 1rem;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  background: var(--color-input);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  line-height: 1.65;
+}
+
+.tool-markdown-preview > :first-child { margin-top: 0; }
+.tool-markdown-preview :where(img, video) { max-width: 100%; height: auto; }
+.tool-markdown-preview :where(pre, table) { max-width: 100%; overflow-x: auto; }
+.tool-markdown-preview pre { padding: 0.8rem; background: var(--color-code); border-radius: 6px; }
+.tool-markdown-preview code { font-family: var(--font-mono, monospace); }
+.tool-markdown-preview blockquote { margin-inline: 0; padding-left: 1rem; border-left: 3px solid var(--color-action-border); }
+.tool-markdown-preview table { display: block; border-collapse: collapse; }
+.tool-markdown-preview :where(th, td) { padding: 0.35rem 0.6rem; border: 1px solid var(--color-line); }
+
 @media (max-width: 520px) {
   .tool-image-row { grid-template-columns: 3.25rem minmax(0, 1fr); }
   .tool-image-thumb { width: 3.25rem; height: 3.25rem; }
@@ -302,6 +369,9 @@
 }
 
 @media (max-width: 760px) {
+  .tool-markdown-grid { grid-template-columns: 1fr; }
+  .tool-markdown-grid #markdown-input { min-height: 16rem; }
+  .tool-markdown-preview { min-height: 16rem; }
   .tool-fields {
     grid-template-columns: 1fr;
   }

@@ -30,14 +30,18 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.2",
+    "dompurify": "^3.4.16",
     "lucide-astro": "^0.556.0",
+    "marked": "^18.0.14",
     "pdf-lib": "^1.17.1",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20260928.1",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^26.6.1",
+    "jsdom": "^29.1.1",
     "pagefind": "^1.5.2",
     "vitest": "^4.1.11",
     "wrangler": "^4.142.0"

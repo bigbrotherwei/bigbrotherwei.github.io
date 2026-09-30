@@ -37,6 +37,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: '图片 照片 合并 pdf jpeg png webp 文件',
   },
   {
+    slug: 'markdown',
+    href: '/tools/markdown/',
+    title: 'Markdown 预览',
+    description: '即时查看 Markdown 排版，可打开本地 .md 文件。',
+    category: 'text',
+    backgroundKey: 'tool-markdown',
+    searchTerms: 'markdown md 预览 文本 表格 代码',
+  },
+  {
     slug: 'json',
     href: '/tools/json/',
     title: 'JSON 格式化',

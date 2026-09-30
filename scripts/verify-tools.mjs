@@ -25,6 +25,11 @@ if (!existsSync(join(root, registryPath))) {
 } else {
   const { tools } = await import(pathToFileURL(join(root, registryPath)).href);
   const pageContracts = {
+    markdown: {
+      logicModule: 'markdown.ts',
+      logicCalls: ['renderMarkdown', 'importMarkdownFile'],
+      toolResultCalls: ['renderMarkdown', 'importMarkdownFile'],
+    },
     'images-pdf': {
       logicModule: 'images-pdf.ts',
       logicCalls: ['validateImageFiles', 'validateImageFileSignatures', 'normalizeImage', 'restoreQueueFocus', 'buildImagesPdf', 'startPdfDownload'],

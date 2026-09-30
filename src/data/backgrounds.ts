@@ -22,6 +22,7 @@ export const backgroundKeys = [
   'tool-uuid',
   'tool-text-counter',
   'tool-images-pdf',
+  'tool-markdown',
 ] as const;
 
 export type BackgroundKey = (typeof backgroundKeys)[number];
@@ -139,6 +140,12 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'tool-images-pdf': {
     desktop: '/images/backgrounds/tool-images-pdf.webp',
     mobile: '/images/backgrounds/tool-images-pdf-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-markdown': {
+    desktop: '/images/backgrounds/tool-markdown.webp',
+    mobile: '/images/backgrounds/tool-markdown-mobile.webp',
     position: 'center',
     mobilePosition: 'center',
   },

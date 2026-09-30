@@ -7,8 +7,9 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { toolCategories, tools } from '../../src/data/tools.ts';
 
-test('publishes seven uniquely addressable tools', () => {
-  assert.equal(tools.length, 7);
+test('publishes eight uniquely addressable tools including Markdown preview', () => {
+  assert.equal(tools.length, 8);
+  assert.equal(tools.find((tool) => tool.slug === 'markdown')?.href, '/tools/markdown/');
   assert.equal(new Set(tools.map((tool) => tool.slug)).size, tools.length);
 
   for (const tool of tools) {
