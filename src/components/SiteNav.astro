@@ -1,5 +1,6 @@
 ---
 import { Search } from 'lucide-astro';
+import { Monitor, Moon, Sun } from 'lucide-astro';
 
 const links = [
   { href: '/', label: '首页' },
@@ -18,5 +19,15 @@ const links = [
     <a class="site-nav__icon-link" href="/search/" aria-label="搜索" title="搜索">
       <Search aria-hidden="true" size={19} strokeWidth={2.2} />
     </a>
+    <div class="site-nav__theme">
+      <button class="site-nav__icon-link site-nav__theme-toggle" type="button" data-theme-toggle aria-label="选择主题" aria-haspopup="menu" aria-expanded="false" aria-controls="site-theme-menu" title="选择主题">
+        <Sun aria-hidden="true" size={19} strokeWidth={2.2} />
+      </button>
+      <div class="site-nav__theme-menu" id="site-theme-menu" data-theme-menu role="menu" aria-label="主题" hidden>
+        <button type="button" role="menuitemradio" data-theme-choice="system" aria-checked="true"><Monitor aria-hidden="true" size={17} />跟随系统</button>
+        <button type="button" role="menuitemradio" data-theme-choice="light" aria-checked="false"><Sun aria-hidden="true" size={17} />浅色</button>
+        <button type="button" role="menuitemradio" data-theme-choice="dark" aria-checked="false"><Moon aria-hidden="true" size={17} />深色</button>
+      </div>
+    </div>
   </div>
 </nav>

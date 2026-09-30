@@ -39,6 +39,19 @@ const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structured
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline data-theme-prepaint>
+      (() => {
+        let preference = 'system';
+        let dark = false;
+        try {
+          const stored = window.localStorage.getItem('blog-theme-preference');
+          if (stored === 'light' || stored === 'dark') preference = stored;
+        } catch {}
+        try { dark = window.matchMedia('(prefers-color-scheme: dark)').matches; } catch {}
+        document.documentElement.setAttribute('data-theme-preference', preference);
+        document.documentElement.setAttribute('data-theme', preference === 'system' ? (dark ? 'dark' : 'light') : preference);
+      })();
+    </script>
     <meta name="description" content={description} />
     {robots && <meta name="robots" content={robots} />}
     <link rel="canonical" href={canonicalUrl} />
@@ -67,7 +80,9 @@ const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structured
     <slot />
     <script>
       import { mountAnalytics } from '../scripts/analytics';
+      import { mountTheme } from '../scripts/theme';
 
+      mountTheme(document, window);
       mountAnalytics(document, window, import.meta.env.PUBLIC_ANALYTICS_API_URL ?? '');
     </script>
   </body>

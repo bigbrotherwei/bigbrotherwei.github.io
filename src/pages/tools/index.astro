@@ -89,7 +89,7 @@ import { tools, toolCategories } from '../../data/tools';
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding: 1rem;
-    background: rgba(255, 251, 241, 0.72);
+    background: var(--color-panel);
     border: 1px solid var(--color-line);
     border-radius: 8px;
   }
@@ -105,8 +105,8 @@ import { tools, toolCategories } from '../../data/tools';
   input {
     min-height: 2.75rem;
     padding: 0 0.9rem;
-    color: var(--color-muted);
-    background: rgba(255, 255, 255, 0.58);
+    color: var(--color-text);
+    background: var(--color-input);
     border: 1px solid var(--color-line);
     border-radius: 6px;
   }
@@ -119,17 +119,17 @@ import { tools, toolCategories } from '../../data/tools';
 
   .tool-tags button {
     padding: 0.36rem 0.7rem;
-    color: var(--color-ink);
-    background: rgba(57, 127, 125, 0.1);
-    border: 1px solid rgba(57, 127, 125, 0.24);
+    color: var(--color-text);
+    background: var(--color-code);
+    border: 1px solid var(--color-line);
     border-radius: 999px;
     cursor: pointer;
     font-size: 0.9rem;
   }
 
   .tool-tags button[aria-pressed='true'] {
-    color: #fffaf1;
-    background: var(--color-teal);
+    color: var(--color-action-text);
+    background: var(--color-action);
   }
 
   [data-empty-state] {
@@ -140,6 +140,11 @@ import { tools, toolCategories } from '../../data/tools';
 
   .tool-result-count {
     margin: 1.5rem 0 0;
-    color: rgba(255, 250, 241, 0.84);
+    color: var(--color-scene-muted);
+  }
+
+  :where(input, .tool-tags button):focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
   }
 </style>

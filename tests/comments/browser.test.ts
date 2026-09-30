@@ -14,10 +14,14 @@ class ElementStub {
   crossOrigin = '';
   children: ElementStub[] = [];
   contentWindow = {};
+  messages: Array<{ data: unknown; origin: string }> = [];
   attributes = new Map<string, string>();
   listeners = new Map<string, Listener>();
 
-  constructor(tagName: string) { this.tagName = tagName; }
+  constructor(tagName: string) {
+    this.tagName = tagName;
+    this.contentWindow = { postMessage: (data: unknown, origin: string) => { this.messages.push({ data, origin }); } };
+  }
 
   setAttribute(name: string, value: string): void { this.attributes.set(name, value); }
   getAttribute(name: string): string | null { return this.attributes.get(name) ?? null; }
@@ -29,7 +33,7 @@ class ElementStub {
   dispatch(name: string, event?: unknown): void { this.listeners.get(name)?.(event); }
 }
 
-function fixture(configured = true) {
+function fixture(configured = true, theme = 'light') {
   const section = new ElementStub('section');
   const button = new ElementStub('button');
   const status = new ElementStub('p');
@@ -60,12 +64,23 @@ function fixture(configured = true) {
     ['[data-comment-embed]', embed],
   ]);
   const window = new ElementStub('window');
+  const root = new ElementStub('html');
+  root.setAttribute('data-theme', theme);
+  const listeners = new Map<string, Listener>();
   const document = {
+    documentElement: root,
     querySelector: (selector: string) => nodes.get(selector) ?? null,
     createElement: (tagName: string) => new ElementStub(tagName),
+    addEventListener: (name: string, listener: Listener) => { listeners.set(name, listener); },
     defaultView: window,
   } as unknown as Document;
-  return { document, window, button, status, fallback, embed };
+  return {
+    document, window, root, button, status, fallback, embed,
+    changeTheme(theme: string) {
+      root.setAttribute('data-theme', theme);
+      listeners.get('themechange')?.({ detail: { theme } });
+    },
+  };
 }
 
 test('script is absent until click, then configured once for article pathname mapping', () => {
@@ -87,6 +102,7 @@ test('script is absent until click, then configured once for article pathname ma
     'data-mapping': 'pathname',
     'data-strict': '1',
     'data-lang': 'zh-CN',
+    'data-theme': 'light',
   });
   assert.equal(status.textContent, '评论加载中…');
   button.dispatch('click');
@@ -100,6 +116,125 @@ test('script is absent until click, then configured once for article pathname ma
   button.dispatch('click');
   assert.equal(embed.children.length, 1, 'retry replaces the previous embed');
   assert.notEqual(embed.children[0], script);
+});
+
+test('first Giscus request uses the effective theme without loading before click', () => {
+  const { document, button, embed } = fixture(true, 'dark');
+  mountArticleComments(document);
+  assert.equal(embed.children.length, 0);
+  button.dispatch('click');
+  assert.equal(embed.children[0].getAttribute('data-theme'), 'dark');
+});
+
+test('theme changes before click do not request Giscus and click uses the latest theme', () => {
+  const { document, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  changeTheme('dark');
+  assert.equal(embed.children.length, 0);
+  button.dispatch('click');
+  assert.equal(embed.children[0].getAttribute('data-theme'), 'dark');
+});
+
+test('theme changes after load update the Giscus iframe without replacing it', () => {
+  const { document, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const script = embed.children[0];
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  embed.dispatch('load', { target: iframe });
+  changeTheme('dark');
+  assert.deepEqual(iframe.messages, [{
+    data: { giscus: { setConfig: { theme: 'light' } } },
+    origin: 'https://giscus.app',
+  }, {
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
+  }]);
+  assert.deepEqual(embed.children, [script, iframe]);
+});
+
+test('iframe load reconciles a switch back to the click-time theme', () => {
+  const { document, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const script = embed.children[0];
+  changeTheme('dark');
+  script.dispatch('load');
+  changeTheme('light');
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  embed.dispatch('load', { target: iframe });
+  assert.deepEqual(iframe.messages, [{
+    data: { giscus: { setConfig: { theme: 'light' } } },
+    origin: 'https://giscus.app',
+  }]);
+});
+
+test('theme switched before iframe readiness is reconciled on each iframe load', () => {
+  const { document, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const script = embed.children[0];
+  changeTheme('dark');
+  changeTheme('light');
+  changeTheme('dark');
+  assert.equal(script.getAttribute('data-theme'), 'dark');
+  assert.equal(embed.querySelector('iframe'), null);
+
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  embed.dispatch('load', { target: iframe });
+  embed.dispatch('load', { target: iframe });
+  assert.deepEqual(iframe.messages, [{
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
+  }, {
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
+  }]);
+  assert.deepEqual(embed.children, [script, iframe]);
+});
+
+test('reloaded Giscus iframe receives the effective theme again', () => {
+  const { document, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  embed.dispatch('load', { target: iframe });
+  changeTheme('dark');
+  embed.dispatch('load', { target: iframe });
+  assert.deepEqual(iframe.messages.at(-1), {
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
+  });
+  assert.equal(iframe.messages.length, 3);
+});
+
+test('late iframe load from a failed attempt cannot update a retry', () => {
+  const { document, window, button, embed, changeTheme } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  changeTheme('dark');
+  const oldFrame = new ElementStub('iframe');
+  embed.appendChild(oldFrame);
+  window.dispatch('message', { origin: 'https://giscus.app', source: oldFrame.contentWindow, data: { giscus: { error: 'failed' } } });
+  button.dispatch('click');
+  const currentFrame = new ElementStub('iframe');
+  embed.appendChild(currentFrame);
+  embed.dispatch('load', { target: oldFrame });
+  embed.dispatch('load', { target: currentFrame });
+  assert.deepEqual(oldFrame.messages, []);
+  assert.deepEqual(currentFrame.messages, [{
+    data: { giscus: { setConfig: { theme: 'dark' } } },
+    origin: 'https://giscus.app',
+  }]);
+  changeTheme('light');
+  assert.deepEqual(currentFrame.messages.at(-1), {
+    data: { giscus: { setConfig: { theme: 'light' } } },
+    origin: 'https://giscus.app',
+  });
 });
 
 test('trusted Giscus error after script load restores retry and fallback', () => {

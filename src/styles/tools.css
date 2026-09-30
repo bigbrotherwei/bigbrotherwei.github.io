@@ -17,8 +17,8 @@
 
 .tool-workspace {
   padding: clamp(1rem, 3vw, 1.75rem);
-  background: rgba(255, 251, 241, 0.88);
-  border: 1px solid rgba(255, 250, 241, 0.52);
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
   border-radius: 8px;
   box-shadow: var(--shadow-sketch);
   backdrop-filter: blur(10px);
@@ -44,8 +44,8 @@
   min-height: 2.75rem;
   padding: 0.72rem 0.82rem;
   resize: vertical;
-  color: var(--color-ink);
-  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text);
+  background: var(--color-input);
   border: 1px solid var(--color-line);
   border-radius: 6px;
   font: inherit;
@@ -58,7 +58,7 @@
 
 .tool-field :where(input, textarea)[readonly] {
   color: var(--color-muted);
-  background: rgba(57, 127, 125, 0.07);
+  background: var(--color-code);
 }
 
 .tool-field--compact {
@@ -84,7 +84,7 @@
   min-height: 2.5rem;
   padding: 0.45rem 0.8rem;
   color: var(--color-muted);
-  background: rgba(255, 255, 255, 0.74);
+  background: var(--color-input);
   border: 1px solid var(--color-line);
   border-radius: 6px;
   cursor: pointer;
@@ -93,9 +93,9 @@
 }
 
 .tool-segmented button[aria-pressed='true'] {
-  color: #fffaf1;
-  background: var(--color-sky);
-  border-color: var(--color-sky);
+  color: var(--color-action-text);
+  background: var(--color-action);
+  border-color: var(--color-action);
 }
 
 .tool-toolbar {
@@ -109,8 +109,8 @@
 .tool-toolbar button {
   min-height: 2.75rem;
   padding: 0.55rem 0.9rem;
-  color: #fffaf1;
-  background: var(--color-sky);
+  color: var(--color-action-text);
+  background: var(--color-action);
   border: 1px solid transparent;
   border-radius: 6px;
   cursor: pointer;
@@ -119,7 +119,7 @@
 }
 
 .tool-toolbar button:hover {
-  background: var(--color-farm-sky);
+  background: var(--color-action-hover);
 }
 
 .tool-toolbar .tool-icon-button {
@@ -132,20 +132,24 @@
 }
 
 .tool-status {
+  width: fit-content;
   min-height: 1.5rem;
   margin: 0;
-  color: rgba(255, 250, 241, 0.9);
+  padding: 0.35rem 0.6rem;
+  color: var(--color-muted);
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
   font-size: 0.92rem;
   font-weight: 700;
   line-height: 1.5;
 }
 
 .tool-status[data-state='success'] {
-  color: #b9f5c8;
+  color: var(--color-success);
 }
 
 .tool-status[data-state='error'] {
-  color: #ffd0be;
+  color: var(--color-error);
 }
 
 .tool-results {
@@ -162,9 +166,9 @@
   margin: 0;
   padding: 0.8rem;
   overflow: auto;
-  color: var(--color-ink);
-  background: rgba(57, 127, 125, 0.08);
-  border: 1px solid rgba(57, 127, 125, 0.22);
+  color: var(--color-text);
+  background: var(--color-code);
+  border: 1px solid var(--color-line);
   border-radius: 6px;
   font: inherit;
   line-height: 1.55;
@@ -203,9 +207,16 @@
 }
 
 .tool-page :where(a, button, input, select, textarea):focus-visible {
-  outline: 3px solid var(--color-ink);
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
-  box-shadow: 0 0 0 7px #fffaf1;
+  box-shadow: 0 0 0 7px var(--color-panel);
+}
+
+.tool-page button:disabled {
+  color: var(--color-muted);
+  background: var(--color-panel-soft);
+  border-color: var(--color-line);
+  cursor: not-allowed;
 }
 
 @media (max-width: 760px) {
