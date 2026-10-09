@@ -1,5 +1,6 @@
 ---
 import PageHero from '../PageHero.astro';
+import PageViews from '../PageViews.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import type { BackgroundKey } from '../../data/backgrounds';
 
@@ -23,6 +24,7 @@ const { title, description, backgroundKey, statusId = 'tool-status', statusInsid
       <PageHero eyebrow="Tools" title={title} description={description} />
       <p class="tool-privacy-note">{privacyNote}</p>
     </div>
+    <PageViews label="页面访问量" />
     <section class="tool-workspace" aria-describedby={statusId} aria-label={`${title} 工作台`}>
       <slot />
       {statusInside && <p id={statusId} class="tool-status" role="status" aria-live="polite">准备就绪</p>}

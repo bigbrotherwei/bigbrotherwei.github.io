@@ -42,7 +42,7 @@ npm run preview
 
 导航栏的主题按钮提供“跟随系统”“浅色”“深色”三种选择。首次访问默认跟随系统，系统外观变化时页面会自动切换；手动选择浅色或深色后则保持该选择。偏好仅保存在当前浏览器，刷新和普通页面导航后仍会生效；浏览器禁用本地存储时，本页内的选择仍可使用。主题切换不会更换页面的夜景背景。
 
-文章评论仅在读者点击“加载评论”后连接 Giscus。评论会按当前主题显示，之后切换主题也会同步评论外观，不会重新加载评论或清空正在输入的内容。
+文章评论在打开文章时自动连接 Giscus。读者可以隐藏评论，再点击“显示评论”重新加载；评论会按当前主题显示，切换主题也会同步评论外观，不会清空正在输入的内容。
 
 ## 发布
 
@@ -60,7 +60,7 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
 文章评论需要仓库所有者另外开启 GitHub Discussions、安装 Giscus App，并设置四项公开的 GitHub Actions Repository Variables。具体步骤和上线检查见[文章评论配置](docs/comments-setup.zh.md)；读者可在站点的 `/privacy/` 查看[隐私说明](src/pages/privacy.astro)。未配置时文章仍可阅读和发布，评论区会显示“评论未开放”。
 
-访问统计由单独的 Cloudflare Worker 和 D1 提供，不随 Pages workflow 自动部署。手动创建、迁移、发布、验收与回退步骤见[访问统计部署指南](docs/analytics-setup.zh.md)。仓库变量 `PUBLIC_ANALYTICS_API_URL` 未设置或 API 不可用时，静态页面照常发布和阅读，统计数字显示“暂不可用”。
+访问统计使用 [Vercount](https://github.com/EvanNotFound/vercount)，展示全站 PV、UV，以及各文章和工具详情页的访问量，无需单独部署统计后端。工具页数字不代表实际按钮使用次数。启用、验收与迁移注意事项见[访问统计部署指南](docs/analytics-setup.zh.md)。服务不可用时，静态页面仍可正常阅读，统计数字显示“暂不可用”。
 
 ## 维护流程
 
@@ -321,7 +321,7 @@ Pagefind 在 Astro 静态页面生成后执行。索引只收录带 `data-pagefi
 
 - 暗色模式
 - 评论系统
-- 访问统计和当前在线人数
+- 访问统计（全站 PV、UV 和文章阅读数）
 
 ## 设计文档
 

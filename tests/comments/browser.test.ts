@@ -28,7 +28,11 @@ class ElementStub {
   addEventListener(name: string, listener: Listener): void { this.listeners.set(name, listener); }
   appendChild(child: ElementStub): void { this.children.push(child); }
   replaceChildren(): void { this.children = []; }
-  querySelector(selector: string): ElementStub | null { return selector === 'iframe' ? this.children.find((child) => child.tagName === 'iframe') ?? null : null; }
+  querySelector(selector: string): ElementStub | null {
+    if (selector === 'iframe') return this.children.find((child) => child.tagName === 'iframe') ?? null;
+    if (selector === '[data-comment-label]') return this.children.find((child) => child.getAttribute('data-comment-label') !== null) ?? null;
+    return null;
+  }
   remove(): void { /* Replaced by the parent in the test fixture below. */ }
   dispatch(name: string, event?: unknown): void { this.listeners.get(name)?.(event); }
 }
@@ -36,6 +40,10 @@ class ElementStub {
 function fixture(configured = true, theme = 'light') {
   const section = new ElementStub('section');
   const button = new ElementStub('button');
+  const label = new ElementStub('span');
+  label.setAttribute('data-comment-label', '');
+  label.textContent = '隐藏评论';
+  button.appendChild(label);
   const status = new ElementStub('p');
   const fallback = new ElementStub('a');
   const embed = new ElementStub('div');
@@ -75,7 +83,7 @@ function fixture(configured = true, theme = 'light') {
     defaultView: window,
   } as unknown as Document;
   return {
-    document, window, root, button, status, fallback, embed,
+    document, window, root, button, label, status, fallback, embed,
     changeTheme(theme: string) {
       root.setAttribute('data-theme', theme);
       listeners.get('themechange')?.({ detail: { theme } });
@@ -83,12 +91,34 @@ function fixture(configured = true, theme = 'light') {
   };
 }
 
-test('script is absent until click, then configured once for article pathname mapping', () => {
-  const { document, button, status, fallback, embed } = fixture();
+test('configured article loads Giscus on mount and can hide and show comments', () => {
+  const { document, button, label, status, embed } = fixture();
   mountArticleComments(document);
+  assert.equal(embed.children.length, 1);
+  assert.equal(embed.children[0].src, 'https://giscus.app/client.js');
+  assert.equal(label.textContent, '隐藏评论');
+  assert.equal(status.textContent, '评论加载中…');
+  assert.equal(button.getAttribute('aria-expanded'), 'true');
+
+  const firstScript = embed.children[0];
+  button.dispatch('click');
   assert.equal(embed.children.length, 0);
+  assert.equal(label.textContent, '显示评论');
+  assert.equal(status.textContent, '评论已隐藏');
+  assert.equal(button.getAttribute('aria-expanded'), 'false');
+  firstScript.dispatch('error');
+  assert.equal(status.textContent, '评论已隐藏');
 
   button.dispatch('click');
+  assert.equal(embed.children.length, 1);
+  assert.notEqual(embed.children[0], firstScript);
+  assert.equal(label.textContent, '隐藏评论');
+  assert.equal(button.getAttribute('aria-expanded'), 'true');
+});
+
+test('configured article mounts Giscus with pathname mapping and can reconnect after hiding', () => {
+  const { document, button, label, status, fallback, embed } = fixture();
+  mountArticleComments(document);
   assert.equal(embed.children.length, 1);
   const script = embed.children[0];
   assert.equal(script.src, 'https://giscus.app/client.js');
@@ -105,30 +135,30 @@ test('script is absent until click, then configured once for article pathname ma
     'data-theme': 'light',
   });
   assert.equal(status.textContent, '评论加载中…');
-  button.dispatch('click');
-  assert.equal(embed.children.length, 1);
   script.dispatch('load');
   assert.equal(button.hidden, false);
   assert.equal(button.disabled, false);
-  assert.equal(fallback.hidden, false);
-  assert.match(status.textContent, /评论/);
+  assert.equal(fallback.hidden, true);
+  assert.equal(status.textContent, '');
   embed.appendChild(new ElementStub('div'));
   button.dispatch('click');
-  assert.equal(embed.children.length, 1, 'retry replaces the previous embed');
+  assert.equal(embed.children.length, 0, 'hiding removes the previous embed');
+  assert.equal(label.textContent, '显示评论');
+  button.dispatch('click');
+  assert.equal(embed.children.length, 1, 'showing loads a fresh embed');
   assert.notEqual(embed.children[0], script);
 });
 
-test('first Giscus request uses the effective theme without loading before click', () => {
-  const { document, button, embed } = fixture(true, 'dark');
+test('automatic Giscus request uses the effective theme', () => {
+  const { document, embed } = fixture(true, 'dark');
   mountArticleComments(document);
-  assert.equal(embed.children.length, 0);
-  button.dispatch('click');
   assert.equal(embed.children[0].getAttribute('data-theme'), 'dark');
 });
 
-test('theme changes before click do not request Giscus and click uses the latest theme', () => {
+test('theme changes while hidden do not request Giscus and showing uses the latest theme', () => {
   const { document, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
+  button.dispatch('click');
   changeTheme('dark');
   assert.equal(embed.children.length, 0);
   button.dispatch('click');
@@ -138,7 +168,6 @@ test('theme changes before click do not request Giscus and click uses the latest
 test('theme changes after load update the Giscus iframe without replacing it', () => {
   const { document, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   const script = embed.children[0];
   const iframe = new ElementStub('iframe');
   embed.appendChild(iframe);
@@ -157,7 +186,6 @@ test('theme changes after load update the Giscus iframe without replacing it', (
 test('iframe load reconciles a switch back to the click-time theme', () => {
   const { document, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   const script = embed.children[0];
   changeTheme('dark');
   script.dispatch('load');
@@ -174,7 +202,6 @@ test('iframe load reconciles a switch back to the click-time theme', () => {
 test('theme switched before iframe readiness is reconciled on each iframe load', () => {
   const { document, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   const script = embed.children[0];
   changeTheme('dark');
   changeTheme('light');
@@ -199,7 +226,6 @@ test('theme switched before iframe readiness is reconciled on each iframe load',
 test('reloaded Giscus iframe receives the effective theme again', () => {
   const { document, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   const iframe = new ElementStub('iframe');
   embed.appendChild(iframe);
   embed.dispatch('load', { target: iframe });
@@ -215,7 +241,6 @@ test('reloaded Giscus iframe receives the effective theme again', () => {
 test('late iframe load from a failed attempt cannot update a retry', () => {
   const { document, window, button, embed, changeTheme } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   changeTheme('dark');
   const oldFrame = new ElementStub('iframe');
   embed.appendChild(oldFrame);
@@ -240,7 +265,6 @@ test('late iframe load from a failed attempt cannot update a retry', () => {
 test('trusted Giscus error after script load restores retry and fallback', () => {
   const { document, window, button, status, fallback, embed } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   embed.children[0].dispatch('load');
   const iframe = new ElementStub('iframe');
   embed.appendChild(iframe);
@@ -255,10 +279,24 @@ test('trusted Giscus error after script load restores retry and fallback', () =>
   assert.equal(embed.children.length, 1);
 });
 
+test('missing discussion keeps the first-comment widget open', () => {
+  const { document, window, button, status, embed } = fixture();
+  mountArticleComments(document);
+  const script = embed.children[0];
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  window.dispatch('message', {
+    origin: 'https://giscus.app',
+    source: iframe.contentWindow,
+    data: { giscus: { error: 'Discussion not found' } },
+  });
+  assert.deepEqual(embed.children, [script, iframe]);
+  assert.doesNotMatch(status.textContent, /加载失败/);
+});
+
 test('script load cannot overwrite an earlier Giscus failure', () => {
   const { document, window, button, status, embed } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   const script = embed.children[0];
   const iframe = new ElementStub('iframe');
   embed.appendChild(iframe);
@@ -271,7 +309,6 @@ test('script load cannot overwrite an earlier Giscus failure', () => {
 test('error from removed Giscus iframe cannot fail a retry', () => {
   const { document, window, button, status, embed } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   const oldFrame = new ElementStub('iframe');
   embed.appendChild(oldFrame);
   window.dispatch('message', { origin: 'https://giscus.app', source: oldFrame.contentWindow, data: { giscus: { error: 'initial' } } });
@@ -287,7 +324,6 @@ test('error from removed Giscus iframe cannot fail a retry', () => {
 test('script error restores retry and shows Discussions fallback', () => {
   const { document, button, status, fallback, embed } = fixture();
   mountArticleComments(document);
-  button.dispatch('click');
   embed.children[0].dispatch('error');
   assert.equal(status.textContent, '评论加载失败，请重试或前往 GitHub Discussions。');
   assert.equal(button.disabled, false);

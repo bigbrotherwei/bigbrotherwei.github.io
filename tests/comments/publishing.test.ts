@@ -22,7 +22,7 @@ test('Pages build receives all four public Giscus variables', () => {
   }
 });
 
-test('configured publishing still waits for a click and includes Giscus attributes', () => {
+test('configured publishing prepares automatic comments and includes Giscus attributes', () => {
   const output = mkdtempSync(path.join(tmpdir(), 'comments-configured-'));
   try {
     const env = {
@@ -43,6 +43,7 @@ test('configured publishing still waits for a click and includes Giscus attribut
     for (const post of posts) {
       const article = readFileSync(path.join(output, 'posts', post.name, 'index.html'), 'utf8');
       assert.match(article, /<button[^>]+data-comment-load/, post.name);
+      assert.match(article, /data-comment-label[^>]*>隐藏评论<\/span>/, post.name);
       assert.match(article, /data-repo="bigbrotherwei\/bigbrotherwei\.github\.io"/, post.name);
       assert.match(article, /data-repo-id="R_kgDOExample"/, post.name);
       assert.match(article, /data-category="Comments"/, post.name);

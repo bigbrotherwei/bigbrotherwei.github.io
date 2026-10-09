@@ -11,10 +11,9 @@ const attributes = config ? giscusAttributes(config) : {};
     <p class="eyebrow">Discussion</p>
     <h2 id="article-comments-title">评论</h2>
   </div>
-  {config && <p class="article-comments__notice">加载评论后将连接 GitHub 服务。</p>}
   <p class="article-comments__notice"><a href="/privacy/">隐私说明</a></p>
   <div class="article-comments__actions">
-    {config && <button type="button" class="article-comments__load" data-comment-load><MessageCircle aria-hidden="true" size={18} />加载评论</button>}
+    {config && <button type="button" class="article-comments__load" data-comment-load aria-controls="article-comment-embed" aria-expanded="true"><MessageCircle aria-hidden="true" size={18} /><span data-comment-label>隐藏评论</span></button>}
     <p class="article-comments__status" data-comment-status aria-live="polite">{config ? '' : '评论未开放'}</p>
     <a
       href="https://github.com/bigbrotherwei/bigbrotherwei.github.io/discussions"
@@ -24,7 +23,7 @@ const attributes = config ? giscusAttributes(config) : {};
       hidden
     >前往 GitHub Discussions</a>
   </div>
-  <div class="article-comments__embed" data-comment-embed></div>
+  <div id="article-comment-embed" class="article-comments__embed" data-comment-embed></div>
 </section>
 
 <style>
