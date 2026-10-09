@@ -1,6 +1,6 @@
 # 文章评论配置
 
-文章评论使用公开仓库的 GitHub Discussions 和 Giscus。读者点击“加载评论”后才连接 Giscus；未完成配置时，文章显示“评论未开放”，静态站仍可正常构建和发布。
+文章评论使用公开仓库的 GitHub Discussions 和 Giscus。配置完成后，读者打开文章即自动连接 Giscus；可以点击“隐藏评论”移除评论框，再点击“显示评论”重新加载。未完成配置时，文章显示“评论未开放”，静态站仍可正常构建和发布。
 
 ## 仓库准备
 
@@ -24,6 +24,6 @@
 
 ## 上线检查与回退
 
-发布后打开一篇文章，在点击前确认浏览器未请求 `giscus.app/client.js`。点击后检查评论区是否加载，并用 GitHub 账号发表一条测试评论，确认它出现在该文章路径对应的 Discussion。首次评论前，Giscus 可能提示 `Discussion not found`，表示当前文章尚无对应 Discussion；评论框仍应可用，提交首条评论后才会创建对应 Discussion。再检查窄屏布局和真正加载失败时的重试、Discussions 链接。
+发布后打开一篇文章，确认浏览器自动请求 `giscus.app/client.js` 且评论区显示。点击“隐藏评论”应移除评论框，点击“显示评论”应重新加载。用 GitHub 账号发表一条测试评论，确认它出现在该文章路径对应的 Discussion。首次评论前，Giscus 可能提示 `Discussion not found`，表示当前文章尚无对应 Discussion；评论框仍应可用，提交首条评论后才会创建对应 Discussion。再检查窄屏布局和真正加载失败时的重试、Discussions 链接。
 
 需要临时停用时，清除任一项公开变量并重新运行 Pages 构建；文章阅读不受影响，评论区将显示“评论未开放”。已在 GitHub Discussions 中的评论不会被删除。隐私说明见站点的 `/privacy/` 页面。
