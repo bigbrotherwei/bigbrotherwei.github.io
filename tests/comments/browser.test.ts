@@ -255,6 +255,22 @@ test('trusted Giscus error after script load restores retry and fallback', () =>
   assert.equal(embed.children.length, 1);
 });
 
+test('missing discussion keeps the first-comment widget open', () => {
+  const { document, window, button, status, embed } = fixture();
+  mountArticleComments(document);
+  button.dispatch('click');
+  const script = embed.children[0];
+  const iframe = new ElementStub('iframe');
+  embed.appendChild(iframe);
+  window.dispatch('message', {
+    origin: 'https://giscus.app',
+    source: iframe.contentWindow,
+    data: { giscus: { error: 'Discussion not found' } },
+  });
+  assert.deepEqual(embed.children, [script, iframe]);
+  assert.doesNotMatch(status.textContent, /加载失败/);
+});
+
 test('script load cannot overwrite an earlier Giscus failure', () => {
   const { document, window, button, status, embed } = fixture();
   mountArticleComments(document);

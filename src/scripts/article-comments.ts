@@ -45,7 +45,9 @@ export function mountArticleComments(document: Document): void {
     if (event.source !== embed.querySelector('iframe')?.contentWindow) return;
     const data = event.data;
     if (!data || typeof data !== 'object' || !data.giscus || typeof data.giscus !== 'object') return;
-    if (typeof data.giscus.error === 'string') showFailure();
+    if (typeof data.giscus.error === 'string' && data.giscus.error.trim().replace(/\.$/, '') !== 'Discussion not found') {
+      showFailure();
+    }
   });
 
   document.addEventListener('themechange', (event) => {
