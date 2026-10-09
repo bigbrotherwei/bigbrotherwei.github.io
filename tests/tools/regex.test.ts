@@ -63,6 +63,34 @@ test('renders match and capture text without creating HTML elements', () => {
   assert.match(summarizeRegexResults(result.value), /捕获 1：<img/);
 });
 
+test('caps rendered captures while retaining every match row and announcing omissions', () => {
+  const result = runRegex('()'.repeat(200), 'g', 'a'.repeat(9));
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.value.matches.length, 10);
+  const document = new JSDOM('').window.document;
+  const target = document.createElement('div');
+  renderRegexResults(target, result.value);
+  assert.equal(target.querySelectorAll('.tool-regex-row').length, 10);
+  assert.equal(target.querySelectorAll('.tool-regex-capture').length, 1000);
+  assert.match(target.firstElementChild?.textContent ?? '', /共 2000 个捕获组，仅显示前 1000 个/);
+});
+
+test('keeps DOM size bounded for 200 captures across 1000 matches', () => {
+  const result = runRegex('()'.repeat(200), 'g', 'a'.repeat(999));
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.value.matches.length, 1000);
+  assert.equal(result.value.truncated, false);
+  const document = new JSDOM('').window.document;
+  const target = document.createElement('div');
+  renderRegexResults(target, result.value);
+  assert.equal(target.querySelectorAll('.tool-regex-row').length, 1000);
+  assert.equal(target.querySelectorAll('.tool-regex-capture').length, 1000);
+  assert.ok(target.querySelectorAll('*').length < 5000);
+  assert.match(target.firstElementChild?.textContent ?? '', /共 200000 个捕获组，仅显示前 1000 个/);
+});
+
 test('page connects worker, lifecycle, clipboard and safe renderer', () => {
   const source = readFileSync(new URL('../../src/pages/tools/regex.astro', import.meta.url), 'utf8');
   assert.match(source, /new Worker\(new URL\('\.\.\/\.\.\/scripts\/regex-worker\.ts', import\.meta\.url\)/);

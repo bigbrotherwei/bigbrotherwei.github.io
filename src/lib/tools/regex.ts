@@ -52,6 +52,14 @@ export const summarizeRegexResults = ({ matches, truncated }: RegexResults): str
 export const renderRegexResults = (target: HTMLElement, { matches, truncated }: RegexResults): void => {
   const document = target.ownerDocument;
   const fragment = document.createDocumentFragment();
+  const captureLimit = 1000;
+  const totalCaptures = matches.reduce((total, match) => total + match.captures.length, 0);
+  let renderedCaptures = 0;
+  if (totalCaptures > captureLimit) {
+    const notice = document.createElement('p');
+    notice.textContent = `共 ${totalCaptures} 个捕获组，仅显示前 ${captureLimit} 个。`;
+    fragment.append(notice);
+  }
   for (const { start, end, text, captures } of matches) {
     const row = document.createElement('div');
     row.className = 'tool-regex-row';
@@ -62,12 +70,14 @@ export const renderRegexResults = (target: HTMLElement, { matches, truncated }: 
     content.className = 'tool-regex-content';
     content.append(document.createTextNode(text || '∅'));
     row.append(position, content);
-    captures.forEach((capture, index) => {
+    for (let index = 0; index < captures.length && renderedCaptures < captureLimit; index += 1) {
+      const capture = captures[index];
       const group = document.createElement('span');
       group.className = 'tool-regex-capture';
       group.append(document.createTextNode(`捕获 ${index + 1}：${capture ?? '未匹配'}`));
       row.append(group);
-    });
+      renderedCaptures += 1;
+    }
     fragment.append(row);
   }
   if (truncated) {
