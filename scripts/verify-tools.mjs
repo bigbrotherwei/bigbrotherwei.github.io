@@ -35,8 +35,7 @@ if (!existsSync(join(root, registryPath))) {
     },
     'text-diff': {
       logicModule: 'text-diff.ts',
-      logicCalls: ['compareText', 'renderDiff', 'summarizeDiff', 'swapDiffInputs'],
-      toolResultCalls: ['compareText'],
+      logicCalls: ['createTextDiffRunner', 'renderDiff', 'summarizeDiff', 'swapDiffInputs'],
       browserModule: 'browser.ts',
       browserCalls: ['copyText'],
     },

@@ -6,7 +6,7 @@ const tool = tools.find(({ slug }) => slug === 'text-diff');
 if (!tool) throw new Error('缺少文本差异对比工具注册信息');
 ---
 
-<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-text-diff" statusId="text-diff-status">
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-text-diff" statusId="text-diff-status" statusInside>
   <div class="tool-diff-inputs">
     <div class="tool-field">
       <label for="text-diff-old">旧文本</label>
@@ -36,7 +36,7 @@ if (!tool) throw new Error('缺少文本差异对比工具注册信息');
 </ToolLayout>
 
 <script>
-  import { compareText, renderDiff, summarizeDiff, swapDiffInputs } from '../../lib/tools/text-diff.ts';
+  import { createTextDiffRunner, renderDiff, summarizeDiff, swapDiffInputs } from '../../lib/tools/text-diff.ts';
   import type { DiffChunk, DiffMode } from '../../lib/tools/text-diff.ts';
   import { copyText } from '../../lib/tools/browser.ts';
 
@@ -52,25 +52,39 @@ if (!tool) throw new Error('缺少文本差异对比工具注册信息');
     throw new Error('文本差异工作台缺少必要控件');
   }
 
+  const runner = createTextDiffRunner(() => new Worker(new URL('../../scripts/text-diff-worker.ts', import.meta.url), { type: 'module' }));
   let mode: DiffMode = 'line';
   let chunks: DiffChunk[] = [];
   let hasResult = false;
+  let isComparing = false;
+  let revision = 0;
   const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
     status.textContent = message;
     if (state === 'idle') delete status.dataset.state;
     else status.dataset.state = state;
   };
   const invalidate = () => {
+    revision += 1;
+    runner.cancel();
     chunks = [];
     hasResult = false;
+    isComparing = false;
     output.replaceChildren();
     copyButton.disabled = true;
     showStatus('文本已更改，请重新对比');
   };
-  const compare = () => {
-    const result = compareText(oldInput.value, newInput.value, mode);
+  const compare = async () => {
+    const currentRevision = ++revision;
+    isComparing = true;
+    hasResult = false;
+    chunks = [];
+    output.replaceChildren();
+    copyButton.disabled = true;
+    showStatus('正在对比');
+    const result = await runner.run(oldInput.value, newInput.value, mode);
+    if (currentRevision !== revision) return;
+    isComparing = false;
     if (!result.ok) {
-      invalidate();
       showStatus(result.error, 'error');
       return;
     }
@@ -93,14 +107,14 @@ if (!tool) throw new Error('缺少文本差异对比工具注册信息');
       document.querySelectorAll<HTMLButtonElement>('[data-diff-mode]').forEach((option) => {
         option.setAttribute('aria-pressed', String(option === button));
       });
-      if (hasResult) compare();
+      if (hasResult || isComparing) void compare();
     });
   });
   swapButton.addEventListener('click', () => {
     const swapped = swapDiffInputs(oldInput.value, newInput.value);
     oldInput.value = swapped.oldText;
     newInput.value = swapped.newText;
-    if (hasResult) compare();
+    if (hasResult || isComparing) void compare();
     else invalidate();
     oldInput.focus();
   });
@@ -115,4 +129,5 @@ if (!tool) throw new Error('缺少文本差异对比工具注册信息');
     const result = await copyText(summarizeDiff(chunks));
     showStatus(result.ok ? '已复制差异摘要' : result.error, result.ok ? 'success' : 'error');
   });
+  window.addEventListener('pagehide', () => runner.dispose());
 </script>

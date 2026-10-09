@@ -78,15 +78,24 @@ test('swap reverses old and new input and summary copies plain changes', () => {
   assert.equal(summarizeDiff(result.value), '删除：旧\n新增：新\n');
 });
 
-test('page contract connects comparison and clipboard actions', () => {
+test('copied multiline changes label every line, including blank lines', () => {
+  assert.equal(summarizeDiff([
+    { kind: 'remove', value: '旧一\n\n旧三\n' },
+    { kind: 'add', value: '新一\n新二' },
+  ]), '删除：旧一\n删除：\n删除：旧三\n新增：新一\n新增：新二\n');
+});
+
+test('page contract connects the worker runner and clipboard actions', () => {
   const source = readFileSync(new URL('../../src/pages/tools/text-diff.astro', import.meta.url), 'utf8');
   assert.deepEqual(validateToolPageContract(source, {
     slug: 'text-diff',
     backgroundKey: 'tool-text-diff',
     logicModule: 'text-diff.ts',
-    logicCalls: ['compareText', 'renderDiff', 'summarizeDiff', 'swapDiffInputs'],
-    toolResultCalls: ['compareText'],
+    logicCalls: ['createTextDiffRunner', 'renderDiff', 'summarizeDiff', 'swapDiffInputs'],
     browserModule: 'browser.ts',
     browserCalls: ['copyText'],
   }), []);
+  assert.match(source, /new Worker\(new URL\('\.\.\/\.\.\/scripts\/text-diff-worker\.ts', import\.meta\.url\)/);
+  assert.doesNotMatch(source, /\bcompareText\s*\(/);
+  assert.match(source, /statusInside/);
 });
