@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { createMarkdownPreviewController, importMarkdownFile, renderMarkdown } from '../../src/lib/tools/markdown.ts';
@@ -137,4 +138,34 @@ test('a failed import cannot leave an older preview behind after a pending edit'
   await controller.importFile({ name: 'wrong.txt', size: 10, text: async () => '# Wrong' });
   assert.equal(preview.innerHTML, '');
   assert.match(status.textContent ?? '', /\.md/);
+});
+
+test('preview update reports reflow for scroll position maintenance', () => {
+  const document = window.document;
+  const input = document.createElement('textarea');
+  const preview = document.createElement('div');
+  const status = document.createElement('p');
+  let updates = 0;
+  const controller = createMarkdownPreviewController({
+    input, preview, status, window,
+    onPreviewUpdated: () => { updates += 1; },
+  });
+  input.value = '# Example';
+  controller.updatePreview();
+  input.value = 'a'.repeat(mib + 1);
+  controller.updatePreview();
+  controller.clear();
+  assert.equal(updates, 3);
+});
+
+test('Markdown alone opts into a wider equal-height workspace', () => {
+  const page = readFileSync(new URL('../../src/pages/tools/markdown.astro', import.meta.url), 'utf8');
+  const layout = readFileSync(new URL('../../src/components/tools/ToolLayout.astro', import.meta.url), 'utf8');
+  const styles = readFileSync(new URL('../../src/styles/tools.css', import.meta.url), 'utf8');
+  assert.match(page, /\bwide\b/);
+  assert.match(page, /createSyncScroll/);
+  assert.match(layout, /tool-page--wide/);
+  assert.match(styles, /\.tool-page--wide/);
+  assert.match(styles, /\.tool-markdown-grid #markdown-input[\s\S]*height:/);
+  assert.match(styles, /\.tool-markdown-preview[\s\S]*height:/);
 });

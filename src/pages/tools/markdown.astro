@@ -12,6 +12,7 @@ if (!tool) throw new Error('缺少 Markdown 工具注册信息');
   backgroundKey="tool-markdown"
   statusId="markdown-status"
   statusInside
+  wide
   privacyNote="Markdown 文件只在浏览器中读取，不会上传或保存。预览中的远程图片会由浏览器向图片地址发出请求。"
 >
   <div class="tool-markdown-grid">
@@ -38,6 +39,7 @@ if (!tool) throw new Error('缺少 Markdown 工具注册信息');
 
 <script>
   import { createMarkdownPreviewController } from '../../lib/tools/markdown.ts';
+  import { createSyncScroll } from '../../lib/tools/sync-scroll.ts';
 
   const input = document.querySelector<HTMLTextAreaElement>('#markdown-input');
   const fileInput = document.querySelector<HTMLInputElement>('#markdown-file');
@@ -45,9 +47,15 @@ if (!tool) throw new Error('缺少 Markdown 工具注册信息');
   const status = document.querySelector<HTMLElement>('#markdown-status');
   const clear = document.querySelector<HTMLButtonElement>('#markdown-clear');
   if (!input || !preview || !status) throw new Error('Markdown 工作台缺少必要控件');
-  const controller = createMarkdownPreviewController({ input, preview, status, window });
+  const desktop = window.matchMedia('(min-width: 761px)');
+  const sync = createSyncScroll({ source: input, preview, enabled: () => desktop.matches });
+  const controller = createMarkdownPreviewController({ input, preview, status, window, onPreviewUpdated: sync.refresh });
 
-  input.addEventListener('input', controller.schedulePreview);
+  input.addEventListener('input', () => {
+    sync.onSourceScroll();
+    controller.schedulePreview();
+  });
+  desktop.addEventListener('change', sync.refresh);
   fileInput?.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
     if (!file) return;
