@@ -1,8 +1,7 @@
 import { diffLines, diffWordsWithSpace } from 'diff';
 import type { ToolResult } from './result.ts';
 import type { DiffChunk, DiffMode } from './text-diff.ts';
-
-const maxLength = 100_000;
+import { validateDiffLength } from './text-diff-limits.ts';
 
 export const compareText = (
   oldText: string,
@@ -10,9 +9,8 @@ export const compareText = (
   mode: DiffMode,
   timeoutMs = 1000,
 ): ToolResult<DiffChunk[]> => {
-  if (oldText.length > maxLength || newText.length > maxLength) {
-    return { ok: false, error: '每份文本最多 100,000 个字符，请缩短后重试' };
-  }
+  const length = validateDiffLength(oldText, newText);
+  if (!length.ok) return length;
 
   const changes = mode === 'line'
     ? diffLines(oldText, newText, { timeout: timeoutMs })

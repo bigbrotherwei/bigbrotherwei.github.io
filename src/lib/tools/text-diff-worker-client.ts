@@ -1,5 +1,6 @@
 import type { ToolResult } from './result.ts';
 import type { DiffChunk, DiffMode } from './text-diff.ts';
+import { validateDiffLength } from './text-diff-limits.ts';
 
 type DiffWorker = Pick<Worker, 'postMessage' | 'terminate' | 'onmessage' | 'onerror'>;
 type DiffResult = ToolResult<DiffChunk[]>;
@@ -53,6 +54,8 @@ export const createTextDiffRunner = (workerFactory: () => DiffWorker, timeoutMs 
         settle(cancelled);
         replaceWorker();
       }
+      const length = validateDiffLength(oldText, newText);
+      if (!length.ok) return Promise.resolve(length);
       const id = ++nextId;
       return new Promise((resolve) => {
         const timeout = setTimeout(() => {
@@ -81,6 +84,12 @@ export const createTextDiffRunner = (workerFactory: () => DiffWorker, timeoutMs 
       worker.onmessage = null;
       worker.onerror = null;
       worker.terminate();
+    },
+    resume() {
+      if (!disposed) return;
+      worker = workerFactory();
+      bind(worker);
+      disposed = false;
     },
   };
 };

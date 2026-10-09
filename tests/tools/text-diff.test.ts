@@ -98,4 +98,5 @@ test('page contract connects the worker runner and clipboard actions', () => {
   assert.match(source, /new Worker\(new URL\('\.\.\/\.\.\/scripts\/text-diff-worker\.ts', import\.meta\.url\)/);
   assert.doesNotMatch(source, /\bcompareText\s*\(/);
   assert.match(source, /statusInside/);
+  assert.match(source, /addEventListener\('pageshow',[\s\S]*?runner\.resume\(\)/);
 });

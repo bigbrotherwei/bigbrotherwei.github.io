@@ -129,5 +129,15 @@ if (!tool) throw new Error('缺少文本差异对比工具注册信息');
     const result = await copyText(summarizeDiff(chunks));
     showStatus(result.ok ? '已复制差异摘要' : result.error, result.ok ? 'success' : 'error');
   });
-  window.addEventListener('pagehide', () => runner.dispose());
+  window.addEventListener('pagehide', () => {
+    if (isComparing) {
+      revision += 1;
+      isComparing = false;
+      showStatus('对比已中断，请重新对比');
+    }
+    runner.dispose();
+  });
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) runner.resume();
+  });
 </script>

@@ -84,3 +84,38 @@ test('cancel and dispose settle pending requests and terminate active workers', 
   assert.equal((await leaving).ok, false);
   assert.equal(workers[1].terminated, true);
 });
+
+test('a disposed runner resumes on a fresh worker after page restoration', async () => {
+  const { runner, workers } = makeRunner();
+  const interrupted = runner.run('old', 'new', 'line');
+  const staleHandler = workers[0].onmessage;
+  runner.dispose();
+  assert.equal((await interrupted).ok, false);
+  runner.resume();
+  assert.equal(workers.length, 2);
+
+  const restored = runner.run('restored', 'current', 'word');
+  let settled = false;
+  void restored.then(() => { settled = true; });
+  staleHandler?.({ data: { id: workers[0].posted[0].id, result: { ok: true, value: [] } } } as MessageEvent);
+  await Promise.resolve();
+  assert.equal(settled, false);
+  workers[1].reply(workers[1].posted[0].id, { ok: true, value: [{ kind: 'add', value: 'current' }] });
+  assert.deepEqual(await restored, { ok: true, value: [{ kind: 'add', value: 'current' }] });
+  runner.dispose();
+});
+
+test('rejects either over-limit input before cloning it to a worker', async () => {
+  const { runner, workers } = makeRunner();
+  for (const [oldText, newText] of [['a'.repeat(100_001), ''], ['', 'b'.repeat(100_001)]]) {
+    const result = await runner.run(oldText, newText, 'line');
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.error, /100,000/);
+    assert.equal(workers[0].posted.length, 0);
+  }
+  const atLimit = runner.run('a'.repeat(100_000), '', 'line');
+  assert.equal(workers[0].posted.length, 1);
+  workers[0].reply(workers[0].posted[0].id, { ok: true, value: [] });
+  assert.equal((await atLimit).ok, true);
+  runner.dispose();
+});
