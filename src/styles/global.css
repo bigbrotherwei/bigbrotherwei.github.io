@@ -4,8 +4,8 @@
   color-scheme: light;
   --color-reading-surface: #f7f3ea;
   --color-panel: #fffaf1;
-  --color-panel-glass: rgba(255, 250, 241, 0.86);
-  --color-reading-glass: rgba(247, 243, 234, 0.91);
+  --color-panel-glass: rgba(255, 250, 241, 0.68);
+  --color-reading-glass: rgba(255, 250, 241, 0.78);
   --color-panel-soft: #ece8dd;
   --color-input: #ffffff;
   --color-text: #112333;
@@ -50,8 +50,8 @@
   color-scheme: dark;
   --color-reading-surface: #1b1d22;
   --color-panel: #2b292c;
-  --color-panel-glass: rgba(43, 41, 44, 0.84);
-  --color-reading-glass: rgba(27, 29, 34, 0.88);
+  --color-panel-glass: rgba(255, 250, 241, 0.12);
+  --color-reading-glass: rgba(255, 250, 241, 0.16);
   --color-panel-soft: #353236;
   --color-input: #242328;
   --color-text: #f2f0e5;
@@ -655,7 +655,7 @@ a.sketch-card:active {
 
 .tool-page .page-views {
   color: var(--color-scene-text);
-  background: rgba(8, 18, 31, 0.72);
+  background: rgba(255, 250, 241, 0.12);
   border-left-color: var(--color-farm-gold);
 }
 
@@ -943,7 +943,10 @@ a.sketch-card:active {
   padding: clamp(1.25rem, 3vw, 2rem);
 }
 
-.article-body.sketch-card { background: var(--color-reading-glass); }
+.article-body.sketch-card {
+  background: var(--color-reading-glass);
+  backdrop-filter: blur(3px);
+}
 
 .article-reading-layout {
   display: grid;
@@ -971,6 +974,7 @@ a.sketch-card:active {
   overflow-y: auto;
   color: var(--color-text);
   background: var(--color-panel-glass);
+  backdrop-filter: blur(3px);
   border: 1px solid var(--color-line);
   border-left: 3px solid var(--color-accent);
   border-radius: 4px;
@@ -1192,6 +1196,7 @@ html:has(.article-toc) {
   border-top: 1px solid var(--color-line);
   color: var(--color-text);
   background: var(--color-reading-glass);
+  backdrop-filter: blur(3px);
   padding: 1.5rem;
 }
 
