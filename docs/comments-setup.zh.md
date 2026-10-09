@@ -5,7 +5,7 @@
 ## 仓库准备
 
 1. 在目标公开仓库的 Settings → General → Features 中开启 **Discussions**。
-2. 在 Discussions 中创建一个供文章评论使用的分类（例如 `Comments`）。分类应允许普通讨论；由仓库维护者在 GitHub Discussions 审核内容。
+2. 在 Discussions 中选择一个供文章评论使用的分类（例如 `Announcements` 或新建 `Comments`）。Giscus 推荐公告类型分类；即使读者不能直接在 GitHub 创建公告讨论，Giscus 仍可在收到首条评论时创建对应 Discussion。由仓库维护者在 GitHub Discussions 审核内容。
 3. 由仓库所有者安装 [Giscus GitHub App](https://github.com/apps/giscus)，并授权目标仓库。此操作涉及 GitHub 账号授权，无法由本仓库代码自动完成。
 4. 打开 [Giscus 配置页](https://giscus.app/zh-CN)，选择仓库和评论分类，确认仓库与分类符合页面提示，复制生成的仓库 ID、分类名称和分类 ID。文章使用 `pathname` 严格映射；修改文章标题不会迁移评论，修改文章路径时需人工处理对应 Discussion。
 
