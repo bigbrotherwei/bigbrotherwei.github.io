@@ -45,6 +45,33 @@ test('dark theme glass reveals the scene instead of placing black panels over it
   assert.doesNotMatch(toolsCss.match(/\.tool-workspace\s*\{([^}]+)\}/)?.[1] ?? '', /backdrop-filter/);
 });
 
+test('shared content cards and large sections avoid opaque fills and double outlines', () => {
+  const globalCss = read('src/styles/global.css');
+  const toolsCss = read('src/styles/tools.css');
+  const toolIndex = read('src/pages/tools/index.astro');
+  assert.match(globalCss, /--color-glass-border:\s*rgba\(/);
+  assert.match(globalCss, /\.sketch-card\s*\{[^}]*background:\s*var\(--color-panel-glass\)/s);
+  assert.doesNotMatch(globalCss, /\.sketch-card::before/);
+  for (const selector of ['.site-stats', '.search-panel', '.tag-index__item']) {
+    const block = globalCss.match(new RegExp(`${selector.replaceAll('.', '\\.') }\\s*\\{([^}]+)\\}`))?.[1] ?? '';
+    assert.match(block, /background:\s*var\(--color-panel-glass\)/, selector);
+    assert.match(block, /border[^;]*var\(--color-glass-border\)/, selector);
+  }
+  assert.match(toolsCss.match(/\.tool-workspace\s*\{([^}]+)\}/)?.[1] ?? '', /border[^;]*var\(--color-glass-border\)/);
+  assert.match(toolIndex, /\.tool-panel\s*\{[^}]*background:\s*var\(--color-panel-glass\)/s);
+});
+
+test('Markdown editor and preview reveal the scene and glass edges stay faint', () => {
+  const globalCss = read('src/styles/global.css');
+  const toolsCss = read('src/styles/tools.css');
+  const darkTheme = globalCss.match(/:root\[data-theme="dark"\]\s*\{([^}]+)\}/)?.[1] ?? '';
+  assert.match(darkTheme, /--color-glass-border:\s*rgba\(255, 250, 241, 0\.0[0-9]\)/);
+  assert.match(toolsCss, /\.tool-markdown-grid #markdown-input\s*\{[^}]*background:\s*var\(--color-editor-glass\)/s);
+  assert.match(toolsCss, /\.tool-markdown-preview\s*\{[^}]*background:\s*var\(--color-editor-glass\)/s);
+  assert.match(globalCss, /:root\[data-theme="dark"\] \.sketch-card\s*\{[^}]*text-shadow:/s);
+  assert.match(toolsCss, /:root\[data-theme='dark'\] \.tool-markdown-grid #markdown-input[^}]*text-shadow:/s);
+});
+
 test('deployment and privacy copy describe only the active provider', () => {
   const workflow = read('.github/workflows/deploy.yml');
   const privacy = read('src/pages/privacy.astro');

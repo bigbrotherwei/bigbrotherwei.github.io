@@ -18,9 +18,8 @@
 .tool-workspace {
   padding: clamp(1rem, 3vw, 1.75rem);
   background: var(--color-panel-glass);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-glass-border);
   border-radius: 8px;
-  box-shadow: var(--shadow-sketch);
 }
 
 .tool-fields {
@@ -317,6 +316,9 @@
 
 .tool-markdown-grid #markdown-input {
   min-height: 30rem;
+  background: var(--color-editor-glass);
+  border-color: var(--color-glass-border);
+  backdrop-filter: blur(2px);
   font-family: var(--font-mono, monospace);
   font-weight: 400;
 }
@@ -361,10 +363,16 @@
   padding: 1rem;
   overflow-wrap: anywhere;
   color: var(--color-text);
-  background: var(--color-input);
-  border: 1px solid var(--color-line);
+  background: var(--color-editor-glass);
+  border: 1px solid var(--color-glass-border);
   border-radius: 6px;
+  backdrop-filter: blur(2px);
   line-height: 1.65;
+}
+
+:root[data-theme='dark'] .tool-markdown-grid #markdown-input,
+:root[data-theme='dark'] .tool-markdown-preview {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .tool-markdown-preview > :first-child { margin-top: 0; }
