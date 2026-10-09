@@ -21,6 +21,10 @@ export const backgroundKeys = [
   'tool-timestamp',
   'tool-uuid',
   'tool-text-counter',
+  'tool-images-pdf',
+  'tool-markdown',
+  'tool-text-diff',
+  'tool-regex',
 ] as const;
 
 export type BackgroundKey = (typeof backgroundKeys)[number];
@@ -134,5 +138,29 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
     mobile: '/images/backgrounds/tool-text-scriptorium-mobile.webp',
     position: 'center',
     mobilePosition: 'right center',
+  },
+  'tool-images-pdf': {
+    desktop: '/images/backgrounds/tool-images-pdf.webp',
+    mobile: '/images/backgrounds/tool-images-pdf-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-markdown': {
+    desktop: '/images/backgrounds/tool-markdown.webp',
+    mobile: '/images/backgrounds/tool-markdown-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-text-diff': {
+    desktop: '/images/backgrounds/tool-text-diff.webp',
+    mobile: '/images/backgrounds/tool-text-diff-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-regex': {
+    desktop: '/images/backgrounds/tool-regex.webp',
+    mobile: '/images/backgrounds/tool-regex-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
   },
 };

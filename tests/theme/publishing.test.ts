@@ -57,6 +57,48 @@ test('both themes define readable surfaces and control colors', () => {
   assert.equal(declarations(css, ':root[data-theme="dark"]')['--color-scene-text'], undefined);
 });
 
+test('dark reading surfaces are neutral charcoal and light surfaces stay unchanged', () => {
+  const dark = declarations(css, ':root[data-theme="dark"]');
+  for (const name of ['--color-reading-surface', '--color-panel', '--color-panel-soft', '--color-input', '--color-code']) {
+    const value = dark[name];
+    assert.match(value, /^#[0-9a-f]{6}$/i, `${name} must be a solid color`);
+    const [red, green, blue] = [1, 3, 5].map((index) => parseInt(value.slice(index, index + 2), 16));
+    assert.ok(Math.max(red, green, blue) - Math.min(red, green, blue) <= 12, `${name} should be neutral, got ${value}`);
+  }
+  assert.deepEqual(
+    ['--color-reading-surface', '--color-panel', '--color-panel-soft', '--color-input'].map((name) => declarations(css, ':root')[name]),
+    ['#f7f3ea', '#fffaf1', '#ece8dd', '#ffffff'],
+  );
+});
+
+test('dark reading text and controls meet contrast on their actual surfaces', () => {
+  const dark = declarations(css, ':root[data-theme="dark"]');
+  for (const surface of ['--color-reading-surface', '--color-panel', '--color-panel-soft', '--color-input', '--color-code']) {
+    assert.ok(contrast(dark['--color-text'], dark[surface]) >= 4.5, `body text on ${surface}`);
+    assert.ok(contrast(dark['--color-muted'], dark[surface]) >= 4.5, `secondary text on ${surface}`);
+  }
+  for (const surface of ['--color-reading-surface', '--color-panel', '--color-panel-soft']) {
+    assert.ok(contrast(dark['--color-accent'], dark[surface]) >= 4.5, `links on ${surface}`);
+  }
+  for (const surface of ['--color-action', '--color-action-hover']) {
+    assert.ok(contrast(dark['--color-action-text'], dark[surface]) >= 4.5, `button text on ${surface}`);
+  }
+  for (const surface of ['--color-panel', '--color-code', '--color-input', '--color-action']) {
+    assert.ok(contrast(dark['--color-focus'], dark[surface]) >= 3, `focus ring on ${surface}`);
+  }
+});
+
+test('dark filled controls have a visible boundary against panels', () => {
+  const dark = declarations(css, ':root[data-theme="dark"]');
+  const boundary = dark['--color-action-border'] ?? dark['--color-action'];
+  assert.ok(contrast(boundary, dark['--color-panel']) >= 3, 'filled control boundary on panel');
+  assert.ok(contrast(boundary, dark['--color-panel-soft']) >= 3, 'filled control boundary on soft panel');
+  assert.equal(declarations(toolsCss, '.tool-toolbar button').border, '1px solid var(--color-action-border)');
+  assert.equal(declarations(toolsCss, ".tool-segmented button[aria-pressed='true']")['border-color'], 'var(--color-action-border)');
+  assert.equal(declarations(catalogCss, ".tool-tags button[aria-pressed='true']")['border-color'], 'var(--color-action-border)');
+  assert.equal(declarations(css, '.article-comments__load').border, '1px solid var(--color-action-border)');
+});
+
 test('reading and tool surfaces consume semantic theme tokens', () => {
   for (const selector of ['.sketch-card', '.article-toc', '.tag-index__item', '.article-adjacent__link', '.search-panel', '.search-result', '.site-stats', '.article-reads', '.article-comments']) {
     assert.match(JSON.stringify(declarations(css, selector)), /var\(--color-/);

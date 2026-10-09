@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { validateToolPageContract } from '../../scripts/lib/tool-page-contracts.mjs';
 
 const contract = {
@@ -9,6 +10,22 @@ const contract = {
   logicCalls: ['formatJson'],
   toolResultCalls: ['formatJson'],
 };
+
+test('Markdown page contract requires its controller methods to drive events and initial render', () => {
+  const page = readFileSync(new URL('../../src/pages/tools/markdown.astro', import.meta.url), 'utf8');
+  const markdownContract = {
+    slug: 'markdown', backgroundKey: 'tool-markdown', logicModule: 'markdown.ts',
+    logicCalls: ['createMarkdownPreviewController'],
+    controllerWiring: {
+      factory: 'createMarkdownPreviewController',
+      methods: ['schedulePreview', 'importFile', 'clear', 'updatePreview'],
+    },
+  };
+  assert.deepEqual(validateToolPageContract(page, markdownContract), []);
+  const disconnected = page.replace("input.addEventListener('input', controller.schedulePreview)", "input.addEventListener('input', () => {})");
+  assert.ok(validateToolPageContract(disconnected, markdownContract)
+    .some((failure) => failure.includes('must connect createMarkdownPreviewController')));
+});
 
 test('accepts a real tool layout, paired label, event control, and invoked logic', () => {
   const source = `---

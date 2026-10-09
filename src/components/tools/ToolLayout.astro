@@ -8,9 +8,11 @@ interface Props {
   description: string;
   backgroundKey: BackgroundKey;
   statusId?: string;
+  statusInside?: boolean;
+  privacyNote?: string;
 }
 
-const { title, description, backgroundKey, statusId = 'tool-status' } = Astro.props;
+const { title, description, backgroundKey, statusId = 'tool-status', statusInside = false, privacyNote = '输入内容只在浏览器中处理，不会上传或保存。' } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description} backgroundKey={backgroundKey}>
@@ -18,11 +20,12 @@ const { title, description, backgroundKey, statusId = 'tool-status' } = Astro.pr
     <a class="back-link" href="/tools/">返回工具箱</a>
     <div data-pagefind-body data-pagefind-meta="type:工具">
       <PageHero eyebrow="Tools" title={title} description={description} />
-      <p class="tool-privacy-note">输入内容只在浏览器中处理，不会上传或保存。</p>
+      <p class="tool-privacy-note">{privacyNote}</p>
     </div>
     <section class="tool-workspace" aria-describedby={statusId} aria-label={`${title} 工作台`}>
       <slot />
+      {statusInside && <p id={statusId} class="tool-status" role="status" aria-live="polite">准备就绪</p>}
     </section>
-    <p id={statusId} class="tool-status" role="status" aria-live="polite">准备就绪</p>
+    {!statusInside && <p id={statusId} class="tool-status" role="status" aria-live="polite">准备就绪</p>}
   </main>
 </BaseLayout>

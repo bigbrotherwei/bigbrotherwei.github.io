@@ -8,6 +8,13 @@ import test from 'node:test';
 
 const siteOrigin = 'https://bigbrotherwei.github.io';
 const verifierPath = fileURLToPath(new URL('../../scripts/verify-dist.mjs', import.meta.url));
+const toolCategories = ['文本', '编码', '时间', '开发', '文件'] as const;
+const toolRoutes = ['images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64', 'url', 'timestamp', 'uuid', 'text-counter'] as const;
+const categoryForTool: Record<string, string> = {
+  'images-pdf': 'file', markdown: 'text', 'text-diff': 'text', regex: 'development',
+  json: 'development', base64: 'encoding', url: 'encoding', timestamp: 'time',
+  uuid: 'development', 'text-counter': 'text',
+};
 
 const write = (root: string, path: string, contents: string): void => {
   const target = join(root, path);
@@ -46,7 +53,15 @@ const createValidFixture = (): string => {
   write(root, 'dist/index.html', html('/', ['WebSite']));
   write(root, 'dist/posts/hello/index.html', html('/posts/hello/', ['BlogPosting', 'BreadcrumbList'], '文章'));
   write(root, 'dist/topics/hello/index.html', html('/topics/hello/', [], '专题'));
-  write(root, 'dist/tools/hello/index.html', html('/tools/hello/', [], '工具'));
+  const cards = toolRoutes.map((slug) => `<a href="/tools/${slug}/" data-tool-card data-category="${categoryForTool[slug]}" data-search="${slug}">${slug}</a>`).join('');
+  const filters = ['全部', ...toolCategories].map((label, index) => `<button data-category-filter="${['all', 'text', 'encoding', 'time', 'development', 'file'][index]}">${label}</button>`).join('');
+  write(root, 'dist/tools/index.html', html('/tools/', []).replace('</body>', `${filters}${cards}<p data-result-count>已显示 10 个工具。</p><p data-empty-state hidden>没有找到匹配的工具。</p></body>`));
+  for (const slug of toolRoutes) {
+    const notice = slug === 'markdown'
+      ? '<p class="tool-privacy-note">Markdown 文件只在浏览器中读取，不会上传或保存。预览中的远程图片会由浏览器向图片地址发出请求。</p>'
+      : slug === 'images-pdf' ? '<p class="tool-privacy-note">输入内容只在浏览器中处理，不会上传或保存。</p>' : '';
+    write(root, `dist/tools/${slug}/index.html`, html(`/tools/${slug}/`, [], '工具').replace('</body>', `${notice}</body>`));
+  }
   write(root, 'dist/projects/hello/index.html', html('/projects/hello/', [], '项目'));
   write(root, 'dist/rss.xml', `<rss><channel><item><link>${siteOrigin}/posts/hello/</link></item></channel></rss>`);
   write(root, 'dist/sitemap-index.xml', '<sitemapindex></sitemapindex>');
@@ -84,6 +99,51 @@ test('accepts complete canonical and social URL metadata', () => {
   const result = runVerifier();
 
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('rejects a missing published tool route', () => {
+  const result = runVerifier((root) => rmSync(join(root, 'dist/tools/regex'), { recursive: true }));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Missing published tool route: \/tools\/regex\//);
+});
+
+test('rejects an unlisted extra published tool route', () => {
+  const result = runVerifier((root) => {
+    write(root, 'dist/tools/extra/index.html', html('/tools/extra/', [], '工具'));
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Published tool route count must be 10/);
+});
+
+test('rejects a tool route missing from search', () => {
+  const result = runVerifier((root) => {
+    const path = join(root, 'dist/tools/markdown/index.html');
+    writeFileSync(path, readFileSync(path, 'utf8').replace(' data-pagefind-body', ''));
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Tool route is missing Pagefind body: \/tools\/markdown\//);
+});
+
+test('rejects a tool card with a wrong category and stale count', () => {
+  const result = runVerifier((root) => {
+    const path = join(root, 'dist/tools/index.html');
+    writeFileSync(path, readFileSync(path, 'utf8').replace('data-category="file"', 'data-category="text"').replace('已显示 10 个工具', '已显示 9 个工具'));
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Tool directory category mismatch: images-pdf/);
+  assert.match(result.stderr, /Tool directory initial count must be 10/);
+});
+
+test('rejects missing Markdown remote-image and PDF local-processing notices', () => {
+  const result = runVerifier((root) => {
+    for (const slug of ['markdown', 'images-pdf']) {
+      const path = join(root, `dist/tools/${slug}/index.html`);
+      writeFileSync(path, readFileSync(path, 'utf8').replace(/<p class="tool-privacy-note">.*?<\/p>/, ''));
+    }
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Markdown remote-image privacy notice/);
+  assert.match(result.stderr, /PDF local-processing privacy notice/);
 });
 
 test('rejects missing URL attributes on canonical and social metadata', async (t) => {

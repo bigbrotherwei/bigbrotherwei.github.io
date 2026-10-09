@@ -25,6 +25,31 @@ if (!existsSync(join(root, registryPath))) {
 } else {
   const { tools } = await import(pathToFileURL(join(root, registryPath)).href);
   const pageContracts = {
+    markdown: {
+      logicModule: 'markdown.ts',
+      logicCalls: ['createMarkdownPreviewController'],
+      controllerWiring: {
+        factory: 'createMarkdownPreviewController',
+        methods: ['schedulePreview', 'importFile', 'clear', 'updatePreview'],
+      },
+    },
+    'text-diff': {
+      logicModule: 'text-diff.ts',
+      logicCalls: ['createTextDiffRunner', 'renderDiff', 'summarizeDiff', 'swapDiffInputs'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
+    regex: {
+      logicModule: 'regex-worker-client.ts',
+      logicCalls: ['createRegexRunner'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
+    'images-pdf': {
+      logicModule: 'images-pdf.ts',
+      logicCalls: ['validateImageFiles', 'validateImageFileSignatures', 'normalizeImage', 'restoreQueueFocus', 'buildImagesPdf', 'startPdfDownload'],
+      toolResultCalls: ['validateImageFiles', 'validateImageFileSignatures'],
+    },
     json: {
       logicModule: 'json.ts',
       logicCalls: ['formatJson', 'minifyJson', 'validateJson'],

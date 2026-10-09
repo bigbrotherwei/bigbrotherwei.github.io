@@ -1,0 +1,59 @@
+---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'markdown');
+if (!tool) throw new Error('缺少 Markdown 工具注册信息');
+---
+
+<ToolLayout
+  title={tool.title}
+  description={tool.description}
+  backgroundKey="tool-markdown"
+  statusId="markdown-status"
+  statusInside
+  privacyNote="Markdown 文件只在浏览器中读取，不会上传或保存。预览中的远程图片会由浏览器向图片地址发出请求。"
+>
+  <div class="tool-markdown-grid">
+    <div class="tool-field">
+      <label for="markdown-input">Markdown 内容</label>
+      <textarea id="markdown-input" spellcheck="false"># Markdown 预览
+
+在左侧编辑，在右侧查看**效果**。
+
+- 标题与列表
+- 表格、代码和链接</textarea>
+      <div class="tool-toolbar" aria-label="Markdown 操作">
+        <label class="tool-file-button" for="markdown-file">打开 .md 文件</label>
+        <input id="markdown-file" type="file" accept=".md,text/markdown" />
+        <button type="button" id="markdown-clear">清空</button>
+      </div>
+    </div>
+    <section class="tool-markdown-output" aria-label="Markdown 预览">
+      <h2>预览</h2>
+      <div id="markdown-preview" class="tool-markdown-preview"></div>
+    </section>
+  </div>
+</ToolLayout>
+
+<script>
+  import { createMarkdownPreviewController } from '../../lib/tools/markdown.ts';
+
+  const input = document.querySelector<HTMLTextAreaElement>('#markdown-input');
+  const fileInput = document.querySelector<HTMLInputElement>('#markdown-file');
+  const preview = document.querySelector<HTMLElement>('#markdown-preview');
+  const status = document.querySelector<HTMLElement>('#markdown-status');
+  const clear = document.querySelector<HTMLButtonElement>('#markdown-clear');
+  if (!input || !preview || !status) throw new Error('Markdown 工作台缺少必要控件');
+  const controller = createMarkdownPreviewController({ input, preview, status, window });
+
+  input.addEventListener('input', controller.schedulePreview);
+  fileInput?.addEventListener('change', async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    await controller.importFile(file);
+    fileInput.value = '';
+  });
+  clear?.addEventListener('click', controller.clear);
+  controller.updatePreview();
+</script>

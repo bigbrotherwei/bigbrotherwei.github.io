@@ -1,6 +1,6 @@
 import type { BackgroundKey } from './backgrounds';
 
-export type ToolCategory = 'text' | 'encoding' | 'time' | 'development';
+export type ToolCategory = 'text' | 'encoding' | 'time' | 'development' | 'file';
 
 export interface ToolCategoryDefinition {
   value: ToolCategory | 'all';
@@ -23,9 +23,46 @@ export const toolCategories: readonly ToolCategoryDefinition[] = [
   { value: 'encoding', label: '编码' },
   { value: 'time', label: '时间' },
   { value: 'development', label: '开发' },
+  { value: 'file', label: '文件' },
 ];
 
 export const tools: readonly ToolDefinition[] = [
+  {
+    slug: 'images-pdf',
+    href: '/tools/images-pdf/',
+    title: '图片合并 PDF',
+    description: '按顺序将图片排入 A4 页面，合并下载为 PDF。',
+    category: 'file',
+    backgroundKey: 'tool-images-pdf',
+    searchTerms: '图片 照片 合并 pdf jpeg png webp 文件',
+  },
+  {
+    slug: 'markdown',
+    href: '/tools/markdown/',
+    title: 'Markdown 预览',
+    description: '即时查看 Markdown 排版，可打开本地 .md 文件。',
+    category: 'text',
+    backgroundKey: 'tool-markdown',
+    searchTerms: 'markdown md 预览 文本 表格 代码',
+  },
+  {
+    slug: 'text-diff',
+    href: '/tools/text-diff/',
+    title: '文本差异对比',
+    description: '按行或按词查看两份文本的新增、删除与未变内容。',
+    category: 'text',
+    backgroundKey: 'tool-text-diff',
+    searchTerms: '文本 差异 对比 diff 新增 删除 修改 行 词',
+  },
+  {
+    slug: 'regex',
+    href: '/tools/regex/',
+    title: '正则测试',
+    description: '测试表达式和标志位，查看匹配位置与捕获组。',
+    category: 'development',
+    backgroundKey: 'tool-regex',
+    searchTerms: '正则 regex 表达式 匹配 捕获组 开发',
+  },
   {
     slug: 'json',
     href: '/tools/json/',

@@ -5,6 +5,12 @@ const root = process.cwd();
 const dist = join(root, 'dist');
 const siteOrigin = 'https://bigbrotherwei.github.io';
 const failures = [];
+const toolCategories = {
+  'images-pdf': 'file', markdown: 'text', 'text-diff': 'text', regex: 'development',
+  json: 'development', base64: 'encoding', url: 'encoding', timestamp: 'time',
+  uuid: 'development', 'text-counter': 'text',
+};
+const toolSlugs = Object.keys(toolCategories);
 
 const read = (path) => readFileSync(path, 'utf8');
 const toRoute = (path) => {
@@ -174,6 +180,61 @@ for (const route of expectedSearchableRoutes) {
 }
 for (const type of expectedTypes) {
   if (!foundTypes.has(type)) failures.push(`Pagefind output is missing content type: ${type}`);
+}
+
+for (const slug of toolSlugs) {
+  const route = `/tools/${slug}/`;
+  const path = join(dist, 'tools', slug, 'index.html');
+  if (!existsSync(path)) {
+    failures.push(`Missing published tool route: ${route}`);
+    continue;
+  }
+  if (!searchableRoutes.includes(route)) failures.push(`Tool route is missing Pagefind body: ${route}`);
+}
+const publishedToolRoutes = htmlFiles.map(toRoute).filter((route) => /^\/tools\/[^/]+\/$/.test(route));
+if (publishedToolRoutes.length !== toolSlugs.length) {
+  failures.push(`Published tool route count must be ${toolSlugs.length}; found ${publishedToolRoutes.length}.`);
+}
+
+const toolIndexPath = join(dist, 'tools/index.html');
+if (!existsSync(toolIndexPath)) {
+  failures.push('Missing published tool directory: /tools/');
+} else {
+  const directory = read(toolIndexPath);
+  const cards = tagElements(directory, 'a').filter((tag) => /\sdata-tool-card(?:\s|>)/.test(tag));
+  const seen = new Set();
+  for (const card of cards) {
+    const route = attribute(card, 'href');
+    const slug = route?.match(/^\/tools\/([^/]+)\/$/)?.[1];
+    if (!slug || !Object.hasOwn(toolCategories, slug) || seen.has(slug)) {
+      failures.push(`Tool directory has an unknown or duplicate card: ${route ?? '(missing href)'}`);
+      continue;
+    }
+    seen.add(slug);
+    if (attribute(card, 'data-category') !== toolCategories[slug]) {
+      failures.push(`Tool directory category mismatch: ${slug}`);
+    }
+    if (!attribute(card, 'data-search')?.trim()) failures.push(`Tool directory search text is missing: ${slug}`);
+  }
+  for (const slug of toolSlugs) {
+    if (!seen.has(slug)) failures.push(`Tool directory is missing card: ${slug}`);
+  }
+  const filters = new Set(tagElements(directory, 'button').map((tag) => attribute(tag, 'data-category-filter')).filter(Boolean));
+  for (const category of ['all', ...new Set(Object.values(toolCategories))]) {
+    if (!filters.has(category)) failures.push(`Tool directory is missing category filter: ${category}`);
+  }
+  if (!/\bdata-empty-state\b/.test(directory)) failures.push('Tool directory is missing empty-state output.');
+  const count = directory.match(/<[^>]+data-result-count\b[^>]*>\s*已显示\s*(\d+)\s*个工具/);
+  if (Number(count?.[1]) !== toolSlugs.length) failures.push(`Tool directory initial count must be ${toolSlugs.length}.`);
+}
+
+const markdownPath = join(dist, 'tools/markdown/index.html');
+if (existsSync(markdownPath) && !/class="tool-privacy-note"[^>]*>[^<]*远程图片[^<]*浏览器[^<]*请求/.test(read(markdownPath))) {
+  failures.push('Markdown remote-image privacy notice is missing.');
+}
+const pdfPath = join(dist, 'tools/images-pdf/index.html');
+if (existsSync(pdfPath) && !/class="tool-privacy-note"[^>]*>[^<]*浏览器[^<]*不会上传或保存/.test(read(pdfPath))) {
+  failures.push('PDF local-processing privacy notice is missing.');
 }
 
 const publishedPostRoutes = expectedSearchableRoutes.filter((route) => route.startsWith('/posts/'));

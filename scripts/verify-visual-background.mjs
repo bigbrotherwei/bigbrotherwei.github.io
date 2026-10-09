@@ -221,6 +221,7 @@ const pageBackgroundRequirements = {
   'src/pages/tools/timestamp.astro': 'tool-timestamp',
   'src/pages/tools/uuid.astro': 'tool-uuid',
   'src/pages/tools/text-counter.astro': 'tool-text-counter',
+  'src/pages/tools/images-pdf.astro': 'tool-images-pdf',
 };
 
 const expectedToolAssets = {
@@ -247,6 +248,10 @@ const expectedToolAssets = {
   'tool-text-counter': {
     desktop: '/images/backgrounds/tool-text-scriptorium.webp',
     mobile: '/images/backgrounds/tool-text-scriptorium-mobile.webp',
+  },
+  'tool-images-pdf': {
+    desktop: '/images/backgrounds/tool-images-pdf.webp',
+    mobile: '/images/backgrounds/tool-images-pdf-mobile.webp',
   },
 };
 
