@@ -9,22 +9,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <header>
         <p class="eyebrow">Privacy</p>
         <h1>隐私说明</h1>
-        <p>本站是公开的静态博客。评论由 GitHub Discussions 托管；访问统计功能启用时，会按下文所述处理浏览器标识和访问记录。</p>
+        <p>本站是公开的静态博客。评论由 GitHub Discussions 托管；访问统计使用第三方 Vercount 服务。</p>
       </header>
 
       <section aria-labelledby="privacy-comments">
         <h2 id="privacy-comments">文章评论</h2>
         <p>打开已启用评论的文章时，浏览器会自动请求 Giscus 脚本并连接 GitHub 服务。点击“隐藏评论”会移除评论框，但不能撤回已经发出的请求；点击“显示评论”会重新连接。浏览评论无需登录；发表内容需要 GitHub 账号，评论和账号信息由 GitHub 按其服务条款与隐私政策处理。站长通过公开仓库的 GitHub Discussions 审核评论。</p>
-        <p>本站不会把访问统计的浏览器标识传给 Giscus。未开启评论时，不会请求 Giscus 评论脚本。</p>
+        <p>本站不会主动将访问统计数据传给 Giscus。未开启评论时，不会请求 Giscus 评论脚本。</p>
         <p><a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub 隐私声明</a></p>
       </section>
 
       <section aria-labelledby="privacy-stats">
         <h2 id="privacy-stats">访问统计</h2>
-        <p>统计功能启用后，浏览器在 localStorage 中保存一个随机访客标识，并向本站统计服务发送站内页面路径和该标识。一次有效页面导航计入总访问量；同一浏览器首次出现计入累计访客数。文章阅读数按文章路径累计，不代表独立读者数。</p>
-        <p>服务端使用私有密钥对访客标识做 HMAC 处理，长期保留处理后的去重记录以维持累计访客数；不会公开单个访客记录。在线状态和近期访问记录定期清理，累计去重记录没有自动到期时间。</p>
-        <p>“当前在线”是最近 90 秒内有可见页面心跳的不同浏览器标识的估计值，不代表实时连接数。页面关闭或隐藏后，数字可能继续保留至窗口结束。</p>
-        <p>清除本站的 localStorage 会删除本地标识；下次访问可能被计为新访客。已累计的历史数字不会因此追溯扣除。更换浏览器或设备也可能被计为新访客。统计服务暂不可用时，页面会显示“暂不可用”，不会将其当作零。</p>
+        <p>每次打开页面，浏览器会加载 Vercount 脚本并向 <code>events.vercount.one</code> 发起请求。本站展示全站访问量、累计访客数及文章页面访问量，不再提供当前在线人数。Vercount 使用 Cookie 识别同一浏览器的访客；累计访客数不等同于独立真人数，更换浏览器、设备或清除 Cookie 可能被重新计入。</p>
+        <p>访问请求由 Vercount 处理，本站不再向自建统计服务发送访客标识，也不再生成旧版 localStorage 访客 ID。浏览器屏蔽第三方脚本或服务不可用时，统计会显示“暂不可用”，正文和导航不受影响。旧版 Cloudflare 统计数字不会自动迁移到 Vercount。</p>
+        <p>关于该服务的实现与数据处理，请参阅 <a href="https://github.com/EvanNotFound/vercount" target="_blank" rel="noopener noreferrer">Vercount 项目说明</a>。</p>
       </section>
     </div>
   </main>

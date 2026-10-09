@@ -75,7 +75,7 @@ const structuredData = [
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
             {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
           </div>
-          <ArticleReads path={`/posts/${post.id}/`} />
+          <ArticleReads />
           {postTags.length > 0 && (
             <div class="tag-list article-tags" aria-label="文章标签">
               <span class="article-tags__label" data-pagefind-ignore><Tag aria-hidden="true" size={15} />标签</span>

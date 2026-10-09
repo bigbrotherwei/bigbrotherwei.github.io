@@ -1,16 +1,4 @@
----
-interface Props { path: string }
-const { path } = Astro.props;
----
-
-<div class="article-reads" aria-label="文章阅读统计" data-article-reads data-stats-path={path} data-state="loading" data-pagefind-ignore>
-  <span>阅读 <strong data-stat-key="reads">加载中</strong></span>
+<div class="article-reads" aria-label="文章阅读统计" data-vercount-stats data-state="loading" data-pagefind-ignore>
+  <span>阅读 <strong id="vercount_value_page_pv" data-vercount-value>加载中</strong></span>
   <a href="/privacy/">隐私说明</a>
 </div>
-
-<script>
-  import { mountStatsDisplay } from '../scripts/stats-display';
-
-  const root = document.querySelector<HTMLElement>('[data-article-reads]');
-  if (root) void mountStatsDisplay(root, window, import.meta.env.PUBLIC_ANALYTICS_API_URL ?? '');
-</script>

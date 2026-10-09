@@ -1,15 +1,7 @@
-<section class="site-stats" aria-label="本站访问统计" data-site-stats data-stats-path="/" data-state="loading" data-pagefind-ignore>
+<section class="site-stats" aria-label="本站访问统计" data-vercount-stats data-state="loading" data-pagefind-ignore>
   <div class="site-stats__inner">
-    <div class="site-stats__item"><span>总访问量</span><strong data-stat-key="pv">加载中</strong></div>
-    <div class="site-stats__item"><span>累计访客</span><strong data-stat-key="uv">加载中</strong></div>
-    <div class="site-stats__item"><span>当前在线</span><strong data-stat-key="online">加载中</strong></div>
+    <div class="site-stats__item"><span>总访问量</span><strong id="vercount_value_site_pv" data-vercount-value>加载中</strong></div>
+    <div class="site-stats__item"><span>累计访客</span><strong id="vercount_value_site_uv" data-vercount-value>加载中</strong></div>
     <a class="site-stats__privacy" href="/privacy/">统计与隐私说明</a>
   </div>
 </section>
-
-<script>
-  import { mountStatsDisplay } from '../scripts/stats-display';
-
-  const root = document.querySelector<HTMLElement>('[data-site-stats]');
-  if (root) void mountStatsDisplay(root, window, import.meta.env.PUBLIC_ANALYTICS_API_URL ?? '');
-</script>
