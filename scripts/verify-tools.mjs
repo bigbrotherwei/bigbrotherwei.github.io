@@ -28,6 +28,10 @@ if (!existsSync(join(root, registryPath))) {
     markdown: {
       logicModule: 'markdown.ts',
       logicCalls: ['createMarkdownPreviewController'],
+      controllerWiring: {
+        factory: 'createMarkdownPreviewController',
+        methods: ['schedulePreview', 'importFile', 'clear', 'updatePreview'],
+      },
     },
     'images-pdf': {
       logicModule: 'images-pdf.ts',

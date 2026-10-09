@@ -312,6 +312,36 @@ const collectScriptFacts = (scripts) => {
   };
 };
 
+const hasControllerWiring = (scripts, factoryName, methods) => {
+  const source = ts.createSourceFile('controller-page.ts', scripts, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const controllerNames = new Set();
+  const wired = new Set();
+  const visit = (node) => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)
+      && node.initializer && ts.isCallExpression(node.initializer)
+      && ts.isIdentifier(node.initializer.expression)
+      && node.initializer.expression.text === factoryName) {
+      controllerNames.add(node.name.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  const inspect = (node) => {
+    if (ts.isPropertyAccessExpression(node)
+      && ts.isIdentifier(node.expression) && controllerNames.has(node.expression.text)) {
+      const parent = node.parent;
+      if ((ts.isCallExpression(parent) && parent.expression === node)
+        || (ts.isCallExpression(parent) && ts.isPropertyAccessExpression(parent.expression)
+          && parent.expression.name.text === 'addEventListener' && parent.arguments.includes(node))) {
+        wired.add(node.name.text);
+      }
+    }
+    ts.forEachChild(node, inspect);
+  };
+  inspect(source);
+  return methods.every((method) => wired.has(method));
+};
+
 export const validateToolPageContract = (source, contract) => {
   const failures = [];
   const cleaned = stripComments(source);
@@ -345,6 +375,11 @@ export const validateToolPageContract = (source, contract) => {
     if (!importedLocals?.has(functionName) || importedCallsFor(moduleName, functionName).length === 0) {
       failures.push(`must call ${functionName} from a page script`);
     }
+  }
+
+  if (contract.controllerWiring
+    && !hasControllerWiring(scripts, contract.controllerWiring.factory, contract.controllerWiring.methods)) {
+    failures.push(`must connect ${contract.controllerWiring.factory} methods to page events and rendering`);
   }
 
   for (const functionName of contract.toolResultCalls ?? []) {

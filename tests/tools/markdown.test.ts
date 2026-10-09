@@ -127,3 +127,14 @@ test('an over-limit edit removes the previously rendered preview', () => {
   assert.equal(preview.innerHTML, '');
   assert.match(status.textContent ?? '', /1 MiB/);
 });
+
+test('a failed import cannot leave an older preview behind after a pending edit', async () => {
+  const { input, preview, status, controller } = previewController();
+  input.value = '# Earlier';
+  controller.updatePreview();
+  input.value = 'a'.repeat(mib + 1);
+  controller.schedulePreview();
+  await controller.importFile({ name: 'wrong.txt', size: 10, text: async () => '# Wrong' });
+  assert.equal(preview.innerHTML, '');
+  assert.match(status.textContent ?? '', /\.md/);
+});

@@ -102,6 +102,7 @@ export const createMarkdownPreviewController = ({ input, preview, status, window
     const result = await importMarkdownFile(file);
     if (request !== generation) return;
     if (!result.ok) {
+      updatePreview();
       showStatus(result.error, 'error');
       return;
     }
