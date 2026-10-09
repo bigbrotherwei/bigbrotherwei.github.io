@@ -98,6 +98,12 @@ export const restoreQueueFocus = (
   (preferred ?? buttons.find((button) => !button.disabled) ?? fallback).focus();
 };
 
+export const refreshImagePreviewUrls = <T extends { file: File; url: string }>(
+  queue: T[], createObjectURL: (file: File) => string = (file) => URL.createObjectURL(file),
+) => {
+  for (const item of queue) item.url = createObjectURL(item.file);
+};
+
 interface PdfDownloadBrowser {
   createObjectURL(blob: Blob): string;
   revokeObjectURL(url: string): void;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { PDFDict, PDFDocument, PDFName, PDFRawStream } from 'pdf-lib';
-import { buildImagesPdf, normalizeImage, placeImage, restoreQueueFocus, startPdfDownload, validateImageFiles, validateImageFileSignatures } from '../../src/lib/tools/images-pdf.ts';
+import { buildImagesPdf, normalizeImage, placeImage, refreshImagePreviewUrls, restoreQueueFocus, startPdfDownload, validateImageFiles, validateImageFileSignatures } from '../../src/lib/tools/images-pdf.ts';
 
 const mib = 1024 * 1024;
 const file = (name: string, type = 'image/jpeg', size = 8) =>
@@ -34,6 +34,27 @@ test('reports names for unsupported, empty and oversized files', () => {
 test('places images proportionally within a 24 pt inset', () => {
   assert.deepEqual(placeImage(1000, 500, 842, 595, 24), { x: 24, y: 99, width: 794, height: 397 });
   assert.deepEqual(placeImage(500, 1000, 595, 842, 24), { x: 99, y: 24, width: 397, height: 794 });
+});
+
+test('recreates thumbnail URLs from retained files after page cache restoration', () => {
+  const queued = [
+    { file: file('first.jpg'), url: 'blob:released-1' },
+    { file: file('second.jpg'), url: 'blob:released-2' },
+  ];
+  const created: string[] = [];
+  refreshImagePreviewUrls(queued, (source) => {
+    created.push(source.name);
+    return `blob:new-${created.length}`;
+  });
+  assert.deepEqual(created, ['first.jpg', 'second.jpg']);
+  assert.deepEqual(queued.map((item) => item.url), ['blob:new-1', 'blob:new-2']);
+});
+
+test('PDF page reconnects thumbnails when the browser restores it from cache', async () => {
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../../src/pages/tools/images-pdf.astro', import.meta.url), 'utf8');
+  assert.match(page, /addEventListener\('pagehide',[\s\S]*?previewUrlsReleased = true/);
+  assert.match(page, /addEventListener\('pageshow',[\s\S]*?refreshImagePreviewUrls\(queue\)/);
 });
 
 test('checks actual signatures, including a GIF mislabeled as JPEG', async () => {

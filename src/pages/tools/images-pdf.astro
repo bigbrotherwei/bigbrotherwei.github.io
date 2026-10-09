@@ -41,7 +41,7 @@ if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
 </ToolLayout>
 
 <script>
-  import { buildImagesPdf, normalizeImage, restoreQueueFocus, startPdfDownload, validateImageFiles, validateImageFileSignatures } from '../../lib/tools/images-pdf.ts';
+  import { buildImagesPdf, normalizeImage, refreshImagePreviewUrls, restoreQueueFocus, startPdfDownload, validateImageFiles, validateImageFileSignatures } from '../../lib/tools/images-pdf.ts';
   import type { NormalizedImage } from '../../lib/tools/images-pdf.ts';
 
   interface QueueItem { file: File; url: string; width: number; height: number }
@@ -56,6 +56,7 @@ if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
   const queue: QueueItem[] = [];
   const downloadUrls = new Set<string>();
   let busy = false;
+  let previewUrlsReleased = false;
 
   const showStatus = (message: string, state: 'idle' | 'success' | 'error' = 'idle') => {
     status.textContent = message;
@@ -206,8 +207,15 @@ if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
 
   window.addEventListener('pagehide', () => {
     queue.forEach((item) => URL.revokeObjectURL(item.url));
+    previewUrlsReleased = true;
     downloadUrls.forEach((url) => URL.revokeObjectURL(url));
     downloadUrls.clear();
+  });
+  window.addEventListener('pageshow', () => {
+    if (!previewUrlsReleased) return;
+    refreshImagePreviewUrls(queue);
+    previewUrlsReleased = false;
+    render();
   });
   render();
 </script>
