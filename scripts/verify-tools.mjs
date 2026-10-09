@@ -33,6 +33,13 @@ if (!existsSync(join(root, registryPath))) {
         methods: ['schedulePreview', 'importFile', 'clear', 'updatePreview'],
       },
     },
+    'text-diff': {
+      logicModule: 'text-diff.ts',
+      logicCalls: ['compareText', 'renderDiff', 'summarizeDiff', 'swapDiffInputs'],
+      toolResultCalls: ['compareText'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
     'images-pdf': {
       logicModule: 'images-pdf.ts',
       logicCalls: ['validateImageFiles', 'validateImageFileSignatures', 'normalizeImage', 'restoreQueueFocus', 'buildImagesPdf', 'startPdfDownload'],

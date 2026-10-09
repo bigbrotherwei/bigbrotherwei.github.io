@@ -46,6 +46,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: 'markdown md 预览 文本 表格 代码',
   },
   {
+    slug: 'text-diff',
+    href: '/tools/text-diff/',
+    title: '文本差异对比',
+    description: '按行或按词查看两份文本的新增、删除与未变内容。',
+    category: 'text',
+    backgroundKey: 'tool-text-diff',
+    searchTerms: '文本 差异 对比 diff 新增 删除 修改 行 词',
+  },
+  {
     slug: 'json',
     href: '/tools/json/',
     title: 'JSON 格式化',
