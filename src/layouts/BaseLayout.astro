@@ -79,11 +79,11 @@ const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structured
     <SiteNav />
     <slot />
     <script>
-      import { mountAnalytics } from '../scripts/analytics';
+      import { mountVercount } from '../scripts/vercount';
       import { mountTheme } from '../scripts/theme';
 
       mountTheme(document, window);
-      mountAnalytics(document, window, import.meta.env.PUBLIC_ANALYTICS_API_URL ?? '');
+      mountVercount(document, window);
     </script>
   </body>
 </html>

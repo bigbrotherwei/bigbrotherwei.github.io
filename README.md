@@ -60,7 +60,7 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
 文章评论需要仓库所有者另外开启 GitHub Discussions、安装 Giscus App，并设置四项公开的 GitHub Actions Repository Variables。具体步骤和上线检查见[文章评论配置](docs/comments-setup.zh.md)；读者可在站点的 `/privacy/` 查看[隐私说明](src/pages/privacy.astro)。未配置时文章仍可阅读和发布，评论区会显示“评论未开放”。
 
-访问统计由单独的 Cloudflare Worker 和 D1 提供，不随 Pages workflow 自动部署。手动创建、迁移、发布、验收与回退步骤见[访问统计部署指南](docs/analytics-setup.zh.md)。仓库变量 `PUBLIC_ANALYTICS_API_URL` 未设置或 API 不可用时，静态页面照常发布和阅读，统计数字显示“暂不可用”。
+访问统计使用 [Vercount](https://github.com/EvanNotFound/vercount)，展示全站 PV、UV，以及各文章和工具详情页的访问量，无需单独部署统计后端。工具页数字不代表实际按钮使用次数。启用、验收与迁移注意事项见[访问统计部署指南](docs/analytics-setup.zh.md)。服务不可用时，静态页面仍可正常阅读，统计数字显示“暂不可用”。
 
 ## 维护流程
 
@@ -321,7 +321,7 @@ Pagefind 在 Astro 静态页面生成后执行。索引只收录带 `data-pagefi
 
 - 暗色模式
 - 评论系统
-- 访问统计和当前在线人数
+- 访问统计（全站 PV、UV 和文章阅读数）
 
 ## 设计文档
 
