@@ -1,0 +1,13 @@
+---
+interface Props {
+  summary: string;
+}
+
+const { summary } = Astro.props;
+if (!summary.trim()) throw new Error('折叠示例需要摘要标题。');
+---
+
+<details class="article-disclosure">
+  <summary>{summary}</summary>
+  <div class="article-disclosure__body"><slot /></div>
+</details>

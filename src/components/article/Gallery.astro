@@ -1,0 +1,25 @@
+---
+interface GalleryImage {
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+interface Props {
+  images: GalleryImage[];
+}
+
+const { images } = Astro.props;
+if (images.length === 0 || images.some(({ src, alt }) => !src.trim() || !alt.trim())) {
+  throw new Error('图片画廊需要至少一张图片，且每张图片必须有地址和替代文本。');
+}
+---
+
+<div class="article-gallery" aria-label="文章图片画廊">
+  {images.map(({ src, alt, caption }) => (
+    <figure class="article-gallery__item">
+      <img src={src} alt={alt} loading="lazy" decoding="async" />
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  ))}
+</div>
