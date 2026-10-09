@@ -18,7 +18,9 @@ if (images.length === 0 || images.some(({ src, alt }) => !src.trim() || !alt.tri
 <div class="article-gallery" aria-label="文章图片画廊">
   {images.map(({ src, alt, caption }) => (
     <figure class="article-gallery__item">
-      <img src={src} alt={alt} loading="lazy" decoding="async" />
+      <a href={src} aria-label={`查看原图：${alt}`}>
+        <img src={src} alt={alt} loading="lazy" decoding="async" />
+      </a>
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
   ))}
