@@ -420,7 +420,46 @@
 .tool-diff-label { flex: 0 0 3.5rem; font-weight: 800; }
 .tool-diff-content { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
+.tool-regex-form { display: grid; gap: 1rem; }
+.tool-regex-form #regex-pattern,
+.tool-regex-form #regex-input { font-family: var(--font-mono, monospace); font-weight: 400; }
+.tool-regex-form #regex-input { min-height: 16rem; overflow-wrap: anywhere; }
+.tool-regex-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+}
+.tool-regex-flags legend { padding: 0 0.3rem; color: var(--color-muted); font-size: 0.92rem; font-weight: 700; }
+.tool-regex-flags label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
+.tool-regex-flags input { width: 1rem; height: 1rem; accent-color: var(--color-action); }
+.tool-regex-form .tool-toolbar { margin-top: 0; }
+.tool-regex-output { min-width: 0; border-top: 1px solid var(--color-line); }
+.tool-regex-output h2 { margin: 1rem 0 0.5rem; font-size: 0.92rem; color: var(--color-muted); }
+.tool-regex-results {
+  min-height: 8rem;
+  padding: 0.5rem;
+  color: var(--color-text);
+  background: var(--color-input);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+.tool-regex-row { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 0.25rem 0.75rem; padding: 0.4rem; border-bottom: 1px solid var(--color-line); }
+.tool-regex-position { color: var(--color-muted); font-weight: 700; }
+.tool-regex-content,
+.tool-regex-capture { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.tool-regex-capture { grid-column: 2; color: var(--color-muted); }
+
 @media (max-width: 520px) {
+  .tool-regex-row { grid-template-columns: 1fr; }
+  .tool-regex-capture { grid-column: 1; }
   .tool-image-row { grid-template-columns: 3.25rem minmax(0, 1fr); }
   .tool-image-thumb { width: 3.25rem; height: 3.25rem; }
   .tool-image-actions { grid-column: 2; }

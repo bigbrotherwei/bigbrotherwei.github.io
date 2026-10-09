@@ -39,6 +39,12 @@ if (!existsSync(join(root, registryPath))) {
       browserModule: 'browser.ts',
       browserCalls: ['copyText'],
     },
+    regex: {
+      logicModule: 'regex-worker-client.ts',
+      logicCalls: ['createRegexRunner'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
     'images-pdf': {
       logicModule: 'images-pdf.ts',
       logicCalls: ['validateImageFiles', 'validateImageFileSignatures', 'normalizeImage', 'restoreQueueFocus', 'buildImagesPdf', 'startPdfDownload'],

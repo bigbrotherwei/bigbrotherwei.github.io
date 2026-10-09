@@ -55,6 +55,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: '文本 差异 对比 diff 新增 删除 修改 行 词',
   },
   {
+    slug: 'regex',
+    href: '/tools/regex/',
+    title: '正则测试',
+    description: '测试表达式和标志位，查看匹配位置与捕获组。',
+    category: 'development',
+    backgroundKey: 'tool-regex',
+    searchTerms: '正则 regex 表达式 匹配 捕获组 开发',
+  },
+  {
     slug: 'json',
     href: '/tools/json/',
     title: 'JSON 格式化',

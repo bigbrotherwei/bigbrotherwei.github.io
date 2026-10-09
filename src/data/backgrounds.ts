@@ -24,6 +24,7 @@ export const backgroundKeys = [
   'tool-images-pdf',
   'tool-markdown',
   'tool-text-diff',
+  'tool-regex',
 ] as const;
 
 export type BackgroundKey = (typeof backgroundKeys)[number];
@@ -153,6 +154,12 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'tool-text-diff': {
     desktop: '/images/backgrounds/tool-text-diff.webp',
     mobile: '/images/backgrounds/tool-text-diff-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-regex': {
+    desktop: '/images/backgrounds/tool-regex.webp',
+    mobile: '/images/backgrounds/tool-regex-mobile.webp',
     position: 'center',
     mobilePosition: 'center',
   },

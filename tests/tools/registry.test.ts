@@ -7,10 +7,11 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { toolCategories, tools } from '../../src/data/tools.ts';
 
-test('publishes nine uniquely addressable tools including text diff', () => {
-  assert.equal(tools.length, 9);
+test('publishes ten uniquely addressable tools including regex', () => {
+  assert.equal(tools.length, 10);
   assert.equal(tools.find((tool) => tool.slug === 'markdown')?.href, '/tools/markdown/');
   assert.equal(tools.find((tool) => tool.slug === 'text-diff')?.href, '/tools/text-diff/');
+  assert.equal(tools.find((tool) => tool.slug === 'regex')?.href, '/tools/regex/');
   assert.equal(new Set(tools.map((tool) => tool.slug)).size, tools.length);
 
   for (const tool of tools) {

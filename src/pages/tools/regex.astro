@@ -1,0 +1,122 @@
+---
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'regex');
+if (!tool) throw new Error('缺少正则测试工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-regex" statusId="regex-status" statusInside>
+  <form id="regex-form" class="tool-regex-form">
+    <div class="tool-field">
+      <label for="regex-pattern">表达式</label>
+      <input id="regex-pattern" type="text" spellcheck="false" autocomplete="off" maxlength="501" placeholder="例如：(\w+)" />
+    </div>
+    <fieldset class="tool-regex-flags">
+      <legend>标志位</legend>
+      <label><input type="checkbox" name="regex-flag" value="g" checked /> g 全局</label>
+      <label><input type="checkbox" name="regex-flag" value="i" /> i 忽略大小写</label>
+      <label><input type="checkbox" name="regex-flag" value="m" /> m 多行</label>
+      <label><input type="checkbox" name="regex-flag" value="s" /> s 单行</label>
+    </fieldset>
+    <div class="tool-field">
+      <label for="regex-input">测试文本</label>
+      <textarea id="regex-input" spellcheck="false" placeholder="输入要检查的文本"></textarea>
+    </div>
+    <div class="tool-toolbar" aria-label="正则测试操作">
+      <button type="submit" id="regex-run">测试</button>
+      <button type="button" id="regex-clear">清空</button>
+      <button type="button" id="regex-copy" disabled>复制结果</button>
+    </div>
+  </form>
+  <section class="tool-regex-output" aria-label="匹配结果" aria-describedby="regex-status">
+    <h2>匹配结果 <span id="regex-count"></span></h2>
+    <div id="regex-results" class="tool-regex-results"></div>
+  </section>
+</ToolLayout>
+
+<script>
+  import { createRegexRunner } from '../../lib/tools/regex-worker-client.ts';
+  import { renderRegexResults, summarizeRegexResults, type RegexResults } from '../../lib/tools/regex.ts';
+  import { copyText } from '../../lib/tools/browser.ts';
+
+  const form = document.querySelector<HTMLFormElement>('#regex-form');
+  const pattern = document.querySelector<HTMLInputElement>('#regex-pattern');
+  const input = document.querySelector<HTMLTextAreaElement>('#regex-input');
+  const output = document.querySelector<HTMLElement>('#regex-results');
+  const count = document.querySelector<HTMLElement>('#regex-count');
+  const status = document.querySelector<HTMLElement>('#regex-status');
+  const runButton = document.querySelector<HTMLButtonElement>('#regex-run');
+  const copyButton = document.querySelector<HTMLButtonElement>('#regex-copy');
+  const clearButton = document.querySelector<HTMLButtonElement>('#regex-clear');
+  if (!form || !pattern || !input || !output || !count || !status || !runButton || !copyButton || !clearButton) {
+    throw new Error('正则测试工作台缺少必要控件');
+  }
+
+  const runner = createRegexRunner(() => new Worker(new URL('../../scripts/regex-worker.ts', import.meta.url), { type: 'module' }));
+  let revision = 0;
+  let results: RegexResults | undefined;
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+  const invalidate = () => {
+    revision += 1;
+    runner.cancel();
+    results = undefined;
+    output.replaceChildren();
+    count.textContent = '';
+    copyButton.disabled = true;
+    runButton.disabled = false;
+    showStatus('内容已更改，请重新测试');
+  };
+  const selectedFlags = () => [...form.querySelectorAll<HTMLInputElement>('[name="regex-flag"]:checked')]
+    .map((checkbox) => checkbox.value).join('');
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const currentRevision = ++revision;
+    results = undefined;
+    output.replaceChildren();
+    count.textContent = '';
+    copyButton.disabled = true;
+    runButton.disabled = true;
+    showStatus('正在测试');
+    const result = await runner.run(pattern.value, selectedFlags(), input.value);
+    if (currentRevision !== revision) return;
+    runButton.disabled = false;
+    if (!result.ok) {
+      showStatus(result.error, 'error');
+      return;
+    }
+    results = result.value;
+    renderRegexResults(output, results);
+    count.textContent = `${results.matches.length} 个${results.truncated ? '（已截断）' : ''}`;
+    copyButton.disabled = false;
+    showStatus(results.matches.length ? '测试完成' : '没有匹配', 'success');
+  });
+  pattern.addEventListener('input', invalidate);
+  input.addEventListener('input', invalidate);
+  form.querySelectorAll<HTMLInputElement>('[name="regex-flag"]').forEach((checkbox) => checkbox.addEventListener('change', invalidate));
+  clearButton.addEventListener('click', () => {
+    pattern.value = '';
+    input.value = '';
+    form.querySelectorAll<HTMLInputElement>('[name="regex-flag"]').forEach((checkbox) => { checkbox.checked = checkbox.value === 'g'; });
+    invalidate();
+    showStatus('已清空');
+    pattern.focus();
+  });
+  copyButton.addEventListener('click', async () => {
+    if (!results) return;
+    const result = await copyText(summarizeRegexResults(results));
+    showStatus(result.ok ? '已复制结果' : result.error, result.ok ? 'success' : 'error');
+  });
+  window.addEventListener('pagehide', () => {
+    revision += 1;
+    runButton.disabled = false;
+    runner.dispose();
+  });
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) runner.resume();
+  });
+</script>
