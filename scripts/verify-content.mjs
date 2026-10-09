@@ -59,7 +59,7 @@ const parseFrontmatter = (source, filePath) => {
   return data;
 };
 
-const markdownFiles = (directory) => {
+const markdownFiles = (directory, extensions = ['.md']) => {
   const absoluteDirectory = join(root, directory);
   if (!existsSync(absoluteDirectory) || !statSync(absoluteDirectory).isDirectory()) {
     return [];
@@ -77,7 +77,7 @@ const markdownFiles = (directory) => {
         continue;
       }
 
-      if (entry.isFile() && entry.name.endsWith('.md')) {
+      if (entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension))) {
         files.push(relativePath);
       }
     }
@@ -88,10 +88,20 @@ const markdownFiles = (directory) => {
 };
 
 const topicFiles = markdownFiles('src/content/topics');
-const postFiles = markdownFiles('src/content/posts');
+const postFiles = markdownFiles('src/content/posts', ['.md', '.mdx']);
 const projectFiles = markdownFiles('src/content/projects');
 const topicDirectory = join(root, 'src/content/topics');
 const projectDirectory = join(root, 'src/content/projects');
+
+const postSlugs = new Map();
+for (const postPath of postFiles) {
+  const slug = relative(join(root, 'src/content/posts'), join(root, postPath))
+    .replace(/\\/g, '/')
+    .replace(/\.mdx?$/, '');
+  const previous = postSlugs.get(slug);
+  if (previous) failures.push(`重复文章 slug ${slug}: ${previous} 与 ${postPath}`);
+  else postSlugs.set(slug, postPath);
+}
 
 if (topicFiles.length < 2) {
   failures.push('Expected at least 2 topic markdown files');
@@ -179,7 +189,7 @@ if (exists('src/content.config.ts')) {
   const contentConfig = read('src/content.config.ts');
   for (const token of [
     'defineCollection',
-    "glob({ pattern: '**/*.md', base: './src/content/posts' })",
+    "glob({ pattern: '**/*.(md|mdx)', base: './src/content/posts' })",
     "glob({ pattern: '**/*.md', base: './src/content/topics' })",
     "glob({ pattern: '**/*.md', base: './src/content/projects' })",
     'const projects = defineCollection',

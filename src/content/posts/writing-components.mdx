@@ -1,0 +1,26 @@
+---
+title: "用 MDX 编写带组件的文章"
+description: "一篇简短示例：普通文章继续使用 Markdown，需要复用展示组件时再选择 MDX。"
+pubDate: 2026-10-09
+tags:
+  - Astro
+  - 博客维护
+topic: "blog-rebuild"
+order: 4
+draft: false
+background: "post-writing-components"
+---
+
+大部分文章只需 Markdown。需要在正文中加入可复用的展示区域时，可以把文件保存为 `.mdx`，其余发布日期、标签和专题字段不变。
+
+## 普通段落仍是 Markdown
+
+标题、列表、引用和代码块继续按熟悉的 Markdown 方式书写。
+
+```ts
+const format = 'mdx';
+```
+
+## 何时使用组件
+
+提示、分组图片和折叠的补充内容适合做成统一组件，避免每篇文章都手写一遍样式。后文展示这几种用法。
