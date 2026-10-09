@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
+    "@astrojs/mdx": "^8.0.3",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.2",
@@ -34,7 +35,12 @@
     "lucide-astro": "^0.556.0",
     "marked": "^18.0.14",
     "pdf-lib": "^1.17.1",
-    "typescript": "^6.0.3"
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
+    "typescript": "^6.0.3",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/jsdom": "^30.0.0",

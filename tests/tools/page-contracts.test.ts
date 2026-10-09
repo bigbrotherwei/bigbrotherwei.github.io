@@ -22,7 +22,7 @@ test('Markdown page contract requires its controller methods to drive events and
     },
   };
   assert.deepEqual(validateToolPageContract(page, markdownContract), []);
-  const disconnected = page.replace("input.addEventListener('input', controller.schedulePreview)", "input.addEventListener('input', () => {})");
+  const disconnected = page.replace('controller.schedulePreview()', 'void 0');
   assert.ok(validateToolPageContract(disconnected, markdownContract)
     .some((failure) => failure.includes('must connect createMarkdownPreviewController')));
 });

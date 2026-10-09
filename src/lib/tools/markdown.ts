@@ -65,9 +65,10 @@ interface MarkdownPreviewElements {
   preview: HTMLElement;
   status: HTMLElement;
   window: Window;
+  onPreviewUpdated?: () => void;
 }
 
-export const createMarkdownPreviewController = ({ input, preview, status, window }: MarkdownPreviewElements) => {
+export const createMarkdownPreviewController = ({ input, preview, status, window, onPreviewUpdated }: MarkdownPreviewElements) => {
   let generation = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -81,10 +82,12 @@ export const createMarkdownPreviewController = ({ input, preview, status, window
     const result = renderMarkdown(input.value, window);
     if (!result.ok) {
       preview.replaceChildren();
+      onPreviewUpdated?.();
       showStatus(result.error, 'error');
       return;
     }
     preview.innerHTML = result.value;
+    onPreviewUpdated?.();
     showStatus('预览已更新', 'success');
   };
 

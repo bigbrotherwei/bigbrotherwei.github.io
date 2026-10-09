@@ -13,6 +13,7 @@ export const backgroundKeys = [
   'post-blog-rebuild-roadmap',
   'post-github-pages-workflow',
   'post-pixel-farm-background',
+  'post-writing-components',
   'topic-blog-rebuild',
   'topic-developer-toolbox',
   'tool-json',
@@ -94,6 +95,10 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'post-pixel-farm-background': {
     desktop: '/images/backgrounds/post-painter-overlook.webp',
     mobile: '/images/backgrounds/post-painter-overlook-mobile.webp',
+  },
+  'post-writing-components': {
+    desktop: '/images/backgrounds/post-writing-components.webp',
+    mobile: '/images/backgrounds/post-writing-components-mobile.webp',
   },
   'topic-blog-rebuild': {
     desktop: '/images/backgrounds/topic-renovated-homestead.webp',

@@ -1,0 +1,41 @@
+---
+title: "用 MDX 编写带组件的文章"
+description: "一篇简短示例：普通文章继续使用 Markdown，需要复用展示组件时再选择 MDX。"
+pubDate: 2026-10-09
+tags:
+  - Astro
+  - 博客维护
+topic: "blog-rebuild"
+order: 4
+draft: false
+background: "post-writing-components"
+---
+
+import Callout from '../../components/article/Callout.astro';
+import Gallery from '../../components/article/Gallery.astro';
+import Disclosure from '../../components/article/Disclosure.astro';
+
+大部分文章只需 Markdown。需要在正文中加入可复用的展示区域时，可以把文件保存为 `.mdx`，其余发布日期、标签和专题字段不变。
+
+## 普通段落仍是 Markdown
+
+标题、列表、引用和代码块继续按熟悉的 Markdown 方式书写。
+
+```ts
+const format = 'mdx';
+```
+
+## 何时使用组件
+
+提示、分组图片和折叠的补充内容适合做成统一组件，避免每篇文章都手写一遍样式。
+
+<Callout type="tip">先写内容，再决定是否需要组件；普通段落和标题仍使用 Markdown。</Callout>
+
+<Gallery images={[
+  { src: '/images/backgrounds/post-writing-components.webp', alt: '夜晚山谷中的写作木屋桌面插画', caption: '桌面背景' },
+  { src: '/images/backgrounds/post-writing-components-mobile.webp', alt: '夜晚山谷中的写作木屋手机插画', caption: '手机背景' },
+]} />
+
+<Disclosure summary="查看组件使用建议">
+  对需要重复使用的展示形式，优先建立一个小组件；仅在单篇文章中使用的简单强调，也可以继续用 Markdown 或原生 HTML。
+</Disclosure>

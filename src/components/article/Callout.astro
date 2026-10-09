@@ -1,0 +1,13 @@
+---
+interface Props {
+  type: 'info' | 'tip' | 'warning';
+}
+
+const { type } = Astro.props;
+const labels = { info: '说明', tip: '提示', warning: '注意' } as const;
+---
+
+<aside class={`article-callout article-callout--${type}`} aria-label={labels[type]}>
+  <strong class="article-callout__label">{labels[type]}</strong>
+  <div class="article-callout__content"><slot /></div>
+</aside>

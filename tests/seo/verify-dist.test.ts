@@ -101,6 +101,23 @@ test('accepts complete canonical and social URL metadata', () => {
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
 });
 
+test('rejects broken root-relative links inside published article bodies', () => {
+  const result = runVerifier((root) => {
+    const path = join(root, 'dist/posts/hello/index.html');
+    writeFileSync(path, readFileSync(path, 'utf8').replace('</body>', '<div data-article-body><a href="/posts/missing/?ref=one#section">missing</a></div></body>'));
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /posts\/hello.*posts\/missing/);
+});
+
+test('allows published article links to existing routes and remote sites', () => {
+  const result = runVerifier((root) => {
+    const path = join(root, 'dist/posts/hello/index.html');
+    writeFileSync(path, readFileSync(path, 'utf8').replace('</body>', '<div data-article-body><a href="/topics/hello/?ref=one#section">topic</a><a href="https://example.invalid/">external</a></div></body>'));
+  });
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
 test('rejects a missing published tool route', () => {
   const result = runVerifier((root) => rmSync(join(root, 'dist/tools/regex'), { recursive: true }));
   assert.equal(result.status, 1);

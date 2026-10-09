@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { checkPostPublishing } from './lib/post-publishing-checks.mjs';
 
 const root = process.cwd();
 const requiredPaths = [
@@ -59,7 +60,7 @@ const parseFrontmatter = (source, filePath) => {
   return data;
 };
 
-const markdownFiles = (directory) => {
+const markdownFiles = (directory, extensions = ['.md']) => {
   const absoluteDirectory = join(root, directory);
   if (!existsSync(absoluteDirectory) || !statSync(absoluteDirectory).isDirectory()) {
     return [];
@@ -77,7 +78,7 @@ const markdownFiles = (directory) => {
         continue;
       }
 
-      if (entry.isFile() && entry.name.endsWith('.md')) {
+      if (entry.isFile() && extensions.some((extension) => entry.name.endsWith(extension))) {
         files.push(relativePath);
       }
     }
@@ -88,7 +89,7 @@ const markdownFiles = (directory) => {
 };
 
 const topicFiles = markdownFiles('src/content/topics');
-const postFiles = markdownFiles('src/content/posts');
+const postFiles = markdownFiles('src/content/posts', ['.md', '.mdx']);
 const projectFiles = markdownFiles('src/content/projects');
 const topicDirectory = join(root, 'src/content/topics');
 const projectDirectory = join(root, 'src/content/projects');
@@ -123,6 +124,14 @@ for (const topicPath of topicFiles) {
       failures.push(`${topicPath} missing required frontmatter: ${key}`);
     }
   }
+}
+
+for (const { file, message } of checkPostPublishing({
+  posts: postFiles.map((file) => ({ file, source: read(file) })),
+  topics: new Set(topics.keys()),
+  publicRoot: join(root, 'public'),
+})) {
+  failures.push(`${file}: ${message}`);
 }
 
 for (const postPath of postFiles) {
@@ -179,7 +188,7 @@ if (exists('src/content.config.ts')) {
   const contentConfig = read('src/content.config.ts');
   for (const token of [
     'defineCollection',
-    "glob({ pattern: '**/*.md', base: './src/content/posts' })",
+    "glob({ pattern: '**/*.(md|mdx)', base: './src/content/posts' })",
     "glob({ pattern: '**/*.md', base: './src/content/topics' })",
     "glob({ pattern: '**/*.md', base: './src/content/projects' })",
     'const projects = defineCollection',
