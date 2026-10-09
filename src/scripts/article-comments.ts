@@ -11,15 +11,16 @@ const giscusAttributes = [
 export function mountArticleComments(document: Document): void {
   const section = document.querySelector<HTMLElement>('[data-article-comments]');
   const button = document.querySelector<HTMLButtonElement>('[data-comment-load]');
+  const label = button?.querySelector<HTMLElement>('[data-comment-label]');
   const status = document.querySelector<HTMLElement>('[data-comment-status]');
   const fallback = document.querySelector<HTMLAnchorElement>('[data-comment-fallback]');
   const embed = document.querySelector<HTMLElement>('[data-comment-embed]');
-  if (!section || !button || !status || !fallback || !embed) return;
+  if (!section || !button || !label || !status || !fallback || !embed) return;
 
   const attributes = giscusAttributes.map((name) => [name, section.getAttribute(name)] as const);
   if (attributes.some(([, value]) => !value)) return;
 
-  let loading = false;
+  let visible = false;
   let attempt = 0;
   let currentScript: HTMLScriptElement | undefined;
   let readyFrame: HTMLIFrameElement | null = null;
@@ -32,10 +33,11 @@ export function mountArticleComments(document: Document): void {
     embed.replaceChildren();
     currentScript = undefined;
     readyFrame = null;
-    loading = false;
+    visible = false;
     button.disabled = false;
     button.hidden = false;
-    button.textContent = '重试加载评论';
+    button.setAttribute('aria-expanded', 'false');
+    label.textContent = '重试加载评论';
     status.textContent = '评论加载失败，请重试或前往 GitHub Discussions。';
     fallback.hidden = false;
   };
@@ -64,13 +66,14 @@ export function mountArticleComments(document: Document): void {
     sendTheme(frame, effectiveTheme());
   }, true);
 
-  button.addEventListener('click', () => {
-    if (loading) return;
+  const loadComments = () => {
     const currentAttempt = ++attempt;
-    loading = true;
-    button.disabled = true;
+    visible = true;
+    button.disabled = false;
+    button.setAttribute('aria-expanded', 'true');
+    label.textContent = '隐藏评论';
     status.textContent = '评论加载中…';
-    fallback.hidden = false;
+    fallback.hidden = true;
     embed.replaceChildren();
     readyFrame = null;
 
@@ -83,14 +86,29 @@ export function mountArticleComments(document: Document): void {
     currentScript = script;
     script.addEventListener('load', () => {
       if (currentAttempt !== attempt) return;
-      loading = false;
-      button.disabled = false;
-      button.textContent = '重试加载评论';
-      status.textContent = '评论组件已加载；若评论未显示，可重试或前往 GitHub Discussions。';
+      status.textContent = '';
     });
     script.addEventListener('error', () => {
       if (currentAttempt === attempt) showFailure();
     });
     embed.appendChild(script);
+  };
+
+  button.addEventListener('click', () => {
+    if (!visible) {
+      loadComments();
+      return;
+    }
+    attempt += 1;
+    visible = false;
+    currentScript = undefined;
+    readyFrame = null;
+    embed.replaceChildren();
+    label.textContent = '显示评论';
+    button.setAttribute('aria-expanded', 'false');
+    status.textContent = '评论已隐藏';
+    fallback.hidden = true;
   });
+
+  loadComments();
 }

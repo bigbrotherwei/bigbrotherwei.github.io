@@ -24,8 +24,11 @@ test('theme controller updates an already loaded Giscus frame when system appear
     contentWindow: { postMessage: (data: unknown, origin: string) => { messages.push({ data, origin }); } },
   };
   const section = { getAttribute: (name: string) => sectionAttributes.get(name) ?? null };
+  const label = { textContent: '隐藏评论' };
   const button = {
     disabled: false, hidden: false, textContent: '',
+    querySelector: (selector: string) => selector === '[data-comment-label]' ? label : null,
+    setAttribute() {},
     addEventListener: (name: string, listener: () => void) => { buttonListeners.set(name, listener); },
   };
   const status = { textContent: '' };
@@ -62,8 +65,7 @@ test('theme controller updates an already loaded Giscus frame when system appear
 
   mountTheme(document, window);
   mountArticleComments(document);
-  assert.equal(embedChildren.length, 0);
-  buttonListeners.get('click')?.();
+  assert.equal(embedChildren.length, 1);
   assert.equal(embedChildren[0].attributes?.get('data-theme'), 'light');
   embedChildren.push(frame);
   embedListeners.get('load')?.({ target: frame });
