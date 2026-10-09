@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { JSDOM } from 'jsdom';
 
 const root = process.cwd();
 const dist = join(root, 'dist');
@@ -99,6 +100,23 @@ const foundTypes = new Set();
 for (const path of htmlFiles) {
   const html = read(path);
   const route = toRoute(path);
+
+  if (/^\/posts\/[^/]+\/$/.test(route)) {
+    const document = new JSDOM(html).window.document;
+    for (const link of document.querySelectorAll('[data-article-body] a[href]')) {
+      const href = link.getAttribute('href');
+      if (!href?.startsWith('/') || href.startsWith('//')) continue;
+      try {
+        const pathname = decodeURIComponent(new URL(href, siteOrigin).pathname);
+        const target = join(dist, pathname.slice(1), pathname.endsWith('/') ? 'index.html' : '');
+        if (relative(dist, target).startsWith('..') || !existsSync(target)) {
+          failures.push(`${route} has broken article link: ${href}`);
+        }
+      } catch {
+        failures.push(`${route} has invalid article link: ${href}`);
+      }
+    }
+  }
 
   if (route === '/search/' && html.includes('__VITE_PRELOAD__')) {
     failures.push('/search/ production script contains an unresolved Vite preload placeholder.');

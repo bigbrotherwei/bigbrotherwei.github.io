@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { checkPostPublishing } from './lib/post-publishing-checks.mjs';
 
 const root = process.cwd();
 const requiredPaths = [
@@ -93,16 +94,6 @@ const projectFiles = markdownFiles('src/content/projects');
 const topicDirectory = join(root, 'src/content/topics');
 const projectDirectory = join(root, 'src/content/projects');
 
-const postSlugs = new Map();
-for (const postPath of postFiles) {
-  const slug = relative(join(root, 'src/content/posts'), join(root, postPath))
-    .replace(/\\/g, '/')
-    .replace(/\.mdx?$/, '');
-  const previous = postSlugs.get(slug);
-  if (previous) failures.push(`重复文章 slug ${slug}: ${previous} 与 ${postPath}`);
-  else postSlugs.set(slug, postPath);
-}
-
 if (topicFiles.length < 2) {
   failures.push('Expected at least 2 topic markdown files');
 }
@@ -133,6 +124,14 @@ for (const topicPath of topicFiles) {
       failures.push(`${topicPath} missing required frontmatter: ${key}`);
     }
   }
+}
+
+for (const { file, message } of checkPostPublishing({
+  posts: postFiles.map((file) => ({ file, source: read(file) })),
+  topics: new Set(topics.keys()),
+  publicRoot: join(root, 'public'),
+})) {
+  failures.push(`${file}: ${message}`);
 }
 
 for (const postPath of postFiles) {

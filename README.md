@@ -150,7 +150,7 @@ background: "topic-developer-toolbox"
 这里写专题介绍。
 ```
 
-创建新文章时，在 `src/content/posts/` 下新增一个 `.md` 文件。文件名就是文章 slug，例如 `json-tool-design.md` 对应 `/posts/json-tool-design/`。
+创建新文章时，在 `src/content/posts/` 下新增一个 `.md` 文件；需要复用提示框、画廊或折叠示例时也可使用 `.mdx`。文件名就是文章 slug，例如 `json-tool-design.md` 对应 `/posts/json-tool-design/`；同名的 `.md` 与 `.mdx` 不可并存。
 
 ```markdown
 ---

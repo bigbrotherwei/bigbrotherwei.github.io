@@ -1,6 +1,6 @@
 # 博客文章写作指南
 
-这份文档说明文章写在哪里、如何归入专题、图片如何保存，以及当前 Markdown 文章可以使用哪些展示效果。
+这份文档说明文章写在哪里、如何归入专题、图片如何保存，以及 Markdown 与 MDX 文章可以使用哪些展示效果。
 
 ## 1. 在哪里写文章
 
@@ -10,7 +10,7 @@
 src/content/posts/
 ```
 
-每篇文章是一个独立的 `.md` 文件。文件名就是文章的 slug，也会成为公开地址的一部分。
+每篇文章是一个独立的 `.md` 或 `.mdx` 文件。文件名（不含扩展名）就是文章的 slug，也会成为公开地址的一部分。普通文章优先用 `.md`；需要复用展示组件时再用 `.mdx`。
 
 例如：
 
@@ -51,7 +51,7 @@ src/content/topics/blog-rebuild.md
 topic: "blog-rebuild"
 ```
 
-`order` 决定文章在该专题中的阅读顺序。第一篇通常填写 `1`，后续依次递增。
+`order` 决定文章在该专题中的阅读顺序。第一篇通常填写 `1`，后续依次递增；同一专题内不能重复。
 
 如果准备写一个全新的系列，应先创建专题，再写属于该专题的文章。当前专题状态只允许：`计划中`、`更新中`、`已完成`。
 
@@ -82,7 +82,7 @@ tags:
   - Astro
   - 博客维护
 topic: "blog-rebuild"
-order: 4
+order: 5
 draft: true
 background: "post-your-article"
 ---
@@ -206,13 +206,13 @@ public/images/backgrounds/
 
 ## 5. 当前是否只能写 Markdown
 
-当前内容集合只扫描：
+当前内容集合扫描：
 
 ```text
-src/content/posts/**/*.md
+src/content/posts/**/*.(md|mdx)
 ```
 
-因此，自动进入文章列表、专题和文章详情页的文章目前必须使用 `.md` 格式。项目暂未启用 MDX，`.mdx` 文件不会自动成为文章。
+`.md` 和 `.mdx` 使用同一套文章字段、地址、草稿规则和发布流程。同名的两个文件不能同时存在，否则会生成重复地址并导致构建失败。
 
 Markdown 并不只支持纯文字。当前文章可以使用：
 
@@ -223,7 +223,7 @@ Markdown 并不只支持纯文字。当前文章可以使用：
 - 粗体、斜体和行内代码。
 - 浏览器原生 HTML，例如 `figure`、`details`、`summary`、`mark`、`kbd`、`video`。
 
-文章中的二级、三级标题（`##`、`###`）会自动生成页内目录，并随阅读位置高亮；没有这两级标题的文章不会显示目录。建议用二级标题划分主要章节，三级标题补充小节，不必手写锚点或目录。
+文章中的二级、三级标题（`##`、`###`）会自动生成页内目录，并随阅读位置高亮；没有这两级标题的文章不会显示目录。代码块可在文章页复制；正文图片可点击放大。建议用二级标题划分主要章节，三级标题补充小节，不必手写锚点或目录。
 
 例如折叠内容：
 
@@ -253,32 +253,26 @@ Markdown 并不只支持纯文字。当前文章可以使用：
 
 适合：图片、表格、代码块、引用、折叠内容、音视频和简单 HTML。写文章时直接使用即可，不需要修改站点代码。
 
-### 使用 HTML 类名和全局 CSS
+### 在 MDX 中使用现成组件
 
-适合：提示框、强调段落、图片画廊、特殊表格等纯样式效果。
+适合：统一的提示框、图片画廊和折叠示例。将文章保存为 `.mdx`，在 frontmatter 后导入组件：
 
-这类效果需要先在站点样式中实现一个可复用类名，再在文章里使用：
+```mdx
+import Callout from '../../components/article/Callout.astro';
+import Gallery from '../../components/article/Gallery.astro';
+import Disclosure from '../../components/article/Disclosure.astro';
 
-```html
-<aside class="article-note">
-  这是一段需要特别注意的内容。
-</aside>
+<Callout type="tip">这是一条提示。</Callout>
+
+<Gallery images={[
+  { src: '/images/posts/my-post/first.webp', alt: '第一张图的具体内容', caption: '第一张' },
+  { src: '/images/posts/my-post/second.webp', alt: '第二张图的具体内容' },
+]} />
+
+<Disclosure summary="查看补充说明">折叠后显示的内容。</Disclosure>
 ```
 
-不要在每篇文章中复制大段 `<style>`，统一样式更容易维护和适配移动端。
-
-### 启用 MDX 或开发 Astro 组件
-
-适合：可交互图表、标签页、步骤器、可运行代码、复杂动画和需要 JavaScript 状态的组件。
-
-当前项目没有启用 MDX，因此 Markdown 文章里不能直接导入 Astro、React 或 Vue 组件。如果确实需要这类效果，应单独提出需求，再完成以下站点级改造：
-
-1. 接入 Astro MDX 集成。
-2. 扩展内容集合，使其识别 `.mdx`。
-3. 编写可复用且兼容移动端的组件。
-4. 增加构建、安全、无障碍和浏览器测试。
-
-不要直接在文章中加入来源不明的脚本，也不要为了单篇文章引入大型前端框架。
+`Callout` 的 `type` 只接受 `info`、`tip`、`warning`；`Gallery` 每张图片都必须有非空 `alt`。画廊图片本身是原图链接，没有脚本也能打开。完整示例见 `src/content/posts/writing-components.mdx`。不要在文章中加入来源不明的脚本，也不要为了单篇文章引入大型前端框架。
 
 ## 7. 本地预览与发布
 
@@ -296,7 +290,7 @@ npm run verify:visual-background
 npm run build
 ```
 
-最后一条命令会生成 Pagefind 搜索索引，并运行 `verify:dist` 检查文章的 Canonical、社交元数据、JSON-LD、RSS、Sitemap 和搜索边界。
+第一条命令会检查专题、顺序、重复 slug、图片替代文本和本地媒体路径；最后一条命令会生成 Pagefind 搜索索引，并检查文章站内链接、Canonical、社交元数据、JSON-LD、RSS、Sitemap 和搜索边界。远程链接不会在构建时联网检查。
 
 推荐发布流程：
 

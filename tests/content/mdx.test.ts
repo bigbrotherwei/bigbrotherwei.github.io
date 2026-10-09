@@ -14,7 +14,8 @@ test('posts collection loads Markdown and MDX with the same schema', () => {
 test('content verification accepts MDX and rejects duplicate Markdown/MDX slugs', () => {
   const verifier = read('scripts/verify-content.mjs');
   assert.match(verifier, /\.mdx/);
-  assert.match(verifier, /duplicate|重复|冲突/i);
+  assert.match(verifier, /checkPostPublishing\(\{/);
+  assert.match(read('scripts/lib/post-publishing-checks.mjs'), /文章 slug 冲突/);
 });
 
 test('published post paths, search and RSS still exclude drafts regardless of source extension', () => {
