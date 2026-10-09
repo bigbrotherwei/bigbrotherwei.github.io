@@ -27,8 +27,7 @@ if (!existsSync(join(root, registryPath))) {
   const pageContracts = {
     markdown: {
       logicModule: 'markdown.ts',
-      logicCalls: ['renderMarkdown', 'importMarkdownFile'],
-      toolResultCalls: ['renderMarkdown', 'importMarkdownFile'],
+      logicCalls: ['createMarkdownPreviewController'],
     },
     'images-pdf': {
       logicModule: 'images-pdf.ts',

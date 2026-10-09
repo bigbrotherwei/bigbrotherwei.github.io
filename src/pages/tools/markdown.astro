@@ -36,58 +36,23 @@ if (!tool) throw new Error('缺少 Markdown 工具注册信息');
 </ToolLayout>
 
 <script>
-  import { importMarkdownFile, renderMarkdown } from '../../lib/tools/markdown.ts';
+  import { createMarkdownPreviewController } from '../../lib/tools/markdown.ts';
 
   const input = document.querySelector<HTMLTextAreaElement>('#markdown-input');
   const fileInput = document.querySelector<HTMLInputElement>('#markdown-file');
   const preview = document.querySelector<HTMLElement>('#markdown-preview');
   const status = document.querySelector<HTMLElement>('#markdown-status');
   const clear = document.querySelector<HTMLButtonElement>('#markdown-clear');
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  if (!input || !preview || !status) throw new Error('Markdown 工作台缺少必要控件');
+  const controller = createMarkdownPreviewController({ input, preview, status, window });
 
-  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
-    if (!status) return;
-    status.textContent = message;
-    if (state === 'idle') delete status.dataset.state;
-    else status.dataset.state = state;
-  };
-
-  const updatePreview = () => {
-    if (!input || !preview) return;
-    const result = renderMarkdown(input.value, window);
-    if (!result.ok) {
-      showStatus(result.error, 'error');
-      return;
-    }
-    preview.innerHTML = result.value;
-    showStatus('预览已更新', 'success');
-  };
-
-  const schedulePreview = () => {
-    clearTimeout(timer);
-    timer = setTimeout(updatePreview, 200);
-  };
-
-  input?.addEventListener('input', schedulePreview);
+  input.addEventListener('input', controller.schedulePreview);
   fileInput?.addEventListener('change', async () => {
     const file = fileInput.files?.[0];
-    if (!file || !input) return;
-    const result = await importMarkdownFile(file);
+    if (!file) return;
+    await controller.importFile(file);
     fileInput.value = '';
-    if (!result.ok) {
-      showStatus(result.error, 'error');
-      return;
-    }
-    input.value = result.value;
-    updatePreview();
-    input.focus();
   });
-  clear?.addEventListener('click', () => {
-    if (!input) return;
-    input.value = '';
-    clearTimeout(timer);
-    updatePreview();
-    input.focus();
-  });
-  updatePreview();
+  clear?.addEventListener('click', controller.clear);
+  controller.updatePreview();
 </script>
