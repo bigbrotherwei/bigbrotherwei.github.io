@@ -7,7 +7,7 @@ const tool = tools.find(({ slug }) => slug === 'images-pdf');
 if (!tool) throw new Error('缺少图片合并 PDF 工具注册信息');
 ---
 
-<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-images-pdf" statusId="images-pdf-status">
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-images-pdf" statusId="images-pdf-status" statusInside>
   <div class="tool-fields">
     <div class="tool-field">
       <label for="images-pdf-input">选择图片</label>

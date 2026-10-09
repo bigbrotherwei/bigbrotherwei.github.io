@@ -77,6 +77,13 @@ test('keeps hidden tool cards visually removed even when card classes set displa
   assert.match(globalCss, /\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important\s*;/s);
 });
 
+test('new tool status messages stay inside their work panels', () => {
+  for (const slug of ['images-pdf', 'markdown', 'text-diff', 'regex']) {
+    const page = readFileSync(new URL(`../../src/pages/tools/${slug}.astro`, import.meta.url), 'utf8');
+    assert.match(page, /<ToolLayout\b[^>]*\bstatusInside\b/s, `${slug} should place status inside the workspace`);
+  }
+});
+
 test('directory search and category filters update the visible count together', () => {
   const source = readFileSync(new URL('../../src/pages/tools/index.astro', import.meta.url), 'utf8');
   const script = source.match(/<script>([\s\S]*?)<\/script>/)?.[1];
