@@ -1,6 +1,6 @@
 # Vercount 访问统计部署与验收
 
-本站使用 [Vercount](https://github.com/EvanNotFound/vercount) 托管的公开脚本统计全站访问量（PV）、累计访客数（UV）和文章页面访问量。GitHub Pages 仍负责静态页面；合并本次 PR 后重新部署即可接入统计，不需要 Cloudflare Worker、D1、API 密钥或 GitHub Actions 统计变量。本站不再展示当前在线人数，因为 Vercount 没有提供这一指标。
+本站使用 [Vercount](https://github.com/EvanNotFound/vercount) 托管的公开脚本统计全站访问量（PV）、累计访客数（UV），以及每篇文章和每个工具详情页的访问量（页面 PV）。GitHub Pages 仍负责静态页面；合并本次 PR 后重新部署即可接入统计，不需要 Cloudflare Worker、D1、API 密钥或 GitHub Actions 统计变量。Vercount 不提供单页 UV 或工具按钮使用次数；页面计数不能解释为独立阅读人数或实际使用次数。本站不再展示当前在线人数。
 
 ## 发布前
 
@@ -10,7 +10,7 @@
 
 ## 验收
 
-1. 打开线上首页，确认“总访问量”和“累计访客”由“加载中”更新为数字；打开任意文章，确认“阅读次数”更新为数字。当前在线人数应已移除。
+1. 打开线上首页，确认“总访问量”和“累计访客”由“加载中”更新为数字；打开两篇不同文章和两个不同工具详情页，确认各页的“阅读量”或“页面访问量”更新为数字，并按各自的页面路径累计。当前在线人数应已移除。
 2. 在浏览器开发者工具的网络面板确认脚本来自 `https://events.vercount.one/js`，且不再请求旧 Worker 的 `/visit`、`/heartbeat`、`/stats` 接口。浏览器拦截第三方脚本或 Vercount 暂不可用时，数字应显示“暂不可用”，正文、导航和评论仍可使用。
 3. 在另一个浏览器配置中重复访问进行对照。Vercount 使用 Cookie 识别访客；UV 并非严格的独立真人数，具体更新时机以服务端结果为准，不要根据单次刷新判断故障。
 

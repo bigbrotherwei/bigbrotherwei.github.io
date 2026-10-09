@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -9,13 +9,29 @@ const read = (name: string) => readFileSync(path.join(root, name), 'utf8');
 test('static pages use Vercount counters without an online placeholder', () => {
   const layout = read('src/layouts/BaseLayout.astro');
   const home = read('src/components/SiteStats.astro');
-  const article = read('src/components/ArticleReads.astro');
+  const article = read('src/pages/posts/[slug].astro');
+  const tool = read('src/components/tools/ToolLayout.astro');
+  assert.ok(existsSync(path.join(root, 'src/components/PageViews.astro')));
+  const pageViews = read('src/components/PageViews.astro');
   assert.match(layout, /mountVercount\(document, window\)/);
   assert.doesNotMatch(layout, /mountAnalytics|PUBLIC_ANALYTICS_API_URL/);
   assert.match(home, /id="vercount_value_site_pv"/);
   assert.match(home, /id="vercount_value_site_uv"/);
-  assert.match(article, /id="vercount_value_page_pv"/);
+  assert.match(pageViews, /id="vercount_value_page_pv"/);
+  assert.match(article, /<PageViews label="阅读量"/);
+  assert.match(tool, /<PageViews label="页面访问量"/);
+  assert.doesNotMatch(tool, /使用次数|使用人数/);
   assert.doesNotMatch(home, /当前在线|data-stat-key/);
+});
+
+test('article and tool work surfaces use translucent outer panels while inputs stay solid', () => {
+  const globalCss = read('src/styles/global.css');
+  const toolsCss = read('src/styles/tools.css');
+  assert.match(globalCss, /--color-panel-glass:\s*rgba\(/);
+  assert.match(globalCss, /--color-reading-glass:\s*rgba\(/);
+  assert.match(globalCss, /\.article-body\.sketch-card\s*\{[^}]*background:\s*var\(--color-reading-glass\)/s);
+  assert.match(toolsCss, /\.tool-workspace\s*\{[^}]*background:\s*var\(--color-panel-glass\)/s);
+  assert.match(toolsCss, /\.tool-field :where\(input, select, textarea\)\s*\{[^}]*background:\s*var\(--color-input\)/s);
 });
 
 test('deployment and privacy copy describe only the active provider', () => {

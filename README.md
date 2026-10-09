@@ -60,7 +60,7 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 
 文章评论需要仓库所有者另外开启 GitHub Discussions、安装 Giscus App，并设置四项公开的 GitHub Actions Repository Variables。具体步骤和上线检查见[文章评论配置](docs/comments-setup.zh.md)；读者可在站点的 `/privacy/` 查看[隐私说明](src/pages/privacy.astro)。未配置时文章仍可阅读和发布，评论区会显示“评论未开放”。
 
-访问统计使用 [Vercount](https://github.com/EvanNotFound/vercount)，展示全站 PV、UV 和文章阅读数，无需单独部署统计后端。启用、验收与迁移注意事项见[访问统计部署指南](docs/analytics-setup.zh.md)。服务不可用时，静态页面仍可正常阅读，统计数字显示“暂不可用”。
+访问统计使用 [Vercount](https://github.com/EvanNotFound/vercount)，展示全站 PV、UV，以及各文章和工具详情页的访问量，无需单独部署统计后端。工具页数字不代表实际按钮使用次数。启用、验收与迁移注意事项见[访问统计部署指南](docs/analytics-setup.zh.md)。服务不可用时，静态页面仍可正常阅读，统计数字显示“暂不可用”。
 
 ## 维护流程
 
