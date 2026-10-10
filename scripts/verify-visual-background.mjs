@@ -23,6 +23,8 @@ const routePaths = [
   'src/pages/projects/[slug].astro',
 ];
 const failures = [];
+const minimumBackgroundBytes = 50_000;
+const maximumBackgroundBytes = 350 * 1024;
 const stripComments = (source) => source.replace(/<!--[\s\S]*?-->/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
 const readWebpDimensions = (path) => {
   const data = readFileSync(path);
@@ -79,8 +81,8 @@ for (const [path, minimumWidth, minimumHeight, label] of [
     failures.push(`${label} farm background is too small: ${metadata.width}x${metadata.height}`);
   }
 
-  if (metadata.bytes < 80_000 || metadata.bytes > 1_000_000) {
-    failures.push(`${label} farm background size must stay between 80 KB and 1 MB`);
+  if (metadata.bytes < minimumBackgroundBytes || metadata.bytes > maximumBackgroundBytes) {
+    failures.push(`${label} farm background size must stay between 50 KB and 350 KiB`);
   }
 }
 
@@ -162,8 +164,8 @@ if (existsSync(registryPath)) {
         failures.push(`Page background must be a lossy WebP image: ${asset}`);
       } else if (metadata.width < minimumWidth || metadata.height < minimumHeight) {
         failures.push(`Page background is too small: ${asset} (${metadata.width}x${metadata.height})`);
-      } else if (metadata.bytes < 80_000 || metadata.bytes > 1_000_000) {
-        failures.push(`Page background size must stay between 80 KB and 1 MB: ${asset}`);
+      } else if (metadata.bytes < minimumBackgroundBytes || metadata.bytes > maximumBackgroundBytes) {
+        failures.push(`Page background size must stay between 50 KB and 350 KiB: ${asset}`);
       }
     }
   }
