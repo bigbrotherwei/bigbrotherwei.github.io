@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import PostsSubnav from '../../components/PostsSubnav.astro';
+import PostDate from '../../components/PostDate.astro';
 import { buildTagIndex } from '../../lib/content/discovery';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
@@ -42,9 +43,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
       <section class="tag-detail__posts" aria-label={`${tag.label} 标签文章`}>
         {tag.posts.length > 0 ? tag.posts.map((post) => (
           <article class="archive-post">
-            <time class="archive-post__date" datetime={post.data.pubDate.toISOString()}>
-              {formatDate(post.data.pubDate)}
-            </time>
+            <PostDate class="archive-post__date" date={post.data.pubDate} text={formatDate(post.data.pubDate)} />
             <div class="archive-post__content">
               <h2><a href={`/posts/${post.id}/`}>{post.data.title}</a></h2>
               <p>{post.data.description}</p>

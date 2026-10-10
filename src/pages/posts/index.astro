@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import PageHero from '../../components/PageHero.astro';
+import PostDate from '../../components/PostDate.astro';
 import PostsSubnav from '../../components/PostsSubnav.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
@@ -24,7 +25,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     <PageHero
       eyebrow="Posts"
       title="文章"
-      description="文章是按时间发布的单篇内容。它可以独立阅读，也可以通过 frontmatter 归入某个专题。"
+      description="技术实践与学习记录，按发布时间浏览。"
     />
 
     <PostsSubnav active="posts" />
@@ -33,7 +34,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
       {posts.length > 0 ? posts.map((post) => (
         <a class="sketch-card content-card" href={`/posts/${post.id}/`}>
           <div class="content-card__meta">
-            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            <PostDate date={post.data.pubDate} text={formatDate(post.data.pubDate)} />
             <span>{post.data.tags.join(' / ')}</span>
           </div>
           <h2>{post.data.title}</h2>
