@@ -117,3 +117,9 @@ test('article callouts align with paragraphs without a browser-default left marg
   const diagram = readFileSync(new URL('../../public/interactive/foundationdb-architecture.html', import.meta.url), 'utf8');
   assert.match(diagram, /html\.embedded \.stage \{ height: auto; \}/u);
 });
+
+test('single adjacent article link aligns with the reading column', () => {
+  const css = readFileSync(new URL('../../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(css, /\.article-adjacent\s*\{[^}]*padding-inline:\s*clamp\(1\.25rem, 3vw, 2rem\);/u);
+  assert.match(css, /\.article-adjacent__link:only-child\s*\{[^}]*grid-column:\s*1;[^}]*text-align:\s*left;/u);
+});
