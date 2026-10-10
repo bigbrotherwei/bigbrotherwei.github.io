@@ -63,7 +63,7 @@ const structuredData = [
   {structuredData}
 >
   <progress class="reading-progress" max="100" value="0" aria-label="文章阅读进度" data-reading-progress></progress>
-  <main class="page-shell">
+  <main class="page-shell page-shell--article">
     <article class="article-page">
       <a class="back-link" href="/posts/">返回文章</a>
       <div data-pagefind-body>
@@ -86,7 +86,7 @@ const structuredData = [
         <div class="article-reading-layout">
           {tocHeadings.length > 0 && (
             <aside class="article-toc" data-pagefind-ignore>
-              <details open>
+              <details>
                 <summary>
                   <ListTree aria-hidden="true" size={17} />
                   <span>本篇目录</span>
@@ -174,5 +174,9 @@ const structuredData = [
 
     mountArticleReading(document, window);
     mountArticleMedia(document, window);
+    if (window.matchMedia('(min-width: 1381px)').matches) {
+      const toc = document.querySelector<HTMLDetailsElement>('.article-toc details');
+      if (toc) toc.open = true;
+    }
   </script>
 </BaseLayout>

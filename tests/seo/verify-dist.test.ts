@@ -101,6 +101,15 @@ test('accepts complete canonical and social URL metadata', () => {
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
 });
 
+test('accepts an empty article catalog with an empty RSS feed', () => {
+  const result = runVerifier((root) => {
+    rmSync(join(root, 'dist/posts/hello'), { recursive: true });
+    write(root, 'dist/rss.xml', '<rss><channel></channel></rss>');
+  });
+
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
 test('rejects broken root-relative links inside published article bodies', () => {
   const result = runVerifier((root) => {
     const path = join(root, 'dist/posts/hello/index.html');

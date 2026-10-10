@@ -308,11 +308,7 @@ if (existsSync(registryPath)) {
 }
 
 const expectedContentBackgrounds = {
-  posts: {
-    'blog-rebuild-roadmap.md': 'post-blog-rebuild-roadmap',
-    'github-pages-workflow.md': 'post-github-pages-workflow',
-    'pixel-farm-background.md': 'post-pixel-farm-background',
-  },
+  posts: {},
   topics: {
     'blog-rebuild.md': 'topic-blog-rebuild',
     'developer-toolbox.md': 'topic-developer-toolbox',

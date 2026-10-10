@@ -196,8 +196,10 @@ if (searchableRoutes.length !== expectedSearchableRoutes.length) {
 for (const route of expectedSearchableRoutes) {
   if (!searchableRoutes.includes(route)) failures.push(`Generated detail page is missing Pagefind body: ${route}`);
 }
-for (const type of expectedTypes) {
-  if (!foundTypes.has(type)) failures.push(`Pagefind output is missing content type: ${type}`);
+for (const [rootName, type] of [['posts', '文章'], ['topics', '专题'], ['tools', '工具'], ['projects', '项目']]) {
+  if (expectedSearchableRoutes.some((route) => route.startsWith(`/${rootName}/`)) && !foundTypes.has(type)) {
+    failures.push(`Pagefind output is missing content type: ${type}`);
+  }
 }
 
 for (const slug of toolSlugs) {

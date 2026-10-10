@@ -98,10 +98,6 @@ if (topicFiles.length < 2) {
   failures.push('Expected at least 2 topic markdown files');
 }
 
-if (postFiles.length < 3) {
-  failures.push('Expected at least 3 post markdown files');
-}
-
 if (projectFiles.length < 1) {
   failures.push('Expected at least 1 project markdown file');
 }

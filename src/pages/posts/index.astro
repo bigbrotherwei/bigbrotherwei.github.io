@@ -30,7 +30,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
     <PostsSubnav active="posts" />
 
     <section class="content-list" aria-label="文章列表">
-      {posts.map((post) => (
+      {posts.length > 0 ? posts.map((post) => (
         <a class="sketch-card content-card" href={`/posts/${post.id}/`}>
           <div class="content-card__meta">
             <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
@@ -39,7 +39,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
           <h2>{post.data.title}</h2>
           <p>{post.data.description}</p>
         </a>
-      ))}
+      )) : <p class="discovery-empty">还没有发布的文章。</p>}
     </section>
   </main>
 </BaseLayout>
