@@ -30,8 +30,11 @@ function contrast(foreground: string, background: string) {
 
 test('published entry points load theme styles and keep the navigation control', () => {
   const assets = readdirSync(new URL('dist/_astro/', root)).filter((name) => name.endsWith('.css'));
+  const postDetails = readdirSync(new URL('dist/posts/', root), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => `posts/${entry.name}/index.html`);
   for (const path of [
-    'index.html', 'posts/index.html', 'posts/blog-rebuild-roadmap/index.html',
+    'index.html', 'posts/index.html', ...postDetails,
     'topics/index.html', 'topics/blog-rebuild/index.html', 'search/index.html', 'tools/index.html',
     ...['json', 'base64', 'url', 'timestamp', 'uuid', 'text-counter'].map((name) => `tools/${name}/index.html`),
   ]) {
@@ -110,6 +113,14 @@ test('reading and tool surfaces consume semantic theme tokens', () => {
     assert.match(JSON.stringify(declarations(catalogCss, selector)), /var\(--color-/);
   }
   assert.match(declarations(css, '.page-hero h1').color, /--color-scene-text/);
+});
+
+test('article media stays within the reading column and tables have visible cells', () => {
+  assert.equal(declarations(css, '.article-body img')['max-width'], '100%');
+  assert.equal(declarations(css, '.article-body table').width, '100%');
+  assert.equal(declarations(css, '.article-body :where(th, td)').border, '1px solid var(--color-table-line)');
+  assert.equal(declarations(css, '.article-interactive iframe').width, '100%');
+  assert.match(css.toString(), /@media \(max-width: 760px\)[\s\S]*?\.article-body table\s*\{[^}]*overflow-x:\s*auto/u);
 });
 
 test('home card text uses the reading theme while article metadata stays legible over the scene', () => {

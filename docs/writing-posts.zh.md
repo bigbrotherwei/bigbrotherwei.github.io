@@ -272,7 +272,7 @@ import Disclosure from '../../components/article/Disclosure.astro';
 <Disclosure summary="查看补充说明">折叠后显示的内容。</Disclosure>
 ```
 
-`Callout` 的 `type` 只接受 `info`、`tip`、`warning`；`Gallery` 每张图片都必须有非空 `alt`。画廊图片本身是原图链接，没有脚本也能打开。完整示例见 `src/content/posts/writing-components.mdx`。不要在文章中加入来源不明的脚本，也不要为了单篇文章引入大型前端框架。
+`Callout` 的 `type` 只接受 `info`、`tip`、`warning`；`Gallery` 每张图片都必须有非空 `alt`。画廊图片本身是原图链接，没有脚本也能打开。上面的片段可以作为新 `.mdx` 文章的起点。不要在文章中加入来源不明的脚本，也不要为了单篇文章引入大型前端框架。
 
 ## 7. 本地预览与发布
 

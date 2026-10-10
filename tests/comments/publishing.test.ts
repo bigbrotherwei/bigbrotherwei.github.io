@@ -39,7 +39,11 @@ test('configured publishing prepares automatic comments and includes Giscus attr
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
     const posts = readdirSync(path.join(output, 'posts'), { withFileTypes: true })
       .filter((entry) => entry.isDirectory());
-    assert.ok(posts.length > 0);
+    if (posts.length === 0) {
+      const articleTemplate = readFileSync(path.join(root, 'src/pages/posts/[slug].astro'), 'utf8');
+      assert.match(articleTemplate, /<ArticleComments\s*\/>/);
+      assert.match(readFileSync(path.join(output, 'posts/index.html'), 'utf8'), /还没有发布的文章。/);
+    }
     for (const post of posts) {
       const article = readFileSync(path.join(output, 'posts', post.name, 'index.html'), 'utf8');
       assert.match(article, /<button[^>]+data-comment-load/, post.name);
@@ -78,7 +82,11 @@ test('unconfigured publishing keeps articles readable, comments unavailable, and
 
     const posts = readdirSync(path.join(output, 'posts'), { withFileTypes: true })
       .filter((entry) => entry.isDirectory());
-    assert.ok(posts.length > 0, 'expected at least one published article');
+    if (posts.length === 0) {
+      const articleTemplate = readFileSync(path.join(root, 'src/pages/posts/[slug].astro'), 'utf8');
+      assert.match(articleTemplate, /<ArticleComments\s*\/>/);
+      assert.match(readFileSync(path.join(output, 'posts/index.html'), 'utf8'), /还没有发布的文章。/);
+    }
     for (const post of posts) {
       const article = readFileSync(path.join(output, 'posts', post.name, 'index.html'), 'utf8');
       assert.match(article, /href="\/privacy\/"/, post.name);

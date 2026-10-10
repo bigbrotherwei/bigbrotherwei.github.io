@@ -10,12 +10,13 @@ export const backgroundKeys = [
   'search-index',
   'project-personal-blog',
   'about',
-  'post-blog-rebuild-roadmap',
-  'post-github-pages-workflow',
-  'post-pixel-farm-background',
-  'post-writing-components',
   'topic-blog-rebuild',
   'topic-developer-toolbox',
+  'topic-foundationdb',
+  'post-foundationdb-architecture',
+  'post-foundationdb-three-node-deployment',
+  'post-foundationdb-expansion-failure-drills',
+  'post-foundationdb-three-node-performance',
   'tool-json',
   'tool-base64',
   'tool-url',
@@ -84,22 +85,6 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
     desktop: '/images/backgrounds/about-lakeside-garden.webp',
     mobile: '/images/backgrounds/about-lakeside-garden-mobile.webp',
   },
-  'post-blog-rebuild-roadmap': {
-    desktop: '/images/backgrounds/post-roadmap-trail.webp',
-    mobile: '/images/backgrounds/post-roadmap-trail-mobile.webp',
-  },
-  'post-github-pages-workflow': {
-    desktop: '/images/backgrounds/post-workflow-waystation.webp',
-    mobile: '/images/backgrounds/post-workflow-waystation-mobile.webp',
-  },
-  'post-pixel-farm-background': {
-    desktop: '/images/backgrounds/post-painter-overlook.webp',
-    mobile: '/images/backgrounds/post-painter-overlook-mobile.webp',
-  },
-  'post-writing-components': {
-    desktop: '/images/backgrounds/post-writing-components.webp',
-    mobile: '/images/backgrounds/post-writing-components-mobile.webp',
-  },
   'topic-blog-rebuild': {
     desktop: '/images/backgrounds/topic-renovated-homestead.webp',
     mobile: '/images/backgrounds/topic-renovated-homestead-mobile.webp',
@@ -107,6 +92,26 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'topic-developer-toolbox': {
     desktop: '/images/backgrounds/topic-inventor-workshop.webp',
     mobile: '/images/backgrounds/topic-inventor-workshop-mobile.webp',
+  },
+  'topic-foundationdb': {
+    desktop: '/images/backgrounds/topic-foundationdb.webp',
+    mobile: '/images/backgrounds/topic-foundationdb-mobile.webp',
+  },
+  'post-foundationdb-architecture': {
+    desktop: '/images/backgrounds/post-painter-overlook.webp',
+    mobile: '/images/backgrounds/post-painter-overlook-mobile.webp',
+  },
+  'post-foundationdb-three-node-deployment': {
+    desktop: '/images/backgrounds/post-workflow-waystation.webp',
+    mobile: '/images/backgrounds/post-workflow-waystation-mobile.webp',
+  },
+  'post-foundationdb-expansion-failure-drills': {
+    desktop: '/images/backgrounds/post-roadmap-trail.webp',
+    mobile: '/images/backgrounds/post-roadmap-trail-mobile.webp',
+  },
+  'post-foundationdb-three-node-performance': {
+    desktop: '/images/backgrounds/post-writing-components.webp',
+    mobile: '/images/backgrounds/post-writing-components-mobile.webp',
   },
   'tool-json': {
     desktop: '/images/backgrounds/tool-json-archive.webp',
