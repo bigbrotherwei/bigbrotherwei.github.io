@@ -89,7 +89,7 @@ test('unconfigured publishing keeps articles readable, comments unavailable, and
     }
     for (const post of posts) {
       const article = readFileSync(path.join(output, 'posts', post.name, 'index.html'), 'utf8');
-      assert.match(article, /href="\/privacy\/"/, post.name);
+      assert.doesNotMatch(article, /href="\/privacy\/"/, post.name);
       assert.match(article, /评论未开放/, post.name);
       assert.ok(!/<script[^>]+src=["']https:\/\/giscus\.app\/client\.js/.test(article), `${post.name}: eager Giscus script`);
       assert.ok(!/<iframe[^>]+src=["']https:\/\/giscus\.app/.test(article), `${post.name}: eager Giscus iframe`);

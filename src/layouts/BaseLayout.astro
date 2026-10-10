@@ -1,5 +1,7 @@
 ---
 import HandPaintedFarmBackdrop from '../components/HandPaintedFarmBackdrop.astro';
+import PointerEffects from '../components/PointerEffects.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import SiteNav from '../components/SiteNav.astro';
 import { pageBackgrounds, type BackgroundKey } from '../data/backgrounds';
 import { buildCanonicalUrl, serializeJsonLd, type JsonLdValue } from '../lib/seo';
@@ -78,6 +80,8 @@ const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structured
     <HandPaintedFarmBackdrop background={background} />
     <SiteNav />
     <slot />
+    <SiteFooter />
+    <PointerEffects />
     <script>
       import { mountVercount } from '../scripts/vercount';
       import { mountTheme } from '../scripts/theme';

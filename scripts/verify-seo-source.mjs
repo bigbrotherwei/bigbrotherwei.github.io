@@ -78,7 +78,7 @@ assertIncludes(configSource, 'image: false', 'Astro config');
 assertIncludes(navSource, "import { Search } from 'lucide-astro'", 'site navigation');
 assertIncludes(navSource, 'href="/search/"', 'site navigation');
 assertIncludes(navSource, 'aria-label="搜索"', 'site navigation');
-assertIncludes(navSource, 'title="搜索"', 'site navigation');
+assertIncludes(navSource, 'data-tooltip="搜索"', 'site navigation');
 
 if (!existsSync(resolve(root, searchPagePath))) {
   throw new Error(`Missing search page: ${searchPagePath}`);
