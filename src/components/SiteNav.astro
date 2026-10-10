@@ -15,12 +15,12 @@ const links = [
 <nav class="site-nav" aria-label="主导航">
   <a class="site-nav__brand" href="/">bigbrotherwei</a>
   <div class="site-nav__links">
-    {links.map((link) => <a class="site-nav__icon-link" href={link.href} aria-label={link.label} title={link.label} aria-current={Astro.url.pathname === link.href || Astro.url.pathname.startsWith(`${link.href}/`) && link.href !== '/' ? 'page' : undefined}><link.icon aria-hidden="true" size={19} strokeWidth={2.2} /></a>)}
-    <a class="site-nav__icon-link" href="/search/" aria-label="搜索" title="搜索">
+    {links.map((link) => <a class="site-nav__icon-link" href={link.href} aria-label={link.label} data-tooltip={link.label} aria-current={Astro.url.pathname === link.href || Astro.url.pathname.startsWith(`${link.href}/`) && link.href !== '/' ? 'page' : undefined}><link.icon aria-hidden="true" size={19} strokeWidth={2.2} /></a>)}
+    <a class="site-nav__icon-link" href="/search/" aria-label="搜索" data-tooltip="搜索">
       <Search aria-hidden="true" size={19} strokeWidth={2.2} />
     </a>
     <div class="site-nav__theme">
-      <button class="site-nav__icon-link site-nav__theme-toggle" type="button" data-theme-toggle aria-label="选择主题" aria-haspopup="menu" aria-expanded="false" aria-controls="site-theme-menu" title="选择主题">
+      <button class="site-nav__icon-link site-nav__theme-toggle" type="button" data-theme-toggle aria-label="选择主题" aria-haspopup="menu" aria-expanded="false" aria-controls="site-theme-menu" data-tooltip="选择主题">
         <Sun aria-hidden="true" size={19} strokeWidth={2.2} />
       </button>
       <div class="site-nav__theme-menu" id="site-theme-menu" data-theme-menu role="menu" aria-label="主题" hidden>

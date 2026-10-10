@@ -8,7 +8,7 @@ test('primary navigation uses labeled icons with hover text', () => {
     assert.match(source, new RegExp(`label: '${label}'`));
   }
   assert.match(source, /aria-label=\{link\.label\}/);
-  assert.match(source, /title=\{link\.label\}/);
+  assert.match(source, /data-tooltip=\{link\.label\}/);
   assert.match(source, /<link\.icon/);
   assert.doesNotMatch(source, /href=\{link\.href\}>\{link\.label\}<\/a>/);
 });

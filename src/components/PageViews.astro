@@ -10,5 +10,4 @@ const { label } = Astro.props;
 
 <div class="page-views" aria-label={`${label}统计`} data-vercount-stats data-state="loading" data-pagefind-ignore>
   <span>{label} <strong id="vercount_value_page_pv" data-vercount-value>加载中</strong>{label === '阅读量' && <UsersRound aria-hidden="true" size={15} strokeWidth={2} />}</span>
-  <a href="/privacy/">隐私说明</a>
 </div>
