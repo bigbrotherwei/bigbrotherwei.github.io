@@ -32,7 +32,7 @@ FoundationDB（FDB）是一个有序分布式 KV 数据库。核心 API 很小�
 
 <div class="article-interactive">
   <p><strong>交互架构图</strong><a href="/interactive/foundationdb-architecture.html" target="_blank" rel="noopener noreferrer">单独打开</a></p>
-  <iframe src="/interactive/foundationdb-architecture.html?embed=1" title="FoundationDB 分域交互架构图" loading="lazy" sandbox="allow-scripts"></iframe>
+  <iframe src="/interactive/foundationdb-architecture.html?embed=1" title="FoundationDB 分域交互架构图" loading="lazy" sandbox="allow-scripts" data-auto-height></iframe>
 </div>
 
 ![FoundationDB 逻辑架构总览](/images/posts/foundationdb-architecture/figure-1.png)

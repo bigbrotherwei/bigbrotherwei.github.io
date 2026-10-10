@@ -25,12 +25,11 @@ html.embedded .hero { align-items: flex-start; }
 html.embedded .hero h1 { font-size: 21px; }
 html.embedded .badge { display: none; }
 html.embedded .layout { grid-template-columns: minmax(0, 1fr); }
-html.embedded .stage { height: min(54vh, 440px); }
+html.embedded .stage { height: auto; }
 html.embedded .stage svg { min-width: 0; }
 html.embedded .side { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 760px) {
   html.embedded .side { grid-template-columns: 1fr; }
-  html.embedded .stage { height: 330px; }
   html.embedded .stage svg { min-width: 720px; }
 }
 </style></head>
@@ -82,7 +81,13 @@ html.embedded .side { display: grid; grid-template-columns: repeat(2, minmax(0, 
 <div class="footer">该图用于解释 FoundationDB 核心逻辑架构与交互边界；具体版本在 version-vector、多地域、角色命名等方面可能有实现差异。</div>
 </div>
 <script>
-if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embedded');
+if (new URLSearchParams(location.search).has('embed')) {
+  document.documentElement.classList.add('embedded');
+  const page = document.querySelector('.page');
+  const reportHeight = () => parent.postMessage({ type: 'foundationdb-architecture-height', height: Math.ceil(page.getBoundingClientRect().height) }, '*');
+  new ResizeObserver(reportHeight).observe(page);
+  reportHeight();
+}
 const roleInfo={coordinator:{title:"Coordinator",meta:"多实例（通常奇数）",pills:["quorum","CC election","coordinated state"],body:"保存很小的协调/引导状态，正常事务数据路径不经过 Coordinator。"},cc:{title:"Cluster Controller",meta:"单活逻辑角色",pills:["recruitment","failure detection","DBInfo","recovery"],body:"控制面核心：接收 Worker 注册，招募角色，驱动 transaction-system generation 的恢复与切换。"},worker:{title:"Worker / fdbserver",meta:"多实例 OS 进程",pills:["register","host roles","heartbeat"],body:"真正运行在机器上的 fdbserver 进程。逻辑角色可以共置在同一个 Worker 中。"},dd:{title:"Data Distributor",meta:"单活",pills:["shard","team","move"],body:"负责 shard placement、split/merge、数据迁移和副本修复。"},ratekeeper:{title:"Ratekeeper",meta:"单活",pills:["metrics","TPS budget","backpressure"],body:"观察 TLog/SS 压力，计算 transaction admission 预算，并由 GRV Proxy 执行限流。"},master:{title:"Master / Sequencer",meta:"单活逻辑角色",pills:["CV","liveCommittedVersion","version authority"],body:"为 commit batch 分配 Commit Version；维护 liveCommittedVersion；GRV Proxy 从这里获得安全的已提交版本。"},client:{title:"Client",meta:"海量实例",pills:["RV","location cache","direct read","commit"],body:"从 GRV Proxy 获取 RV；普通读取直接访问 Storage Server；commit 发给 Commit Proxy；仅在 location cache miss/stale 时向 CP 查询 key location。"},grv:{title:"GRV Proxy",meta:"多实例",pills:["GetReadVersion","batching","admission","epoch check"],body:"聚合 GetReadVersion 请求，向 Master 查询 committed frontier，并确认当前 transaction-system epoch 仍有效。"},cp:{title:"Commit Proxy",meta:"多实例",pills:["commit batch","CV","Resolver fanout","tags"],body:"接收 commit、申请 CV、调用 Resolver 做 OCC；只对通过的事务生成 tagged mutations，通过 LogSystem 写 TLogs；同时提供 key-location 查询。"},resolver:{title:"Resolver",meta:"多实例",pills:["OCC","conflict range","version order"],body:"维护短期冲突历史并按版本顺序检查冲突。它决定事务是否可提交，但不是用户 mutation 的最终 durability 位置。"},txns:{title:"txnStateStore",meta:"状态视图，不是独立服务",pills:["keyServers","serverTags","config"],body:"Commit Proxy 持有的关键系统元数据视图，用于 shard/SS/tag 路由及 transaction-system 恢复。"},logsystem:{title:"LogSystem / Consumer",meta:"进程内抽象",pills:["push routing","replication policy","peek/pop"],body:"不是独立 Server。Commit Proxy 借它把 tagged mutations 路由到实际 TLogs；SS 借 Consumer 读取自己的 tag stream。"},tlog:{title:"TLog",meta:"多实例",pills:["durability","tagged log","version chain"],body:"事务日志服务。达到日志复制策略并 durable 后，事务即可对客户端返回成功；SS 后台异步消费。"},txstag:{title:"txsTag state stream",meta:"恢复用 durable log stream",pills:["bootstrap","recovery","metadata"],body:"保存 transaction-system 关键状态变化，用于新 generation 的恢复启动。"},ss:{title:"Storage Server",meta:"多实例",pills:["MVCC","direct read","tag consumer","local engine"],body:"最终数据承载层。客户端普通读直接访问；SS 从 TLog 按 tag 消费 mutation 并 apply 到本地引擎。"},systemkeys:{title:"System Keyspace",meta:"最终位于 Storage Servers",pills:["0xFF","metadata","durable"],body:"最终持久化的内部系统元数据，如 keyServers、serverList、配置等，和普通 KV 一样存储于 SS。"}};
 const buttons=[...document.querySelectorAll('.routeBtn')],edges=[...document.querySelectorAll('.edge')],nodes=[...document.querySelectorAll('.node')],title=document.getElementById('roleTitle'),meta=document.getElementById('roleMeta'),pills=document.getElementById('rolePills'),body=document.getElementById('roleBody');
 function showRole(role,node){const r=roleInfo[role];if(!r)return;nodes.forEach(n=>n.classList.remove('selected'));if(node)node.classList.add('selected');title.textContent=r.title;meta.textContent=r.meta;pills.innerHTML=r.pills.map(x=>`<span class="pill">${x}</span>`).join('');body.textContent=r.body}nodes.forEach(n=>n.addEventListener('click',()=>showRole(n.dataset.role,n)));

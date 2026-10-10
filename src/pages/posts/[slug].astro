@@ -171,9 +171,11 @@ const structuredData = [
   <script>
     import { mountArticleReading } from '../../scripts/article-reading';
     import { mountArticleMedia } from '../../scripts/article-media';
+    import { mountArticleInteractive } from '../../scripts/article-interactive';
 
     mountArticleReading(document, window);
     mountArticleMedia(document, window);
+    mountArticleInteractive(document, window);
     if (window.matchMedia('(min-width: 1381px)').matches) {
       const toc = document.querySelector<HTMLDetailsElement>('.article-toc details');
       if (toc) toc.open = true;

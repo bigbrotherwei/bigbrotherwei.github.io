@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { mountArticleMedia } from '../../src/scripts/article-media.ts';
+import { mountArticleInteractive } from '../../src/scripts/article-interactive.ts';
 
 const fixture = () => {
   const window = new JSDOM(`
@@ -90,5 +91,29 @@ test('article code blocks share a readable surface without shifting their lines'
 test('the FoundationDB architecture diagram is visible in the article', () => {
   const article = readFileSync(new URL('../../src/content/posts/foundationdb-architecture.md', import.meta.url), 'utf8');
   assert.match(article, /<div class="article-interactive">[\s\S]*?<iframe src="\/interactive\/foundationdb-architecture\.html\?embed=1"/u);
+  assert.match(article, /data-auto-height/u);
   assert.doesNotMatch(article, /<details class="article-interactive">/u);
+});
+
+test('architecture embed follows its measured height and ignores unrelated messages', () => {
+  const window = new JSDOM('<div class="article-interactive"><iframe data-auto-height></iframe></div>').window;
+  const frame = window.document.querySelector('iframe')!;
+  mountArticleInteractive(window.document, window as unknown as Window);
+  window.dispatchEvent(new window.MessageEvent('message', {
+    source: frame.contentWindow,
+    data: { type: 'foundationdb-architecture-height', height: 900 },
+  }));
+  assert.equal(frame.style.height, '902px');
+  window.dispatchEvent(new window.MessageEvent('message', {
+    source: window as unknown as Window,
+    data: { type: 'foundationdb-architecture-height', height: 1400 },
+  }));
+  assert.equal(frame.style.height, '902px');
+});
+
+test('article callouts align with paragraphs without a browser-default left margin', () => {
+  const css = readFileSync(new URL('../../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(css, /\.article-body blockquote\s*\{[^}]*margin:\s*1\.25rem 0;/u);
+  const diagram = readFileSync(new URL('../../public/interactive/foundationdb-architecture.html', import.meta.url), 'utf8');
+  assert.match(diagram, /html\.embedded \.stage \{ height: auto; \}/u);
 });

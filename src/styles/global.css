@@ -959,8 +959,7 @@ a.sketch-card:active {
   display: block;
   width: 100%;
   margin-top: 0.85rem;
-  height: min(66vh, 600px);
-  min-height: 400px;
+  height: 1000px;
   border: 1px solid var(--color-glass-border);
   border-radius: 4px;
   background: #0c1530;
@@ -1153,6 +1152,15 @@ html:has(.article-toc) {
 .article-body p {
   margin: 0 0 1rem;
 }
+
+.article-body blockquote {
+  margin: 1.25rem 0;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.article-body blockquote > :last-child { margin-bottom: 0; }
 
 .article-callout,
 .article-disclosure {
