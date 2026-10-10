@@ -80,3 +80,15 @@ test('article markup keeps a direct image link without JavaScript', () => {
   assert.match(page, /data-article-image-dialog/);
   assert.match(page, /mountArticleMedia/);
 });
+
+test('article code blocks share a readable surface without shifting their lines', () => {
+  const css = readFileSync(new URL('../../src/styles/global.css', import.meta.url), 'utf8');
+  assert.match(css, /\.article-body pre\s*\{[^}]*background-color:\s*#3b5058\s*!important/u);
+  assert.match(css, /\.article-body pre code\s*\{[^}]*display:\s*block;[^}]*padding:\s*0 1rem;[^}]*background:\s*transparent;[^}]*white-space:\s*pre;/u);
+});
+
+test('the FoundationDB architecture diagram is visible in the article', () => {
+  const article = readFileSync(new URL('../../src/content/posts/foundationdb-architecture.md', import.meta.url), 'utf8');
+  assert.match(article, /<div class="article-interactive">[\s\S]*?<iframe src="\/interactive\/foundationdb-architecture\.html\?embed=1"/u);
+  assert.doesNotMatch(article, /<details class="article-interactive">/u);
+});
