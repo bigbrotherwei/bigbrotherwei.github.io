@@ -206,7 +206,7 @@ body.home .hand-painted-farm-backdrop::after {
 
 .farm-night__fairy {
   position: absolute;
-  width: clamp(54px, 5vw, 72px);
+  width: clamp(46px, 4.2vw, 61px);
   animation: fairy-hover 4s ease-in-out infinite;
 }
 
@@ -400,7 +400,7 @@ body.home .hand-painted-farm-backdrop::after {
     width: 106px;
   }
 
-  .farm-night__fairy { width: 50px; }
+  .farm-night__fairy { width: 42px; }
   .farm-night__fairy--1 { top: 25%; left: 20%; }
   .farm-night__fairy--2 { top: 28%; left: 39%; }
   .farm-night__fairy--3 { top: 24%; left: 57%; }
