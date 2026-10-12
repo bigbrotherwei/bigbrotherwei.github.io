@@ -18,15 +18,17 @@ JuiceFS 的核心思路可以概括为：使用独立的元数据系统保存文
 
 ```text
 Application
-                        │
-                 POSIX / FUSE
-                        │
-                JuiceFS Client
-                 /                             /                      Metadata Plane         Data Plane
-       inode / dentry         immutable blocks
-       chunk -> slices        object storage
-              │                   │
-     Redis/TiKV/SQL          S3/OSS/MinIO/Ceph
+    │
+POSIX / FUSE
+    │
+JuiceFS Client
+    ├── Metadata Plane
+    │   ├── inode / dentry
+    │   ├── chunk -> slices
+    │   └── Redis/TiKV/SQL
+    └── Data Plane
+        ├── immutable blocks
+        └── S3/OSS/MinIO/Ceph
 ```
 
 架构抓手
