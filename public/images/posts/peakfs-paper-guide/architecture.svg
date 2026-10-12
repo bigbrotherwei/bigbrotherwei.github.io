@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 710" role="img" aria-labelledby="title desc">
+  <title id="title">PeakFS 请求路径简图</title>
+  <desc id="desc">客户端请求通过 pRPC 和 RDMA 到达通信线程，再经无锁队列转交独占 SSD 区域的处理线程，最终访问 PMeta、PData 和 NVMe。Master 仅在侧面提供集群信息。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 9 5 1 9" fill="none" stroke="#486969" stroke-width="1.8"/></marker>
+  </defs>
+  <rect x="1" y="1" width="678" height="708" rx="8" fill="#f4f7f1" stroke="#9eb5ae" stroke-width="2"/>
+  <text x="340" y="45" text-anchor="middle" font-size="26" font-weight="700" fill="#213c41" font-family="system-ui, sans-serif">PeakFS 请求热路径</text>
+  <g font-family="system-ui, sans-serif" text-anchor="middle" fill="#20383d" font-size="21">
+    <rect x="190" y="72" width="300" height="70" rx="7" fill="#deecdb" stroke="#7ea68b" stroke-width="2"/><text x="340" y="116">应用 / 客户端库</text>
+    <rect x="190" y="177" width="300" height="70" rx="7" fill="#dcebef" stroke="#78a2ad" stroke-width="2"/><text x="340" y="221">pRPC · RDMA</text>
+    <rect x="55" y="302" width="230" height="92" rx="7" fill="#e7f0ef" stroke="#78a2ad" stroke-width="2"/><text x="170" y="340">通信线程</text><text x="170" y="370" font-size="17">收发网络请求</text>
+    <rect x="395" y="302" width="230" height="92" rx="7" fill="#e7f0ef" stroke="#78a2ad" stroke-width="2"/><text x="510" y="340">处理线程</text><text x="510" y="370" font-size="17">独占 SSD 区域</text>
+    <rect x="125" y="457" width="190" height="70" rx="7" fill="#f4e9d1" stroke="#c7a86d" stroke-width="2"/><text x="220" y="500">PMeta 元数据</text>
+    <rect x="365" y="457" width="190" height="70" rx="7" fill="#f4e9d1" stroke="#c7a86d" stroke-width="2"/><text x="460" y="500">PData 文件数据</text>
+    <rect x="190" y="590" width="300" height="70" rx="7" fill="#dce6e2" stroke="#7c9d94" stroke-width="2"/><text x="340" y="633">NVMe / SPDK</text>
+  </g>
+  <g fill="none" stroke="#486969" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M340 143v30"/><path d="M340 248v30h-170v20"/><path d="M285 348h105"/><path d="M510 395v30h-290v27"/><path d="M510 395v58"/><path d="M220 530v28h120v27"/><path d="M460 530v28H340v27"/>
+  </g>
+  <text x="340" y="289" text-anchor="middle" font-size="16" fill="#526668" font-family="system-ui, sans-serif">网络传输</text>
+  <text x="340" y="335" text-anchor="middle" font-size="16" fill="#526668" font-family="system-ui, sans-serif">无锁队列</text>
+  <text x="340" y="685" text-anchor="middle" font-size="16" fill="#526668" font-family="system-ui, sans-serif">Master 提供集群信息，不参与每次请求转发</text>
+</svg>

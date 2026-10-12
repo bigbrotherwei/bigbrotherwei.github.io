@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 760" role="img" aria-labelledby="title desc">
+  <title id="title">PeakFS 手机版请求路径简图</title>
+  <desc id="desc">客户端经 pRPC 和 RDMA 到达通信线程，无锁队列分派至拥有 SSD 区域的处理线程，处理线程访问元数据或文件数据，并通过 SPDK 使用 NVMe。</desc>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 9 5 1 9" fill="none" stroke="#476666" stroke-width="2"/></marker></defs>
+  <rect x="1" y="1" width="358" height="758" rx="7" fill="#f4f7f1" stroke="#9eb5ae" stroke-width="2"/>
+  <g font-family="system-ui, sans-serif" text-anchor="middle" fill="#20383d">
+    <text x="180" y="45" font-size="23" font-weight="700">PeakFS 请求路径</text>
+    <rect x="35" y="70" width="290" height="66" rx="6" fill="#deecdb" stroke="#7ea68b" stroke-width="2"/><text x="180" y="111" font-size="20">应用 / 客户端库</text>
+    <rect x="35" y="175" width="290" height="66" rx="6" fill="#dcebef" stroke="#78a2ad" stroke-width="2"/><text x="180" y="216" font-size="20">pRPC · RDMA</text>
+    <rect x="35" y="280" width="290" height="66" rx="6" fill="#e7f0ef" stroke="#78a2ad" stroke-width="2"/><text x="180" y="321" font-size="20">通信线程</text>
+    <text x="180" y="380" font-size="16" fill="#526668">无锁队列 / 按所有权分派</text>
+    <rect x="35" y="410" width="290" height="66" rx="6" fill="#e7f0ef" stroke="#78a2ad" stroke-width="2"/><text x="180" y="451" font-size="20">处理线程 · 独占 SSD 区域</text>
+    <rect x="35" y="515" width="290" height="66" rx="6" fill="#f4e9d1" stroke="#c7a86d" stroke-width="2"/><text x="180" y="556" font-size="20">PMeta / PData</text>
+    <rect x="35" y="620" width="290" height="66" rx="6" fill="#dce6e2" stroke="#7c9d94" stroke-width="2"/><text x="180" y="661" font-size="20">NVMe / SPDK</text>
+    <text x="180" y="729" font-size="14" fill="#526668">Master 提供集群信息，不转发每次请求</text>
+  </g>
+  <g fill="none" stroke="#476666" stroke-width="2.5" marker-end="url(#a)"><path d="M180 138v32"/><path d="M180 243v32"/><path d="M180 348v55"/><path d="M180 478v32"/><path d="M180 583v32"/></g>
+</svg>

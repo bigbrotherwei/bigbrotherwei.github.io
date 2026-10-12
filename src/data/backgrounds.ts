@@ -13,6 +13,9 @@ export const backgroundKeys = [
   'topic-blog-rebuild',
   'topic-developer-toolbox',
   'topic-foundationdb',
+  'topic-papers',
+  'post-peakfs-paper',
+  'post-foundationdb-paper',
   'post-foundationdb-architecture',
   'post-foundationdb-three-node-deployment',
   'post-foundationdb-expansion-failure-drills',
@@ -96,6 +99,18 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'topic-foundationdb': {
     desktop: '/images/backgrounds/topic-foundationdb.webp',
     mobile: '/images/backgrounds/topic-foundationdb-mobile.webp',
+  },
+  'topic-papers': {
+    desktop: '/images/backgrounds/topic-papers.webp',
+    mobile: '/images/backgrounds/topic-papers-mobile.webp',
+  },
+  'post-peakfs-paper': {
+    desktop: '/images/backgrounds/post-peakfs-paper.webp',
+    mobile: '/images/backgrounds/post-peakfs-paper-mobile.webp',
+  },
+  'post-foundationdb-paper': {
+    desktop: '/images/backgrounds/post-foundationdb-paper.webp',
+    mobile: '/images/backgrounds/post-foundationdb-paper-mobile.webp',
   },
   'post-foundationdb-architecture': {
     desktop: '/images/backgrounds/post-painter-overlook.webp',
