@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 850" role="img" aria-labelledby="title desc">
+  <title id="title">FoundationDB 读写与控制平面简图</title>
+  <desc id="desc">控制平面由 Coordinators 与 Cluster Controller 管理角色；读路径从客户端经 Proxy 取得版本后直接读取 Storage Server；提交路径经 Proxy、Sequencer、Resolver、LogServer，最后由 Storage Server 异步应用日志。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M1 1 9 5 1 9" fill="none" stroke="#486969" stroke-width="1.8"/></marker>
+  </defs>
+  <rect x="1" y="1" width="678" height="848" rx="8" fill="#f4f7f1" stroke="#9eb5ae" stroke-width="2"/>
+  <text x="340" y="43" text-anchor="middle" font-size="26" font-weight="700" fill="#213c41" font-family="system-ui, sans-serif">FoundationDB 三条路径</text>
+  <g font-family="system-ui, sans-serif" fill="#20383d" text-anchor="middle">
+    <text x="68" y="91" font-size="20" font-weight="700">控制</text>
+    <rect x="115" y="62" width="205" height="56" rx="7" fill="#e8e2f0" stroke="#a697be" stroke-width="2"/><text x="217" y="98" font-size="19">Coordinators</text>
+    <rect x="380" y="62" width="240" height="56" rx="7" fill="#e8e2f0" stroke="#a697be" stroke-width="2"/><text x="500" y="98" font-size="19">Cluster Controller</text>
+    <text x="340" y="160" font-size="16" fill="#59636a">选举、角色招募与故障恢复；不转发每次读写</text>
+    <text x="68" y="224" font-size="20" font-weight="700">读取</text>
+    <rect x="115" y="194" width="150" height="62" rx="7" fill="#deecdb" stroke="#7ea68b" stroke-width="2"/><text x="190" y="233" font-size="20">客户端</text>
+    <rect x="340" y="194" width="160" height="62" rx="7" fill="#dcebef" stroke="#78a2ad" stroke-width="2"/><text x="420" y="233" font-size="20">Proxy</text>
+    <rect x="340" y="310" width="240" height="62" rx="7" fill="#f4e9d1" stroke="#c7a86d" stroke-width="2"/><text x="460" y="349" font-size="20">Storage Server</text>
+    <text x="307" y="221" font-size="15" fill="#59636a">取版本</text>
+    <text x="237" y="337" font-size="15" fill="#59636a">按版本直接读</text>
+    <text x="68" y="456" font-size="20" font-weight="700">提交</text>
+    <rect x="115" y="426" width="150" height="62" rx="7" fill="#deecdb" stroke="#7ea68b" stroke-width="2"/><text x="190" y="465" font-size="20">客户端</text>
+    <rect x="340" y="426" width="160" height="62" rx="7" fill="#dcebef" stroke="#78a2ad" stroke-width="2"/><text x="420" y="465" font-size="20">Proxy</text>
+    <rect x="105" y="562" width="205" height="62" rx="7" fill="#e7f0ef" stroke="#78a2ad" stroke-width="2"/><text x="207" y="601" font-size="20">Sequencer 版本</text>
+    <rect x="370" y="562" width="205" height="62" rx="7" fill="#e7f0ef" stroke="#78a2ad" stroke-width="2"/><text x="472" y="601" font-size="20">Resolver 冲突</text>
+    <rect x="105" y="698" width="205" height="62" rx="7" fill="#f4e9d1" stroke="#c7a86d" stroke-width="2"/><text x="207" y="737" font-size="20">LogServer 持久化</text>
+    <rect x="370" y="698" width="205" height="62" rx="7" fill="#f4e9d1" stroke="#c7a86d" stroke-width="2"/><text x="472" y="737" font-size="20">Storage Server</text>
+    <text x="440" y="791" font-size="16" fill="#59636a">异步应用变更</text>
+  </g>
+  <g fill="none" stroke="#486969" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M321 90h54"/><path d="M267 225h68"/><path d="M190 260v80h145"/>
+    <path d="M267 457h68"/><path d="M395 491v42H207v24"/><path d="M445 491v66"/>
+    <path d="M207 629v64"/><path d="M472 629v31H275v33"/><path d="M315 729h50"/>
+  </g>
+  <text x="340" y="826" text-anchor="middle" font-size="16" fill="#526668" font-family="system-ui, sans-serif">简化示意：副本、批处理与恢复细节见正文和原论文</text>
+</svg>
