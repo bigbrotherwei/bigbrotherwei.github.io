@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chooseFruitKinds, fruitKinds, mountPointerEffects } from '../../src/scripts/pointer-effects.ts';
+import { chooseFruitKinds, fruitKinds, makeTrailParticles, mountPointerEffects } from '../../src/scripts/pointer-effects.ts';
 
 function fixture(reducedMotion = false) {
   let drawnCircles = 0;
@@ -39,10 +39,10 @@ test('mouse movement paints a rainbow and clicks paint fruit without interceptin
   app.listeners.get('pointermove')?.({ pointerType: 'mouse', clientX: 100, clientY: 100 });
   assert.equal(app.pendingFrame, true);
   app.tick(16);
-  assert.ok(app.drawnCircles >= 6);
+  assert.ok(app.drawnCircles >= 3);
   app.listeners.get('pointerdown')?.({ pointerType: 'mouse', clientX: 150, clientY: 150 });
   app.tick(32);
-  assert.ok(app.drawnCircles > 6);
+  assert.ok(app.drawnCircles > 3);
   dispose();
   assert.equal(app.listeners.has('pointermove'), false);
 });
@@ -60,7 +60,7 @@ test('the rainbow stays below and right of the mouse pointer', () => {
   mountPointerEffects(app.document, app.window);
   app.listeners.get('pointermove')?.({ pointerType: 'mouse', clientX: 100, clientY: 100 });
   app.tick(16);
-  assert.ok(app.circles.length >= 6);
+  assert.ok(app.circles.length >= 3);
   assert.ok(app.circles.every(({ x, y }) => x > 100 && y > 100));
 });
 
@@ -70,4 +70,15 @@ test('a click uses a few distinct kinds from a broader fruit selection', () => {
   assert.ok(kinds.length >= 3 && kinds.length <= 5);
   assert.equal(new Set(kinds).size, kinds.length);
   assert.ok(kinds.every((kind) => fruitKinds.includes(kind)));
+});
+
+test('rainbow trail is a loose cluster of small unequal grains, not parallel bars', () => {
+  const values = [0.05, 0.81, 0.22, 0.63, 0.94, 0.12, 0.71, 0.36];
+  let next = 0;
+  const particles = makeTrailParticles(100, 100, () => values[next++ % values.length]);
+  assert.ok(particles.length >= 3 && particles.length <= 5);
+  assert.ok(particles.every(({ x, y, radius }) => x > 100 && y > 100 && radius <= 2.2));
+  assert.ok(new Set(particles.map(({ radius }) => radius)).size > 1);
+  const [a, b, c] = particles;
+  assert.notEqual((b.x - a.x) * (c.y - a.y), (b.y - a.y) * (c.x - a.x));
 });

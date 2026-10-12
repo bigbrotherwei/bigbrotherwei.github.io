@@ -77,7 +77,7 @@ const jsonLdItems = structuredData ? (Array.isArray(structuredData) ? structured
     <title>{siteTitle}</title>
   </head>
   <body class={bodyClass}>
-    <HandPaintedFarmBackdrop background={background} animateFarmer={bodyClass === 'home'} />
+    <HandPaintedFarmBackdrop background={background} animateFarmNight={bodyClass === 'home'} />
     <SiteNav />
     <slot />
     <SiteFooter />

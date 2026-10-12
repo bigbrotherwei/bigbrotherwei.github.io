@@ -16,11 +16,23 @@ interface TrailParticle {
   x: number;
   y: number;
   color: string;
+  radius: number;
   life: number;
 }
 
 export const fruitKinds: readonly FruitKind[] = ['watermelon', 'apple', 'banana', 'cabbage', 'orange', 'pear', 'strawberry', 'grapes', 'cherries', 'pineapple', 'peach', 'lemon'];
 const rainbowColors = ['#ef6260', '#f2a65b', '#f6d878', '#86c88b', '#77c8d6', '#9c91d4'];
+
+export function makeTrailParticles(x: number, y: number, random: () => number = Math.random): TrailParticle[] {
+  const count = 3 + Math.floor(random() * 3);
+  return Array.from({ length: count }, () => ({
+    x: x + 7 + random() * 19,
+    y: y + 8 + random() * 16,
+    radius: 0.65 + random() * 1.5,
+    color: rainbowColors[Math.floor(random() * rainbowColors.length)],
+    life: 0.75 + random() * 0.25,
+  }));
+}
 
 export function chooseFruitKinds(random: () => number = Math.random): FruitKind[] {
   const shuffled = [...fruitKinds];
@@ -161,14 +173,14 @@ export function mountPointerEffects(document: Document, window: Window): () => v
 
     for (let index = trail.length - 1; index >= 0; index -= 1) {
       const particle = trail[index];
-      particle.life -= 0.028 * step;
+      particle.life -= 0.035 * step;
       if (particle.life <= 0) { trail.splice(index, 1); continue; }
-      ctx.globalAlpha = particle.life * 0.9;
+      ctx.globalAlpha = particle.life * 0.78;
       ctx.fillStyle = particle.color;
       ctx.shadowColor = particle.color;
-      ctx.shadowBlur = 5;
+      ctx.shadowBlur = 2;
       ctx.beginPath();
-      ctx.arc(particle.x, particle.y, 3.6 * particle.life + 0.5, 0, Math.PI * 2);
+      ctx.arc(particle.x, particle.y, particle.radius * particle.life + 0.2, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -195,10 +207,8 @@ export function mountPointerEffects(document: Document, window: Window): () => v
     if (reducedMotion.matches || event.pointerType !== 'mouse') return;
     const distance = previousPointer ? Math.hypot(event.clientX - previousPointer.x, event.clientY - previousPointer.y) : 20;
     if (distance < 7) return;
-    rainbowColors.forEach((color, index) => {
-      trail.push({ x: event.clientX + 10 + index * 2.4, y: event.clientY + 13 + index * 1.8, color, life: 1 });
-    });
-    if (trail.length > 180) trail.splice(0, trail.length - 180);
+    trail.push(...makeTrailParticles(event.clientX, event.clientY));
+    if (trail.length > 120) trail.splice(0, trail.length - 120);
     previousPointer = { x: event.clientX, y: event.clientY };
     start();
   };
