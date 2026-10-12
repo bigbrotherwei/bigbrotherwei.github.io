@@ -30,6 +30,10 @@ export const backgroundKeys = [
   'tool-markdown',
   'tool-text-diff',
   'tool-regex',
+  'topic-distributed-filesystems',
+  'post-cephfs-architecture',
+  'post-juicefs-architecture',
+  'post-deepseek-3fs-architecture',
 ] as const;
 
 export type BackgroundKey = (typeof backgroundKeys)[number];
@@ -187,5 +191,21 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
     mobile: '/images/backgrounds/tool-regex-mobile.webp',
     position: 'center',
     mobilePosition: 'center',
+  },
+  'topic-distributed-filesystems': {
+    desktop: '/images/backgrounds/topic-distributed-filesystems.webp',
+    mobile: '/images/backgrounds/topic-distributed-filesystems-mobile.webp',
+  },
+  'post-cephfs-architecture': {
+    desktop: '/images/backgrounds/post-cephfs-architecture.webp',
+    mobile: '/images/backgrounds/post-cephfs-architecture-mobile.webp',
+  },
+  'post-juicefs-architecture': {
+    desktop: '/images/backgrounds/post-juicefs-architecture.webp',
+    mobile: '/images/backgrounds/post-juicefs-architecture-mobile.webp',
+  },
+  'post-deepseek-3fs-architecture': {
+    desktop: '/images/backgrounds/post-deepseek-3fs-architecture.webp',
+    mobile: '/images/backgrounds/post-deepseek-3fs-architecture-mobile.webp',
   },
 };

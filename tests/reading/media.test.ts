@@ -101,6 +101,7 @@ test('architecture embed follows its measured height and ignores unrelated messa
   mountArticleInteractive(window.document, window as unknown as Window);
   window.dispatchEvent(new window.MessageEvent('message', {
     source: frame.contentWindow,
+    origin: 'null',
     data: { type: 'foundationdb-architecture-height', height: 900 },
   }));
   assert.equal(frame.style.height, '902px');
@@ -109,6 +110,28 @@ test('architecture embed follows its measured height and ignores unrelated messa
     data: { type: 'foundationdb-architecture-height', height: 1400 },
   }));
   assert.equal(frame.style.height, '902px');
+});
+
+test('multiple article diagrams resize independently from their own messages', () => {
+  const window = new JSDOM(`
+    <div class="article-interactive"><iframe data-auto-height src="/interactive/foundationdb-architecture.html?embed=1"></iframe></div>
+    <div class="article-interactive"><iframe data-auto-height src="/interactive/distributed-filesystems.html?system=cephfs&embed=1"></iframe></div>
+  `, { url: 'https://example.com/posts/example/' }).window;
+  const [foundationFrame, fsFrame] = [...window.document.querySelectorAll<HTMLIFrameElement>('iframe')];
+  mountArticleInteractive(window.document, window as unknown as Window);
+  window.dispatchEvent(new window.MessageEvent('message', {
+    source: fsFrame.contentWindow,
+    origin: 'null',
+    data: { type: 'article-interactive-height', height: 680 },
+  }));
+  assert.equal(fsFrame.style.height, '682px');
+  assert.equal(foundationFrame.style.height, '');
+  window.dispatchEvent(new window.MessageEvent('message', {
+    source: fsFrame.contentWindow,
+    origin: 'https://untrusted.example',
+    data: { type: 'article-interactive-height', height: 1200 },
+  }));
+  assert.equal(fsFrame.style.height, '682px');
 });
 
 test('article callouts align with paragraphs without a browser-default left margin', () => {
