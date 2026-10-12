@@ -168,6 +168,65 @@ body.home .hand-painted-farm-backdrop::after {
     radial-gradient(circle at 50% 46%, rgba(5, 14, 20, 0.06), rgba(5, 14, 20, 0.3) 72%);
 }
 
+.farm-journey {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: max(100vw, 177.872vh);
+  height: max(100vh, 56.22vw);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.farm-journey__actor {
+  position: absolute;
+  top: 45%;
+  left: 76%;
+  opacity: 0;
+  animation: farmer-harvest 30s linear infinite;
+}
+
+.farm-journey__person {
+  display: block;
+  width: auto;
+  height: clamp(56px, 5.1vw, 78px);
+  filter: brightness(1.05) saturate(0.82);
+  transform-origin: 50% 95%;
+  transform: translate(-50%, -95%);
+  animation: farmer-pose 30s linear infinite, farmer-step 480ms ease-in-out infinite alternate;
+}
+
+@keyframes farmer-harvest {
+  0% { top: 45%; left: 76%; opacity: 0; }
+  4% { opacity: 1; }
+  14% { top: 48%; left: 64%; }
+  28% { top: 50%; left: 53%; }
+  43% { top: 47%; left: 40%; }
+  52%, 60% { top: 45%; left: 29%; opacity: 1; }
+  71% { top: 47%; left: 40%; }
+  84% { top: 50%; left: 53%; }
+  95% { top: 48%; left: 64%; opacity: 1; }
+  100% { top: 45%; left: 76%; opacity: 0; }
+}
+
+@keyframes farmer-pose {
+  0%, 49% { transform: translate(-50%, -95%) scaleX(1) rotate(0); }
+  53%, 57% { transform: translate(-50%, -95%) scaleX(1) rotate(-15deg); }
+  60% { transform: translate(-50%, -95%) scaleX(1) rotate(0); }
+  61%, 100% { transform: translate(-50%, -95%) scaleX(-1) rotate(0); }
+}
+
+@keyframes farmer-turn {
+  0%, 60% { transform: translate(-50%, -95%) scaleX(1); }
+  61%, 100% { transform: translate(-50%, -95%) scaleX(-1); }
+}
+
+@keyframes farmer-step {
+  from { margin-top: 0; }
+  to { margin-top: -2px; }
+}
+
 .ambient-motion {
   position: absolute;
   z-index: 2;
@@ -294,14 +353,44 @@ body.home .hand-painted-farm-backdrop::after {
     background-position: var(--background-position-mobile);
   }
 
+  .farm-journey {
+    width: max(100vw, 56.25vh);
+    height: max(100vh, 177.78vw);
+  }
+
+  .farm-journey__actor {
+    animation-name: farmer-mobile-walk;
+    animation-duration: 22s;
+  }
+
+  .farm-journey__person {
+    height: 54px;
+    animation-name: farmer-turn, farmer-step;
+    animation-duration: 22s, 480ms;
+  }
+
   .ambient-motion__meteor:nth-child(2),
   .ambient-motion__petal:nth-child(n + 5) {
     display: none;
   }
 }
 
+@keyframes farmer-mobile-walk {
+  0% { top: 54%; left: 84%; opacity: 0; }
+  5% { opacity: 1; }
+  23% { top: 56%; left: 68%; }
+  48%, 58% { top: 58%; left: 40%; opacity: 1; }
+  81% { top: 56%; left: 68%; }
+  96% { top: 54%; left: 84%; opacity: 1; }
+  100% { top: 54%; left: 84%; opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient-motion {
+    display: none;
+  }
+
+  .farm-journey {
     display: none;
   }
 }

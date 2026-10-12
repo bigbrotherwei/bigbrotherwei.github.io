@@ -1,16 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mountPointerEffects } from '../../src/scripts/pointer-effects.ts';
+import { chooseFruitKinds, fruitKinds, mountPointerEffects } from '../../src/scripts/pointer-effects.ts';
 
 function fixture(reducedMotion = false) {
   let drawnCircles = 0;
+  const circles: Array<{ x: number; y: number }> = [];
   let nextFrame: ((time: number) => void) | undefined;
   const listeners = new Map<string, (event: any) => void>();
   const context = Object.fromEntries([
     'setTransform', 'clearRect', 'save', 'restore', 'translate', 'rotate', 'scale',
-    'beginPath', 'ellipse', 'fill', 'stroke', 'moveTo', 'lineTo', 'bezierCurveTo',
+    'beginPath', 'closePath', 'ellipse', 'fill', 'stroke', 'moveTo', 'lineTo', 'bezierCurveTo',
   ].map((name) => [name, () => {}])) as Record<string, (...args: any[]) => void>;
-  context.arc = () => { drawnCircles += 1; };
+  context.arc = (x: number, y: number) => { drawnCircles += 1; circles.push({ x, y }); };
   const canvas = { width: 0, height: 0, getContext: () => context };
   const media = { matches: reducedMotion, addEventListener: () => {}, removeEventListener: () => {} };
   const document = { querySelector: () => canvas } as unknown as Document;
@@ -23,7 +24,7 @@ function fixture(reducedMotion = false) {
     removeEventListener: (name: string) => { listeners.delete(name); },
   } as unknown as Window;
   return {
-    canvas, listeners, document, window,
+    canvas, circles, listeners, document, window,
     tick: (time: number) => nextFrame?.(time),
     get drawnCircles() { return drawnCircles; },
     get pendingFrame() { return Boolean(nextFrame); },
@@ -52,4 +53,21 @@ test('reduced motion suppresses pointer animation', () => {
   app.listeners.get('pointermove')?.({ pointerType: 'mouse', clientX: 100, clientY: 100 });
   app.listeners.get('pointerdown')?.({ pointerType: 'mouse', clientX: 100, clientY: 100 });
   assert.equal(app.pendingFrame, false);
+});
+
+test('the rainbow stays below and right of the mouse pointer', () => {
+  const app = fixture();
+  mountPointerEffects(app.document, app.window);
+  app.listeners.get('pointermove')?.({ pointerType: 'mouse', clientX: 100, clientY: 100 });
+  app.tick(16);
+  assert.ok(app.circles.length >= 6);
+  assert.ok(app.circles.every(({ x, y }) => x > 100 && y > 100));
+});
+
+test('a click uses a few distinct kinds from a broader fruit selection', () => {
+  assert.ok(fruitKinds.length >= 10);
+  const kinds = chooseFruitKinds(() => 0.4);
+  assert.ok(kinds.length >= 3 && kinds.length <= 5);
+  assert.equal(new Set(kinds).size, kinds.length);
+  assert.ok(kinds.every((kind) => fruitKinds.includes(kind)));
 });

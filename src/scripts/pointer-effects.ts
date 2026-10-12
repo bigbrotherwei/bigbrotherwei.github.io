@@ -1,4 +1,4 @@
-type FruitKind = 'watermelon' | 'apple' | 'banana' | 'cabbage';
+type FruitKind = 'watermelon' | 'apple' | 'banana' | 'cabbage' | 'orange' | 'pear' | 'strawberry' | 'grapes' | 'cherries' | 'pineapple' | 'peach' | 'lemon';
 
 interface FruitParticle {
   kind: FruitKind;
@@ -19,8 +19,17 @@ interface TrailParticle {
   life: number;
 }
 
-const fruitKinds: readonly FruitKind[] = ['watermelon', 'apple', 'banana', 'cabbage'];
+export const fruitKinds: readonly FruitKind[] = ['watermelon', 'apple', 'banana', 'cabbage', 'orange', 'pear', 'strawberry', 'grapes', 'cherries', 'pineapple', 'peach', 'lemon'];
 const rainbowColors = ['#ef6260', '#f2a65b', '#f6d878', '#86c88b', '#77c8d6', '#9c91d4'];
+
+export function chooseFruitKinds(random: () => number = Math.random): FruitKind[] {
+  const shuffled = [...fruitKinds];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+  }
+  return shuffled.slice(0, 3 + Math.floor(random() * 3));
+}
 
 function drawFruit(ctx: CanvasRenderingContext2D, particle: FruitParticle): void {
   ctx.save();
@@ -65,7 +74,7 @@ function drawFruit(ctx: CanvasRenderingContext2D, particle: FruitParticle): void
     ctx.bezierCurveTo(4, 10, -5, 6, -8, -6);
     ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-8, -6); ctx.lineTo(-10, -8); ctx.moveTo(9, 3); ctx.lineTo(10, 1); ctx.stroke();
-  } else {
+  } else if (particle.kind === 'cabbage') {
     ctx.fillStyle = '#a5c977';
     ctx.strokeStyle = '#4c7d56';
     ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -74,6 +83,49 @@ function drawFruit(ctx: CanvasRenderingContext2D, particle: FruitParticle): void
     ctx.moveTo(-7, -2); ctx.bezierCurveTo(-2, -4, 3, -4, 7, -1);
     ctx.moveTo(-6, 4); ctx.bezierCurveTo(-1, 1, 3, 1, 6, 4);
     ctx.stroke();
+  } else if (particle.kind === 'orange' || particle.kind === 'peach') {
+    ctx.fillStyle = particle.kind === 'orange' ? '#f2a044' : '#e88b77';
+    ctx.strokeStyle = particle.kind === 'orange' ? '#a95e2e' : '#a95759';
+    ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (particle.kind === 'peach') {
+      ctx.beginPath(); ctx.moveTo(1, -7); ctx.bezierCurveTo(-2, -1, 1, 4, -1, 7); ctx.stroke();
+    }
+    ctx.fillStyle = '#6b9a58';
+    ctx.beginPath(); ctx.ellipse(3, -8, 3, 1.7, -0.4, 0, Math.PI * 2); ctx.fill();
+  } else if (particle.kind === 'pear') {
+    ctx.fillStyle = '#c7cd68'; ctx.strokeStyle = '#758449';
+    ctx.beginPath();
+    ctx.moveTo(0, -8); ctx.bezierCurveTo(-5, -8, -3, -3, -7, 0);
+    ctx.bezierCurveTo(-11, 9, 10, 10, 7, 0); ctx.bezierCurveTo(3, -3, 5, -8, 0, -8);
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(1, -11); ctx.stroke();
+  } else if (particle.kind === 'strawberry') {
+    ctx.fillStyle = '#d85452'; ctx.strokeStyle = '#893d43';
+    ctx.beginPath(); ctx.moveTo(0, 9); ctx.bezierCurveTo(-10, 2, -9, -7, 0, -6);
+    ctx.bezierCurveTo(9, -7, 10, 2, 0, 9); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#6d9a58';
+    ctx.beginPath(); ctx.moveTo(-6, -6); ctx.lineTo(0, -3); ctx.lineTo(6, -6); ctx.lineTo(0, -9); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#f8d7a0';
+    for (const [x, y] of [[-3, -1], [3, 0], [0, 4]]) { ctx.beginPath(); ctx.arc(x, y, 0.7, 0, Math.PI * 2); ctx.fill(); }
+  } else if (particle.kind === 'grapes') {
+    ctx.fillStyle = '#8d6d9c'; ctx.strokeStyle = '#594b72';
+    for (const [x, y] of [[-4, -5], [3, -5], [-6, 1], [1, 1], [7, 1], [-3, 6], [4, 6]]) {
+      ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    ctx.strokeStyle = '#6b8352'; ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(1, -11); ctx.stroke();
+  } else if (particle.kind === 'cherries') {
+    ctx.fillStyle = '#c95050'; ctx.strokeStyle = '#80363d';
+    for (const x of [-4, 5]) { ctx.beginPath(); ctx.arc(x, 4, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    ctx.strokeStyle = '#678457'; ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(0, -8); ctx.lineTo(5, 0); ctx.stroke();
+  } else if (particle.kind === 'pineapple') {
+    ctx.fillStyle = '#e3b354'; ctx.strokeStyle = '#9b723b';
+    ctx.beginPath(); ctx.ellipse(0, 2, 6, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-5, -3); ctx.lineTo(5, 7); ctx.moveTo(5, -3); ctx.lineTo(-5, 7); ctx.stroke();
+    ctx.fillStyle = '#6c9c5a'; ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(-6, -11); ctx.lineTo(0, -8); ctx.lineTo(5, -12); ctx.lineTo(4, -5); ctx.fill();
+  } else {
+    ctx.fillStyle = '#f1d36a'; ctx.strokeStyle = '#aa8740';
+    ctx.beginPath(); ctx.ellipse(0, 0, 9, 5.5, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e9ec9b'; ctx.beginPath(); ctx.ellipse(-2, -2, 3, 1, -0.3, 0, Math.PI * 2); ctx.fill();
   }
 
   ctx.restore();
@@ -143,11 +195,8 @@ export function mountPointerEffects(document: Document, window: Window): () => v
     if (reducedMotion.matches || event.pointerType !== 'mouse') return;
     const distance = previousPointer ? Math.hypot(event.clientX - previousPointer.x, event.clientY - previousPointer.y) : 20;
     if (distance < 7) return;
-    const normalX = previousPointer ? -(event.clientY - previousPointer.y) / distance : 0;
-    const normalY = previousPointer ? (event.clientX - previousPointer.x) / distance : 1;
     rainbowColors.forEach((color, index) => {
-      const offset = (index - (rainbowColors.length - 1) / 2) * 3.2;
-      trail.push({ x: event.clientX + normalX * offset, y: event.clientY + normalY * offset, color, life: 1 });
+      trail.push({ x: event.clientX + 10 + index * 2.4, y: event.clientY + 13 + index * 1.8, color, life: 1 });
     });
     if (trail.length > 180) trail.splice(0, trail.length - 180);
     previousPointer = { x: event.clientX, y: event.clientY };
@@ -156,11 +205,12 @@ export function mountPointerEffects(document: Document, window: Window): () => v
 
   const onDown = (event: PointerEvent) => {
     if (reducedMotion.matches || event.pointerType !== 'mouse') return;
+    const selectedKinds = chooseFruitKinds();
     for (let index = 0; index < 12; index += 1) {
       const angle = (index / 12) * Math.PI * 2 + Math.random() * 0.25;
       const speed = 1.8 + Math.random() * 2.5;
       fruits.push({
-        kind: fruitKinds[Math.floor(Math.random() * fruitKinds.length)],
+        kind: selectedKinds[index % selectedKinds.length],
         x: event.clientX,
         y: event.clientY,
         vx: Math.cos(angle) * speed,

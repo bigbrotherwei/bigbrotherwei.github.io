@@ -3,9 +3,10 @@ import type { PageBackground } from '../data/backgrounds';
 
 interface Props {
   background: PageBackground;
+  animateFarmer?: boolean;
 }
 
-const { background } = Astro.props;
+const { background, animateFarmer = false } = Astro.props;
 const backdropStyle = [
   `--background-image: url("${background.desktop}")`,
   `--background-image-mobile: url("${background.mobile}")`,
@@ -15,6 +16,11 @@ const backdropStyle = [
 ---
 
 <div class="hand-painted-farm-backdrop" style={backdropStyle} aria-hidden="true">
+  {animateFarmer && <div class="farm-journey">
+    <div class="farm-journey__actor">
+      <img class="farm-journey__person" src="/images/farm-gardener.webp" width="384" height="576" alt="" decoding="async" />
+    </div>
+  </div>}
   <div class="ambient-motion" aria-hidden="true">
     <div class="ambient-motion__meteors">
       <span class="ambient-motion__meteor"></span>
