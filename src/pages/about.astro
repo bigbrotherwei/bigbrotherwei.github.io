@@ -15,34 +15,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       description="6 年软件研发经验，长期从事 Linux 环境下的 C/C++ 开发，主要方向是分布式文件系统与高性能存储。"
     />
 
-    <section class="sketch-grid" aria-label="关于内容">
-      <article class="sketch-card">
+    <section class="sketch-card about-panel" aria-label="关于内容">
+      <div class="about-panel__section">
         <p class="eyebrow">File Systems</p>
         <h2>分布式文件系统</h2>
         <p>参与高性能并行文件存储从架构调研到落地的全过程，面向 PB 级集群设计和实现客户端、元数据服务、文件锁、集群路由及监控告警等能力，并支持元数据集群动态扩展。</p>
-      </article>
-      <article class="sketch-card">
+      </div>
+      <div class="about-panel__section">
         <p class="eyebrow">Engineering</p>
         <h2>性能与可靠性</h2>
         <p>围绕 RDMA、SPDK、FUSE 和 NFS 等技术，持续优化数据与元数据访问路径；推进目录 Quota、元数据服务多线程、平滑重启、文件系统迁移等特性，也参与线上问题排查与系统运维。</p>
-      </article>
-      <article class="sketch-card">
+      </div>
+      <div class="about-panel__section">
         <p class="eyebrow">Exploration</p>
         <h2>其他探索</h2>
         <p>参与 IO500 存储性能评测与优化，也探索过使用文件存储卸载推理 KV Cache，以及面向大模型请求的语义缓存。</p>
-      </article>
-      <article class="sketch-card">
+      </div>
+      <div class="about-panel__section">
         <p class="eyebrow">GitHub</p>
         <h2>更多内容</h2>
         <p class="about-links">
           <a href="https://github.com/bigbrotherwei" target="_blank" rel="noreferrer">GitHub 主页</a>
         </p>
-      </article>
+      </div>
     </section>
   </main>
 </BaseLayout>
 
 <style>
+  .about-panel {
+    max-width: 920px;
+    padding: clamp(1.4rem, 3vw, 2.4rem);
+  }
+
+  .about-panel__section + .about-panel__section {
+    margin-top: 1.6rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--color-glass-border);
+  }
+
+  .about-panel__section h2 {
+    margin: 0.35rem 0 0.65rem;
+    font-size: 1.4rem;
+  }
+
+  .about-panel__section > p:last-child {
+    margin-bottom: 0;
+    line-height: 1.8;
+  }
+
   .about-links {
     display: flex;
     flex-wrap: wrap;

@@ -133,6 +133,12 @@ test('about page links follow the reading theme', () => {
   assert.equal(declarations(aboutCss, '.about-links a').color, 'var(--color-accent)');
 });
 
+test('about page presents its content in one panel', () => {
+  const about = source('src/pages/about.astro');
+  assert.equal((about.match(/class="sketch-card/g) ?? []).length, 1);
+  assert.doesNotMatch(about, /class="sketch-grid"/);
+});
+
 test('night-scene section eyebrows use scene text while surface eyebrows keep reading accents', () => {
   assert.equal(declarations(css, '.section-heading--compact .eyebrow').color, 'var(--color-scene-link)');
   assert.equal(declarations(css, '.privacy-page header .eyebrow').color, 'var(--color-scene-link)');
