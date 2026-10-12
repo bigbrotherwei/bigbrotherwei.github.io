@@ -12,7 +12,7 @@ draft: false
 background: "post-peakfs-paper"
 ---
 
-并行文件系统往往被两类负载同时拉扯：大量进程创建和查询小文件，需要极高的元数据吞吐；共享大文件读写，又希望数据路径尽可能靠近网络与 SSD 的带宽上限。PeakFS 的出发点是：RDMA、NVMe 和多核 CPU 已经足够快，文件系统内部的锁、线程切换、数据拷贝与不匹配的分布策略反而可能成为瓶颈。论文发表于 *IEEE Transactions on Parallel and Distributed Systems* 2024 年第 35 卷第 12 期。以下是一份针对设计和证据的导读，而不是原文翻译。
+并行文件系统往往被两类负载同时拉扯：大量进程创建和查询小文件，需要极高的元数据吞吐；共享大文件读写，又希望数据路径尽可能靠近网络与 SSD 的带宽上限。PeakFS 的出发点是：RDMA、NVMe 和多核 CPU 已经足够快，文件系统内部的锁、线程切换、数据拷贝与不匹配的分布策略反而可能成为瓶颈。论文发表于 *IEEE Transactions on Parallel and Distributed Systems* 2024 年第 35 卷第 12 期。
 
 ## 先看一张简图
 
@@ -49,4 +49,4 @@ pRPC 将连续写入做流水化处理，RDMA、SPDK 和用户态路径减少网
 
 PeakFS 最有启发性的地方，是把多核调度、数据分布、网络传输和 NVMe 访问当作一条连续路径来优化。若只替换通信协议，却让所有请求继续争同一份索引锁，收益会被内部协调抵消。反过来，若工作负载以故障容忍、完整 POSIX 兼容或动态迁移为首要目标，PeakFS 在论文中的取舍就需要重新评估：作者明确讨论了受限的一致性语义、未支持的部分 POSIX 特性，以及静态分布缺少动态迁移等限制（§VI）。
 
-**原论文**：Yixiao Chen 等，*PeakFS: An Ultra-High Performance Parallel File System via Computing-Network-Storage Co-Optimization for HPC Applications*，IEEE TPDS，2024。[DOI 与出版页面](https://doi.org/10.1109/TPDS.2024.3485754)。本文文字和架构图为原创梳理，未转载论文全文或原图。
+**原论文**：Yixiao Chen 等，*PeakFS: An Ultra-High Performance Parallel File System via Computing-Network-Storage Co-Optimization for HPC Applications*，IEEE TPDS，2024。[DOI 与出版页面](https://doi.org/10.1109/TPDS.2024.3485754)。

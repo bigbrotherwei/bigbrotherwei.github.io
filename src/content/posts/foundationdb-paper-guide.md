@@ -12,7 +12,7 @@ draft: false
 background: "post-foundationdb-paper"
 ---
 
-FoundationDB（FDB）的 2021 年 SIGMOD 论文回答了一个很实用的问题：怎样让一个支持严格可串行化事务的有序 KV 存储，同时具备横向扩展、快速故障恢复和可验证的正确性？论文的答案不是给每个分片塞进一套完整事务协议，而是把**事务决策、持久日志、数据存储和集群协调**拆成不同角色。本文只抓住这些角色如何协作，并把论文中的历史测量与今天的部署判断区分开来。
+FoundationDB（FDB）的 2021 年 SIGMOD 论文回答了一个很实用的问题：怎样让一个支持严格可串行化事务的有序 KV 存储，同时具备横向扩展、快速故障恢复和可验证的正确性？论文的答案不是给每个分片塞进一套完整事务协议，而是把**事务决策、持久日志、数据存储和集群协调**拆成不同角色。理解这些角色如何协作时，还需要把论文中的历史测量与今天的部署判断区分开来。
 
 ## 先看一张简图
 
@@ -32,7 +32,7 @@ FoundationDB（FDB）的 2021 年 SIGMOD 论文回答了一个很实用的问题
 
 这套流程把“提交已经持久”与“存储节点已经应用”分开。MVCC 负责按版本读，乐观并发控制（OCC）负责冲突判定；只读事务通常不走完整写入提交路径。原论文还指出：某些跨 Resolver 的冲突检查会出现保守的误判，导致本可提交的事务被拒绝；因此不能把冲突检测描述成零误报（§2.4.2）。
 
-FDB 的 Storage Server 管理的是 key range 分片，不是每片一个独立的 Raft 主节点。理解这一点后，再看全局版本、Resolver 和 LogServer 的职责就不容易混淆。如果想继续追进程角色、恢复自举和实验集群部署，可读本站的[FoundationDB 架构与事务机制](/posts/foundationdb-architecture/)；这篇导读则只讨论论文的核心主张。
+FDB 的 Storage Server 管理的是 key range 分片，不是每片一个独立的 Raft 主节点。理解这一点后，再看全局版本、Resolver 和 LogServer 的职责就不容易混淆。进程角色、恢复自举和实验集群部署的细节可参见[FoundationDB 架构与事务机制](/posts/foundationdb-architecture/)。
 
 ## 恢复为何可以快
 
@@ -54,4 +54,4 @@ FDB 将生产数据库逻辑放入可复现的离散事件模拟环境，网络�
 
 这篇论文最值得学习的是**明确的职责边界**：版本与冲突检查负责事务顺序，日志先兑现持久性，存储节点异步服务读和最终数据，控制平面负责招募与恢复。它把系统复杂度转移到了角色协作和测试基础设施上；确定性模拟正是让这种复杂架构可以持续演进的重要配套，而不是发布前补几轮故障演练就能替代的东西。
 
-**原论文**：Jingyu Zhou 等，*FoundationDB: A Distributed Unbundled Transactional Key Value Store*，ACM SIGMOD，2021。[DOI 与出版页面](https://doi.org/10.1145/3448016.3457559)；[FoundationDB 官方原文](https://www.foundationdb.org/files/fdb-paper.pdf)。本文文字和架构图为原创梳理，未转载论文全文或原图。
+**原论文**：Jingyu Zhou 等，*FoundationDB: A Distributed Unbundled Transactional Key Value Store*，ACM SIGMOD，2021。[DOI 与出版页面](https://doi.org/10.1145/3448016.3457559)；[FoundationDB 官方原文](https://www.foundationdb.org/files/fdb-paper.pdf)。
