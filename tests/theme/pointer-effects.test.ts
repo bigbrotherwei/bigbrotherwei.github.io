@@ -76,7 +76,7 @@ test('rainbow trail is a loose cluster of small unequal grains, not parallel bar
   const values = [0.05, 0.81, 0.22, 0.63, 0.94, 0.12, 0.71, 0.36];
   let next = 0;
   const particles = makeTrailParticles(100, 100, () => values[next++ % values.length]);
-  assert.ok(particles.length >= 3 && particles.length <= 5);
+  assert.ok(particles.length >= 7 && particles.length <= 10);
   assert.ok(particles.every(({ x, y, radius }) => x > 100 && y > 100 && radius <= 2.2));
   assert.ok(new Set(particles.map(({ radius }) => radius)).size > 1);
   const [a, b, c] = particles;

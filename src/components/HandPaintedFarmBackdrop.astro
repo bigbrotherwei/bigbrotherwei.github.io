@@ -13,6 +13,12 @@ const backdropStyle = [
   `--background-position: ${background.position ?? 'center'}`,
   `--background-position-mobile: ${background.mobilePosition ?? 'center'}`,
 ].join('; ');
+const gardenFairies = [
+  { color: 'rose', height: 300 },
+  { color: 'blue', height: 300 },
+  { color: 'violet', height: 300 },
+  { color: 'gold', height: 273 },
+];
 ---
 
 <div class="hand-painted-farm-backdrop" style={backdropStyle} aria-hidden="true">
@@ -20,8 +26,8 @@ const backdropStyle = [
     <img class="farm-night__moon" src="/images/farm-painted-moon.webp" width="160" height="107" alt="" decoding="async" />
     <img class="farm-night__couple" src="/images/farm-moonwatchers.webp" width="440" height="367" alt="" decoding="async" />
     <div class="farm-night__garden">
-      {[1, 2, 3].map((index) => <div class={`farm-night__fairy farm-night__fairy--${index}`}>
-        <img src="/images/farm-garden-sprite.webp" width="320" height="273" alt="" decoding="async" />
+      {gardenFairies.map(({ color, height }, index) => <div class={`farm-night__fairy farm-night__fairy--${index + 1}`}>
+        <img src={`/images/farm-fairy-${color}.webp`} width="256" height={height} alt="" decoding="async" />
         <span class="farm-night__droplet"></span>
         <span class="farm-night__droplet"></span>
       </div>)}

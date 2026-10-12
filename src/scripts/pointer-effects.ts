@@ -24,7 +24,7 @@ export const fruitKinds: readonly FruitKind[] = ['watermelon', 'apple', 'banana'
 const rainbowColors = ['#ef6260', '#f2a65b', '#f6d878', '#86c88b', '#77c8d6', '#9c91d4'];
 
 export function makeTrailParticles(x: number, y: number, random: () => number = Math.random): TrailParticle[] {
-  const count = 3 + Math.floor(random() * 3);
+  const count = 7 + Math.floor(random() * 4);
   return Array.from({ length: count }, () => ({
     x: x + 7 + random() * 19,
     y: y + 8 + random() * 16,
@@ -208,7 +208,7 @@ export function mountPointerEffects(document: Document, window: Window): () => v
     const distance = previousPointer ? Math.hypot(event.clientX - previousPointer.x, event.clientY - previousPointer.y) : 20;
     if (distance < 7) return;
     trail.push(...makeTrailParticles(event.clientX, event.clientY));
-    if (trail.length > 120) trail.splice(0, trail.length - 120);
+    if (trail.length > 180) trail.splice(0, trail.length - 180);
     previousPointer = { x: event.clientX, y: event.clientY };
     start();
   };
