@@ -17,7 +17,6 @@ const requiredRoutePaths = [
   'src/pages/posts/index.astro',
   'src/pages/topics/index.astro',
   'src/pages/tools/index.astro',
-  'src/pages/projects/index.astro',
   'src/pages/about.astro',
 ];
 const forbiddenAssetPaths = [

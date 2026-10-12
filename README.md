@@ -10,6 +10,12 @@
 - GitHub Actions
 - GitHub Pages
 
+## 当前状态
+
+博客目前公开文章、专题、归档、标签、站内搜索和十个浏览器端工具；已支持明暗主题、文章阅读交互、Giscus 评论接入和 Vercount 访问统计。评论是否开放取决于仓库的 Giscus 配置，统计数字取决于第三方服务是否可用。
+
+“项目”栏目暂不发布：顶部导航已隐藏，构建不会生成 `/projects/` 及项目详情，也不会将它们写入站内搜索或 Sitemap。项目 Markdown 和背景素材保留在仓库中，待内容确定后再恢复页面。
+
 ## 本地开发
 
 安装依赖：
@@ -180,9 +186,9 @@ background: "post-json-tool-design"
 
 栏目页也使用同一背景注册表，但由对应 Astro 页面直接传入 key。所有场景保持原创手绘农场暮景的统一美术方向，各自采用不同地点和构图。
 
-## 项目内容
+## 项目内容（暂不发布）
 
-项目使用 Markdown 管理，文件统一放在：
+项目草稿仍使用 Markdown 管理，文件统一放在：
 
 ```text
 src/content/projects/
@@ -190,7 +196,7 @@ src/content/projects/
 
 ### 创建新项目
 
-项目文件名就是公开地址中的 slug。例如 `my-project.md` 会生成 `/projects/my-project/`。可以从下面的完整 frontmatter 开始：
+项目栏目恢复后，文件名才会成为公开地址中的 slug。例如 `my-project.md` 将对应 `/projects/my-project/`。目前只保存内容，不生成页面。可以从下面的完整 frontmatter 开始：
 
 ```markdown
 ---
@@ -234,14 +240,16 @@ npm run build
 
 ## 搜索与订阅
 
-- `/search/`：使用 Pagefind 在浏览器内搜索已发布的文章、专题、工具和项目详情；查询词不会发送到外部服务。
+- `/search/`：使用 Pagefind 在浏览器内搜索已发布的文章、专题和工具详情；查询词不会发送到外部服务。
 - `/rss.xml`：仅包含已发布文章的标题、摘要、日期、分类和链接。
-- `/sitemap-index.xml`：Sitemap 入口；搜索页使用 `noindex,follow`，不进入 Sitemap。
+- `/sitemap-index.xml`：Sitemap 入口；搜索页和暂停发布的项目页不进入 Sitemap。
 - `/robots.txt`：允许抓取公开页面并声明 Sitemap 地址。
 
 Pagefind 在 Astro 静态页面生成后执行。索引只收录带 `data-pagefind-body` 的详情页，草稿、列表、归档、标签、关于和搜索页不会进入索引。发布前必须运行完整的 `npm run build`；最终的 `verify:dist` 会交叉校验 HTML 元数据、JSON-LD、RSS、Sitemap、robots 和 Pagefind 产物。
 
 ## 第一阶段范围
+
+以下阶段章节记录当时的交付范围；当前公开能力以文首“当前状态”为准。
 
 第一阶段只建立基础工程能力：
 
@@ -317,11 +325,12 @@ Pagefind 在 Astro 静态页面生成后执行。索引只收录带 `data-pagefi
 
 第八阶段从全站背景动效开始：夜间手绘插画上有少量自动飘落的花瓣和偶尔划过的流星。效果由 CSS 实现，不需要额外脚本或服务；手机端减少元素，系统启用“减少动态效果”时停止显示。文章页也加入阅读进度、由二三级标题生成的目录和返回顶部按钮，窄屏时目录移到正文上方。页面内容采用短暂淡入，导航和主要入口提供悬停、键盘聚焦反馈；原生页面导航保持不变，系统启用“减少动态效果”时这些动画和过渡也会停用。GitHub Pages 仍可通过浏览器端 JavaScript 实现后续交互组件、Canvas 效果和本地状态；需要服务端数据时再单独设计 API 或 Serverless 边界。
 
-后续候选需求包括：
+## 第九至十二阶段
 
-- 暗色模式
-- 评论系统
-- 访问统计（全站 PV、UV 和文章阅读数）
+- 第九阶段接入文章评论和访问统计；统计后来改用 Vercount，不再需要自行部署统计后端。
+- 第十阶段完成明暗主题与阅读配色。
+- 第十一阶段增加图片合并 PDF、Markdown 预览、文本差异和正则测试工具，并调整深色主题。
+- 第十二阶段支持 MDX 展示组件、图片查看、代码复制及文章发布前检查，同时优化 Markdown 预览布局。
 
 ## 设计文档
 

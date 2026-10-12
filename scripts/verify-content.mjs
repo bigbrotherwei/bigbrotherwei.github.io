@@ -221,33 +221,8 @@ if (exists('src/pages/topics/index.astro')) {
   }
 }
 
-if (exists('src/pages/projects/index.astro')) {
-  const projectsIndex = read('src/pages/projects/index.astro');
-  for (const token of ["getCollection('projects')", '/projects/${project.id}/', 'project.data.status', 'project.data.tags']) {
-    if (!projectsIndex.includes(token)) {
-      failures.push(`src/pages/projects/index.astro must include: ${token}`);
-    }
-  }
-}
-
-if (!exists('src/pages/projects/[slug].astro')) {
-  failures.push('Missing project detail route: src/pages/projects/[slug].astro');
-} else {
-  const projectDetail = read('src/pages/projects/[slug].astro');
-  for (const token of [
-    'export async function getStaticPaths()',
-    "getCollection('projects')",
-    'render(project)',
-    'backgroundKey={project.data.background}',
-    'project.data.repository &&',
-    'project.data.website &&',
-    'target="_blank"',
-    'rel="noreferrer"',
-  ]) {
-    if (!projectDetail.includes(token)) {
-      failures.push(`src/pages/projects/[slug].astro must include: ${token}`);
-    }
-  }
+for (const route of ['src/pages/projects/index.astro', 'src/pages/projects/[slug].astro']) {
+  if (exists(route)) failures.push(`Project route must remain unpublished: ${route}`);
 }
 
 if (!exists('src/components/PostsSubnav.astro')) {

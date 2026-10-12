@@ -62,7 +62,6 @@ const createValidFixture = (): string => {
       : slug === 'images-pdf' ? '<p class="tool-privacy-note">输入内容只在浏览器中处理，不会上传或保存。</p>' : '';
     write(root, `dist/tools/${slug}/index.html`, html(`/tools/${slug}/`, [], '工具').replace('</body>', `${notice}</body>`));
   }
-  write(root, 'dist/projects/hello/index.html', html('/projects/hello/', [], '项目'));
   write(root, 'dist/rss.xml', `<rss><channel><item><link>${siteOrigin}/posts/hello/</link></item></channel></rss>`);
   write(root, 'dist/sitemap-index.xml', '<sitemapindex></sitemapindex>');
   write(root, 'dist/sitemap-0.xml', '<urlset></urlset>');
@@ -99,6 +98,17 @@ test('accepts complete canonical and social URL metadata', () => {
   const result = runVerifier();
 
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('rejects retired project pages and sitemap entries', () => {
+  const result = runVerifier((root) => {
+    write(root, 'dist/projects/hello/index.html', html('/projects/hello/', [], '项目'));
+    write(root, 'dist/sitemap-0.xml', `<urlset><url><loc>${siteOrigin}/projects/hello/</loc></url></urlset>`);
+  });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /must not publish project route/);
+  assert.match(result.stderr, /must exclude \/projects\//);
 });
 
 test('accepts an empty article catalog with an empty RSS feed', () => {

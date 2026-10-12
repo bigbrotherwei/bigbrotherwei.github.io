@@ -15,12 +15,10 @@ const routePaths = [
   'src/pages/posts/index.astro',
   'src/pages/topics/index.astro',
   'src/pages/tools/index.astro',
-  'src/pages/projects/index.astro',
   'src/pages/search/index.astro',
   'src/pages/about.astro',
   'src/pages/posts/[slug].astro',
   'src/pages/topics/[slug].astro',
-  'src/pages/projects/[slug].astro',
 ];
 const failures = [];
 const minimumBackgroundBytes = 50_000;
@@ -214,7 +212,6 @@ const pageBackgroundRequirements = {
   'src/pages/posts/index.astro': 'posts-index',
   'src/pages/topics/index.astro': 'topics-index',
   'src/pages/tools/index.astro': 'tools-index',
-  'src/pages/projects/index.astro': 'projects-index',
   'src/pages/search/index.astro': 'search-index',
   'src/pages/about.astro': 'about',
   'src/pages/tools/json.astro': 'tool-json',
@@ -352,7 +349,6 @@ for (const [collection, expectedEntries] of Object.entries(expectedContentBackgr
 for (const [routePath, expression] of [
   ['src/pages/posts/[slug].astro', 'backgroundKey={post.data.background}'],
   ['src/pages/topics/[slug].astro', 'backgroundKey={topic.data.background}'],
-  ['src/pages/projects/[slug].astro', 'backgroundKey={project.data.background}'],
 ]) {
   const source = readFileSync(join(root, routePath), 'utf8');
   if (!source.includes(expression)) {
