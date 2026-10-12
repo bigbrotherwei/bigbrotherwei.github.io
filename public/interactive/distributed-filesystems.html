@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="交互查看 CephFS、JuiceFS 与 DeepSeek 3FS 的关键请求路径。" />
+  <title>分布式文件系统交互架构图</title>
+  <link rel="canonical" href="https://bigbrotherwei.github.io/interactive/distributed-filesystems.html" />
+  <meta property="og:title" content="分布式文件系统交互架构图" />
+  <meta property="og:description" content="交互查看 CephFS、JuiceFS 与 DeepSeek 3FS 的关键请求路径。" />
+  <meta property="og:url" content="https://bigbrotherwei.github.io/interactive/distributed-filesystems.html" />
+  <meta property="og:image" content="https://bigbrotherwei.github.io/images/backgrounds/topic-distributed-filesystems.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="分布式文件系统交互架构图" />
+  <meta name="twitter:description" content="交互查看 CephFS、JuiceFS 与 DeepSeek 3FS 的关键请求路径。" />
+  <meta name="twitter:image" content="https://bigbrotherwei.github.io/images/backgrounds/topic-distributed-filesystems.webp" />
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #173039; background: #e9f0ee; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button { font: inherit; }
+    .page { width: min(1160px, 100%); min-height: 100vh; margin: 0 auto; padding: clamp(16px, 2.5vw, 30px); background: #f7faf8; }
+    .page[data-tone="metadata"] { --accent: #187e8d; --accent-wash: #e5f3f4; }
+    .page[data-tone="data"] { --accent: #b66628; --accent-wash: #fff1e6; }
+    .page[data-tone="recovery"] { --accent: #5465a4; --accent-wash: #eaedfa; }
+    .eyebrow { margin: 0 0 6px; color: #5d756f; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(21px, 3vw, 31px); line-height: 1.3; }
+    .summary { max-width: 70ch; margin: 8px 0 0; color: #4a6063; font-size: 14px; line-height: 1.65; }
+    .routes { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 20px; }
+    .routes button { min-height: 40px; padding: 7px 15px; border: 1px solid #bed0cc; border-radius: 4px; background: #fff; color: #27434a; font-weight: 700; cursor: pointer; }
+    .routes button:hover, .routes button:focus-visible { border-color: #187e8d; }
+    .routes button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: white; }
+    .routes button:focus-visible, .step:focus-visible { outline: 3px solid #f0b75c; outline-offset: 2px; }
+    .board { border: 1px solid #cbdad7; background: #fff; }
+    .board-head { padding: 18px 22px; border-bottom: 1px solid #d7e2de; background: var(--accent-wash); }
+    .board-head h2 { margin: 0 0 5px; font-size: 17px; }
+    .board-head p { margin: 0; color: #405c61; font-size: 13px; line-height: 1.6; }
+    .flow { display: grid; grid-template-columns: repeat(var(--step-count), minmax(0, 1fr)); gap: 18px; padding: 25px 22px; background-image: radial-gradient(#d5e2dd 0.7px, transparent 0.7px); background-size: 14px 14px; }
+    .step { position: relative; min-width: 0; min-height: 156px; padding: 15px 12px 14px; border: 1px solid #c8d8d4; border-top: 4px solid var(--accent); border-radius: 4px; background: #fff; color: #173039; text-align: left; cursor: pointer; box-shadow: 0 3px 0 #e4ebe8; }
+    .step:not(:last-child)::after { content: "→"; position: absolute; right: -18px; top: 46%; color: var(--accent); font-size: 18px; font-weight: 800; pointer-events: none; }
+    .step:hover, .step[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); }
+    .step__number { display: block; margin-bottom: 11px; color: var(--accent); font-size: 11px; font-weight: 850; }
+    .step__title { display: block; margin-bottom: 7px; font-size: 15px; font-weight: 800; line-height: 1.3; overflow-wrap: anywhere; }
+    .step__hint { display: block; color: #536970; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }
+    .detail { display: grid; grid-template-columns: minmax(145px, 24%) minmax(0, 1fr); gap: 20px; align-items: start; padding: 20px 22px 22px; border-top: 1px solid #d7e2de; }
+    .detail h3 { margin: 0; color: var(--accent); font-size: 17px; }
+    .detail p { margin: 0; color: #334c53; font-size: 14px; line-height: 1.75; }
+    .footnote { margin: 12px 2px 0; color: #607378; font-size: 12px; line-height: 1.6; }
+    html.embedded .page { min-height: 0; }
+    @media (max-width: 720px) {
+      .page { padding: 14px; }
+      .routes { margin: 17px 0 15px; }
+      .routes button { flex: 1 1 auto; padding-inline: 9px; font-size: 12px; }
+      .board-head { padding: 14px 15px; }
+      .flow { grid-template-columns: 1fr; gap: 16px; padding: 16px 15px; }
+      .step { min-height: 0; padding: 10px 12px; }
+      .step:not(:last-child)::after { content: "↓"; right: auto; left: 47%; top: auto; bottom: -19px; font-size: 17px; }
+      .step__number { margin-bottom: 3px; }
+      .step__title { margin-bottom: 2px; font-size: 14px; }
+      .step__hint { font-size: 12px; }
+      .detail { display: block; padding: 15px; }
+      .detail h3 { margin-bottom: 5px; font-size: 15px; }
+      .detail p { font-size: 13px; }
+    }
+    @media (prefers-reduced-motion: no-preference) { .step, .routes button { transition: background-color .15s ease, border-color .15s ease; } }
+  </style>
+</head>
+<body>
+  <main class="page" data-tone="metadata">
+    <header>
+      <p class="eyebrow">Architecture / Request path</p>
+      <h1 data-title>分布式文件系统</h1>
+      <p class="summary" data-summary></p>
+    </header>
+    <nav class="routes" aria-label="选择请求路径" data-routes></nav>
+    <section class="board" aria-labelledby="route-title">
+      <div class="board-head">
+        <h2 id="route-title" data-route-title></h2>
+        <p data-route-summary></p>
+      </div>
+      <div class="flow" aria-label="请求路径步骤" data-flow></div>
+      <div class="detail" aria-live="polite">
+        <h3 data-detail-title></h3>
+        <p data-step-detail></p>
+      </div>
+    </section>
+    <p class="footnote" data-footnote></p>
+  </main>
+  <noscript>开启 JavaScript 后可以切换请求路径并查看各步骤。</noscript>
+  <script>
+    const diagrams = {
+      cephfs: {
+        title: 'CephFS：请求路径与 MDS 接管',
+        summary: '命名空间由 MDS 协调，普通文件数据由客户端直接访问 OSD。选择路径查看两个平面如何协作。',
+        footnote: '逻辑路径图；缓存命中、版本与部署配置会改变实际消息数量。',
+        routes: [
+          { id: 'read', label: '文件读取', tone: 'metadata', summary: '客户端先取得所需的元数据和 layout，随后直接向 OSD 读取文件对象。', steps: [
+            ['客户端', '解析路径与缓存', '先检查本地 dentry、inode 和 capability 缓存；未命中时需要询问权威 MDS。'],
+            ['MDS', '返回 inode、layout 和 cap', 'MDS 处理命名空间和访问权限，返回文件布局与可用的读取 capability；它不转发普通文件数据。'],
+            ['客户端', '计算目标对象与 PG', '客户端根据 layout 和最新 OSD Map 确定需要访问的文件对象与目标 OSD。'],
+            ['OSD', '直接返回文件数据', 'Primary OSD 处理对象读取；返回的数据进入客户端或内核的缓存。'],
+          ] },
+          { id: 'write', label: '文件写入', tone: 'data', summary: '写权限由 MDS 协调，文件对象直接写入 OSD；元数据状态随后收敛。', steps: [
+            ['客户端', '申请写 cap', '若存在冲突的客户端 capability，MDS 需要先召回或降级后才能授予写入权限。'],
+            ['MDS', '协调权限与锁', 'MDS 负责 cap、锁和 inode 状态，不位于普通数据块的传输链路中。'],
+            ['客户端', '按 layout 切分对象', '写入可先进入 page cache，再由客户端按布局形成发往 OSD 的对象操作。'],
+            ['OSD / Data Pool', '持久化文件对象', 'Primary OSD 依据 pool 策略完成复制或纠删码写入；size 和 mtime 等状态经 cap flush 收敛。'],
+          ] },
+          { id: 'failover', label: 'MDS 接管', tone: 'recovery', summary: '备用 MDS 接管故障 rank，通过 Journal 恢复元数据，再恢复客户端会话。', steps: [
+            ['MON / MDS Map', '识别故障 rank', '集群更新 MDS Map，让备用 daemon 接管原逻辑 rank；普通 standby 来自共享备用池。'],
+            ['备用 MDS', '进入恢复状态机', '接管者读取该 rank 的 Journal 位置和保留的日志段。'],
+            ['Metadata Pool', '重放 Journal', '从最早保留的合法 major segment 顺序重放到持久化尾部，恢复尚未刷回的元数据状态。'],
+            ['客户端', '重新连接与恢复 cap', '接管 MDS 恢复 session、锁和 capability 后，客户端重新连接并恢复服务。'],
+          ] },
+        ],
+      },
+      juicefs: {
+        title: 'JuiceFS：元数据与对象数据路径',
+        summary: '客户端同时连接元数据系统和对象存储。切换路径，观察 Chunk、Slice 与不可变 Block 如何参与请求。',
+        footnote: '图示以 Community Edition 的外部元数据引擎为例；Enterprise / Cloud 的 Metadata Service 结构不同。',
+        routes: [
+          { id: 'read', label: '文件读取', tone: 'metadata', summary: '路径先定位 inode 和 Chunk/Slice 映射，数据可从本地缓存或对象存储读取。', steps: [
+            ['应用 / FUSE', '发起 read', '文件句柄和 offset 进入 JuiceFS 客户端的 VFS 逻辑。'],
+            ['元数据引擎', '解析映射', '客户端取得 inode 对应 Chunk 的 Slice 列表，并计算该范围最终可见的数据版本。'],
+            ['客户端缓存', '优先命中 Block', '先检查页缓存或本地 Block 缓存，避免重复访问远端对象。'],
+            ['对象存储', '读取缺失的 Block', '缓存未命中时读取不可变 Block，组装请求范围并返回应用。'],
+          ] },
+          { id: 'write', label: '文件写入', tone: 'data', summary: '先让新数据对象可用，再提交 Chunk 到 Slice 的元数据映射。', steps: [
+            ['应用 / FUSE', '写入客户端缓冲', 'write() 可以先进入客户端内存缓冲；完成系统调用并不等同于数据已经持久化。'],
+            ['JuiceFS 客户端', '形成 Slice 与 Block', '客户端把写入范围组织为新的 Slice，并拆成可上传的不可变 Block。'],
+            ['对象存储', '上传新 Block', 'Block PUT 成功后数据对象才可被后续映射安全引用。'],
+            ['元数据引擎', '提交 Slice 映射', '事务发布新的 Chunk/Slice 映射；失败时更可能留下可回收的孤儿对象。'],
+          ] },
+          { id: 'rename', label: 'Rename', tone: 'recovery', summary: '改名是元数据事务，不需要搬移底层 Block/Object。', steps: [
+            ['应用 / FUSE', '提交 rename', '客户端检查路径、类型、权限以及目标目录的约束。'],
+            ['JuiceFS 客户端', '构造元数据修改', '需要修改源和目标 dentry、inode parent、链接计数等相关状态。'],
+            ['元数据引擎', '原子提交', '依赖所选后端的事务与并发控制，保证这次修改整体成功或失败。'],
+            ['对象存储', '数据对象不移动', '文件内容仍由原有 Chunk/Slice/Block 映射引用，不执行对象 COPY。'],
+          ] },
+        ],
+      },
+      '3fs': {
+        title: 'DeepSeek 3FS：CRAQ 与副本路径',
+        summary: '元数据操作与数据 I/O 分离。CRAQ 写入沿副本链传播，读取可利用多个可读副本。',
+        footnote: '逻辑流程根据文章对应的设计资料绘制；实际线程、部署和故障处理随版本与配置而变。',
+        routes: [
+          { id: 'craq', label: 'CRAQ 写入', tone: 'data', summary: 'Head 拉取客户端数据；更新沿副本链传播；Tail 提交后 ACK 反向返回。', steps: [
+            ['Client MR', '注册写入缓冲', '客户端提供已注册内存区域的地址、rkey 和长度，供 Storage 发起 RDMA Read。'],
+            ['Head', '拉取与排序', 'Head 从 Client MR 拉取数据，检查 chain version 并为同一 Chunk 的写入建立顺序。'],
+            ['中间副本', '传播 pending 版本', 'pending 更新继续沿 chain 传递；副本在收到提交确认前保留状态。'],
+            ['Tail', '提交版本', 'Tail 完成链尾提交，并把 ACK 沿相反方向发回。'],
+            ['Head / Client', '确认写入', '各层收到 ACK 后将 pending 转为 committed，最终由 Head 解锁并通知客户端。'],
+          ] },
+          { id: 'read', label: '副本读取', tone: 'metadata', summary: '元数据和 placement 信息定位 Chunk，可读副本承担读请求。', steps: [
+            ['Client', '定位 inode 和 Chunk', '路径和 inode 信息来自 Meta；打开后客户端可依据 placement 信息定位数据目标。'],
+            ['Chain Table', '选择可读 Target', '客户端结合 chain/target 信息选择当前可读的副本，而非固定只读链尾。'],
+            ['Storage', '读取 Chunk', '目标 Storage 处理读请求，副本本身成为并行读取带宽资源。'],
+            ['Client', '接收数据', '数据路径不要求每次 I/O 都回到 Meta 查询 Chunk 位置。'],
+          ] },
+          { id: 'recovery', label: '故障恢复', tone: 'recovery', summary: '成员状态改变后更新 chain version，并让缺失副本追赶数据。', steps: [
+            ['mgmtd', '识别成员变化', '控制面维护节点与 Target 状态，把可用成员和链状态变化传播给相关组件。'],
+            ['Chain Table', '更新版本与放置', '新的 chain version 避免旧拓扑继续接受不兼容写入。'],
+            ['Storage', '增量同步副本', '恢复流程依据已提交状态追赶缺失的 Chunk 数据与版本。'],
+            ['Client', '刷新拓扑', '客户端使用新的放置信息继续选择可用链路。'],
+          ] },
+        ],
+      },
+    };
+
+    const params = new URLSearchParams(location.search);
+    const page = document.querySelector('.page');
+    const diagram = diagrams[params.get('system')];
+    const title = document.querySelector('[data-title]');
+    const summary = document.querySelector('[data-summary]');
+    const routes = document.querySelector('[data-routes]');
+    const flow = document.querySelector('[data-flow]');
+    const routeTitle = document.querySelector('[data-route-title]');
+    const routeSummary = document.querySelector('[data-route-summary]');
+    const detailTitle = document.querySelector('[data-detail-title]');
+    const detail = document.querySelector('[data-step-detail]');
+
+    if (!diagram) {
+      title.textContent = '未找到交互图';
+      summary.textContent = '请从文章中的交互架构图入口打开。';
+      document.querySelector('.board').hidden = true;
+    } else {
+      document.title = `${diagram.title} | bigbrotherwei`;
+      title.textContent = diagram.title;
+      summary.textContent = diagram.summary;
+      document.querySelector('[data-footnote]').textContent = diagram.footnote;
+
+      function selectStep(button, step) {
+        flow.querySelectorAll('[data-step]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        detailTitle.textContent = step[0];
+        detail.textContent = step[2];
+      }
+
+      function selectRoute(route) {
+        page.dataset.tone = route.tone;
+        routes.querySelectorAll('[data-route]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.route === route.id)));
+        routeTitle.textContent = route.label;
+        routeSummary.textContent = route.summary;
+        flow.style.setProperty('--step-count', route.steps.length);
+        flow.replaceChildren();
+        route.steps.forEach((step, index) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'step';
+          button.dataset.step = String(index);
+          button.setAttribute('aria-pressed', 'false');
+          for (const [className, value] of [['step__number', String(index + 1).padStart(2, '0')], ['step__title', step[0]], ['step__hint', step[1]]]) {
+            const label = document.createElement('span');
+            label.className = className;
+            label.textContent = value;
+            button.append(label);
+          }
+          button.addEventListener('click', () => selectStep(button, step));
+          flow.append(button);
+        });
+        selectStep(flow.querySelector('[data-step]'), route.steps[0]);
+      }
+
+      for (const route of diagram.routes) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.route = route.id;
+        button.setAttribute('aria-pressed', 'false');
+        button.textContent = route.label;
+        button.addEventListener('click', () => selectRoute(route));
+        routes.append(button);
+      }
+      selectRoute(diagram.routes[0]);
+    }
+
+    if (params.has('embed')) {
+      document.documentElement.classList.add('embedded');
+      const reportHeight = () => parent.postMessage({ type: 'article-interactive-height', height: Math.ceil(page.getBoundingClientRect().height) }, '*');
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(reportHeight).observe(page);
+      window.addEventListener('resize', reportHeight);
+      reportHeight();
+    }
+  </script>
+</body>
+</html>

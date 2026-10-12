@@ -45,6 +45,11 @@ CephFS 是构建在 RADOS 之上的分布式 POSIX 文件系统。它向应用�
    └── 文件数据 I/O ─► OSD 集群 ──► Data Pool（replicated / EC objects）
 ```
 
+<div class="article-interactive">
+  <p><strong>交互架构图</strong><a href="/interactive/distributed-filesystems.html?system=cephfs" target="_blank" rel="noopener noreferrer">单独打开</a></p>
+  <iframe src="/interactive/distributed-filesystems.html?system=cephfs&embed=1" title="CephFS 读写路径与 MDS 接管交互图" loading="lazy" sandbox="allow-scripts" data-auto-height></iframe>
+</div>
+
 | 平面 | 组件 | 职责 |
 | --- | --- | --- |
 | 控制平面 | MON、MGR | 维护 Cluster Map、选举与仲裁、MDS rank 分配、配置和健康状态。 |

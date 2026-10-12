@@ -128,6 +128,11 @@ Chain 3: A3 -> C2 -> E4
 
 3FS 使用 CRAQ（Chain Replication with Apportioned Queries）管理副本。最值得记住的是：Write All，Read Any。写沿 chain 传播并由 tail 触发 commit；读可以选择任意处于可读状态的副本，因此副本本身成为读带宽资源。参考 [2]。
 
+<div class="article-interactive">
+  <p><strong>交互架构图</strong><a href="/interactive/distributed-filesystems.html?system=3fs" target="_blank" rel="noopener noreferrer">单独打开</a></p>
+  <iframe src="/interactive/distributed-filesystems.html?system=3fs&embed=1" title="DeepSeek 3FS CRAQ 与副本路径交互图" loading="lazy" sandbox="allow-scripts" data-auto-height></iframe>
+</div>
+
 ![CRAQ 副本链写入与确认路径](/images/posts/deepseek-3fs-architecture/figure-03.png)
 
 *CRAQ 写入：Head 拉取 Client MR，Tail commit，ACK 反向传播。*

@@ -31,6 +31,11 @@ JuiceFS Client
         └── S3/OSS/MinIO/Ceph
 ```
 
+<div class="article-interactive">
+  <p><strong>交互架构图</strong><a href="/interactive/distributed-filesystems.html?system=juicefs" target="_blank" rel="noopener noreferrer">单独打开</a></p>
+  <iframe src="/interactive/distributed-filesystems.html?system=juicefs&embed=1" title="JuiceFS 元数据与数据路径交互图" loading="lazy" sandbox="allow-scripts" data-auto-height></iframe>
+</div>
+
 架构抓手
 理解 JuiceFS 时始终把系统拆成两个平面：Metadata Plane 决定“文件现在是什么”，Data Plane 只负责保存“不可变的数据载荷”。
 
