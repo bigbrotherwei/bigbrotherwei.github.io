@@ -1,0 +1,16 @@
+---
+import { CalendarDays } from 'lucide-astro';
+
+interface Props {
+  date: Date;
+  text: string;
+  class?: string;
+}
+
+const { date, text, class: className } = Astro.props;
+---
+
+<time class:list={['post-date', className]} datetime={date.toISOString()}>
+  <CalendarDays aria-hidden="true" size={15} strokeWidth={2} />
+  <span>{text}</span>
+</time>

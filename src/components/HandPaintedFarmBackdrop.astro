@@ -3,18 +3,36 @@ import type { PageBackground } from '../data/backgrounds';
 
 interface Props {
   background: PageBackground;
+  animateFarmNight?: boolean;
 }
 
-const { background } = Astro.props;
+const { background, animateFarmNight = false } = Astro.props;
 const backdropStyle = [
   `--background-image: url("${background.desktop}")`,
   `--background-image-mobile: url("${background.mobile}")`,
   `--background-position: ${background.position ?? 'center'}`,
   `--background-position-mobile: ${background.mobilePosition ?? 'center'}`,
 ].join('; ');
+const gardenFairies = [
+  { color: 'rose', height: 300 },
+  { color: 'blue', height: 300 },
+  { color: 'violet', height: 300 },
+  { color: 'gold', height: 273 },
+];
 ---
 
 <div class="hand-painted-farm-backdrop" style={backdropStyle} aria-hidden="true">
+  {animateFarmNight && <div class="farm-night">
+    <img class="farm-night__moon" src="/images/farm-painted-moon.webp" width="160" height="107" alt="" decoding="async" />
+    <img class="farm-night__couple" src="/images/farm-moonwatchers.webp" width="440" height="367" alt="" decoding="async" />
+    <div class="farm-night__garden">
+      {gardenFairies.map(({ color, height }, index) => <div class={`farm-night__fairy farm-night__fairy--${index + 1}`}>
+        <img src={`/images/farm-fairy-${color}.webp`} width="256" height={height} alt="" decoding="async" />
+        <span class="farm-night__droplet"></span>
+        <span class="farm-night__droplet"></span>
+      </div>)}
+    </div>
+  </div>}
   <div class="ambient-motion" aria-hidden="true">
     <div class="ambient-motion__meteors">
       <span class="ambient-motion__meteor"></span>

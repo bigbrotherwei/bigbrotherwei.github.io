@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import { ArrowUp, ChevronDown, ListTree, Tag, X } from 'lucide-astro';
 import ArticleComments from '../../components/ArticleComments.astro';
 import PageViews from '../../components/PageViews.astro';
+import PostDate from '../../components/PostDate.astro';
 import PostsSubnav from '../../components/PostsSubnav.astro';
 import { pageBackgrounds } from '../../data/backgrounds';
 import BaseLayout from '../../layouts/BaseLayout.astro';
@@ -72,7 +73,7 @@ const structuredData = [
           <h1>{post.data.title}</h1>
           <p>{post.data.description}</p>
           <div class="content-card__meta">
-            <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+            <PostDate date={post.data.pubDate} text={formatDate(post.data.pubDate)} />
             {topic && <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>}
           </div>
           <PageViews label="阅读量" />
@@ -142,7 +143,7 @@ const structuredData = [
             {relatedPosts.map((relatedPost) => (
               <a class="sketch-card content-card" href={`/posts/${relatedPost.id}/`}>
                 <div class="content-card__meta">
-                  <time datetime={relatedPost.data.pubDate.toISOString()}>{formatDate(relatedPost.data.pubDate)}</time>
+                  <PostDate date={relatedPost.data.pubDate} text={formatDate(relatedPost.data.pubDate)} />
                   <span>{relatedPost.data.topic === post.data.topic ? '同专题' : '相关标签'}</span>
                 </div>
                 <h3>{relatedPost.data.title}</h3>

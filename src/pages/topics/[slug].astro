@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import PostDate from '../../components/PostDate.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 export async function getStaticPaths() {
@@ -55,7 +56,7 @@ const formatDate = (date: Date) => new Intl.DateTimeFormat('zh-CN', {
           {posts.map((post) => (
             <a class="sketch-card content-card" href={`/posts/${post.id}/`}>
               <div class="content-card__meta">
-                <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+                <PostDate date={post.data.pubDate} text={formatDate(post.data.pubDate)} />
                 <span>第 {post.data.order} 篇</span>
               </div>
               <h3>{post.data.title}</h3>

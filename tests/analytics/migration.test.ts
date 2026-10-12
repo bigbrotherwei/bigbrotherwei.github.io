@@ -52,11 +52,13 @@ test('shared content cards and large sections avoid opaque fills and double outl
   assert.match(globalCss, /--color-glass-border:\s*rgba\(/);
   assert.match(globalCss, /\.sketch-card\s*\{[^}]*background:\s*var\(--color-panel-glass\)/s);
   assert.doesNotMatch(globalCss, /\.sketch-card::before/);
-  for (const selector of ['.site-stats', '.search-panel', '.tag-index__item']) {
+  for (const selector of ['.search-panel', '.tag-index__item']) {
     const block = globalCss.match(new RegExp(`${selector.replaceAll('.', '\\.') }\\s*\\{([^}]+)\\}`))?.[1] ?? '';
     assert.match(block, /background:\s*var\(--color-panel-glass\)/, selector);
     assert.match(block, /border[^;]*var\(--color-glass-border\)/, selector);
   }
+  assert.match(globalCss, /\.site-footer\s*\{[^}]*background:\s*var\(--color-panel-glass\)/s);
+  assert.match(globalCss, /\.site-stats\s*\{[^}]*background:\s*transparent/s);
   assert.match(toolsCss.match(/\.tool-workspace\s*\{([^}]+)\}/)?.[1] ?? '', /border[^;]*var\(--color-glass-border\)/);
   assert.match(toolIndex, /\.tool-panel\s*\{[^}]*background:\s*var\(--color-panel-glass\)/s);
 });

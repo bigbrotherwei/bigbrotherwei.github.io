@@ -10,6 +10,8 @@ const postCountByTopic = new Map<string, number>();
 for (const post of posts) {
   postCountByTopic.set(post.data.topic, (postCountByTopic.get(post.data.topic) ?? 0) + 1);
 }
+const activeTopics = topics.filter((topic) => (postCountByTopic.get(topic.id) ?? 0) > 0);
+const plannedTopics = topics.filter((topic) => !postCountByTopic.get(topic.id));
 ---
 
 <BaseLayout
@@ -21,11 +23,11 @@ for (const post of posts) {
     <PageHero
       eyebrow="Topics"
       title="专题"
-      description="专题不是分类，而是一条被整理过的阅读路径。它把多篇文章串成可以持续更新的小册子。"
+      description="沿着一条线索，连续阅读同一主题的文章。"
     />
 
     <section class="sketch-grid" aria-label="专题列表">
-      {topics.map((topic) => (
+      {activeTopics.map((topic) => (
         <a class="sketch-card content-card" href={`/topics/${topic.id}/`}>
           <div class="content-card__meta">
             <span>{topic.data.status}</span>
@@ -36,5 +38,16 @@ for (const post of posts) {
         </a>
       ))}
     </section>
+    {plannedTopics.length > 0 && <section class="topics-planned" aria-label="待更新专题">
+      <h2>待更新</h2>
+      <div>{plannedTopics.map((topic) => <a href={`/topics/${topic.id}/`}>{topic.data.title}</a>)}</div>
+    </section>}
   </main>
 </BaseLayout>
+
+<style>
+  .topics-planned { margin-top: 2.5rem; color: var(--color-scene-text); }
+  .topics-planned h2 { margin: 0 0 0.8rem; font-size: 1.05rem; }
+  .topics-planned div { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+  .topics-planned a { color: var(--color-scene-muted); text-decoration: underline; text-underline-offset: 0.25em; }
+</style>
