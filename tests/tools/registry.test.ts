@@ -9,16 +9,17 @@ import { JSDOM } from 'jsdom';
 import ts from 'typescript';
 import { toolCategories, tools } from '../../src/data/tools.ts';
 
-test('publishes eleven uniquely addressable tools including radix', () => {
-  assert.equal(tools.length, 11);
+test('publishes twelve uniquely addressable tools including SHA', () => {
+  assert.equal(tools.length, 12);
   assert.deepEqual(tools.map((tool) => tool.slug), [
     'images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64',
-    'url', 'radix', 'timestamp', 'uuid', 'text-counter',
+    'url', 'radix', 'sha', 'timestamp', 'uuid', 'text-counter',
   ]);
   assert.equal(tools.find((tool) => tool.slug === 'markdown')?.href, '/tools/markdown/');
   assert.equal(tools.find((tool) => tool.slug === 'text-diff')?.href, '/tools/text-diff/');
   assert.equal(tools.find((tool) => tool.slug === 'regex')?.href, '/tools/regex/');
   assert.equal(tools.find((tool) => tool.slug === 'radix')?.href, '/tools/radix/');
+  assert.equal(tools.find((tool) => tool.slug === 'sha')?.href, '/tools/sha/');
   assert.equal(new Set(tools.map((tool) => tool.slug)).size, tools.length);
 
   for (const tool of tools) {
@@ -36,7 +37,7 @@ test('assigns every tool to a registered category and unique future background k
   assert.equal(new Set(tools.map((tool) => tool.backgroundKey)).size, tools.length);
   assert.deepEqual(Object.fromEntries([...categoryValues].map((category) => [
     category, tools.filter((tool) => tool.category === category).length,
-  ])), { text: 3, encoding: 3, time: 1, development: 3, file: 1 });
+  ])), { text: 3, encoding: 3, time: 1, development: 4, file: 1 });
 });
 
 test('route verification rejects a registry route that has no page even when legacy routes remain', () => {

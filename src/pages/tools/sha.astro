@@ -1,0 +1,140 @@
+---
+import { Copy, Fingerprint } from 'lucide-astro';
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'sha');
+if (!tool) throw new Error('缺少 SHA 摘要工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-sha" statusId="sha-status" statusInside privacyNote="文本和文件只在浏览器中计算摘要，不会上传或保存。单个文件最大 32 MiB。">
+  <div class="tool-toolbar" role="group" aria-label="摘要输入类型">
+    <button type="button" data-sha-mode="text" aria-pressed="true">文本</button>
+    <button type="button" data-sha-mode="file" aria-pressed="false">文件</button>
+  </div>
+  <div id="sha-text-panel" class="tool-field">
+    <label for="sha-text">输入文本</label>
+    <textarea id="sha-text" placeholder="输入要计算摘要的文本" spellcheck="false"></textarea>
+  </div>
+  <div id="sha-file-panel" class="tool-field" hidden>
+    <label for="sha-file">选择本地文件</label>
+    <input id="sha-file" type="file" />
+  </div>
+  <div class="tool-field tool-field--compact">
+    <label for="sha-algorithm">摘要算法</label>
+    <select id="sha-algorithm">
+      <option value="SHA-256">SHA-256</option>
+      <option value="SHA-384">SHA-384</option>
+      <option value="SHA-512">SHA-512</option>
+    </select>
+  </div>
+  <div class="tool-toolbar" aria-label="摘要操作">
+    <button type="button" data-sha-action="digest" title="计算 SHA 摘要"><Fingerprint size={18} aria-hidden="true" />计算摘要</button>
+    <button type="button" data-sha-action="copy" title="复制摘要"><Copy size={18} aria-hidden="true" />复制摘要</button>
+  </div>
+  <div class="tool-field">
+    <label for="sha-output">十六进制摘要</label>
+    <textarea id="sha-output" readonly spellcheck="false" placeholder="摘要会显示在这里"></textarea>
+  </div>
+</ToolLayout>
+
+<style>
+  #sha-text { min-height: 9rem; }
+  #sha-output { min-height: 7rem; overflow-wrap: anywhere; }
+  #sha-file-panel[hidden] { display: none; }
+</style>
+
+<script>
+  import { copyText } from '../../lib/tools/browser.ts';
+  import { digestBytes, validateHashFile, type ShaAlgorithm } from '../../lib/tools/sha.ts';
+
+  const textInput = document.querySelector<HTMLTextAreaElement>('#sha-text');
+  const fileInput = document.querySelector<HTMLInputElement>('#sha-file');
+  const algorithmInput = document.querySelector<HTMLSelectElement>('#sha-algorithm');
+  const output = document.querySelector<HTMLTextAreaElement>('#sha-output');
+  const status = document.querySelector<HTMLElement>('#sha-status');
+  let mode: 'text' | 'file' = 'text';
+  let requestId = 0;
+
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    if (!status) return;
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  const clearResult = () => {
+    requestId++;
+    if (output) output.value = '';
+    showStatus('准备就绪');
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-sha-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      mode = button.dataset.shaMode === 'file' ? 'file' : 'text';
+      document.querySelectorAll<HTMLButtonElement>('[data-sha-mode]').forEach((item) => {
+        item.setAttribute('aria-pressed', String(item === button));
+      });
+      const textPanel = document.querySelector<HTMLElement>('#sha-text-panel');
+      const filePanel = document.querySelector<HTMLElement>('#sha-file-panel');
+      if (textPanel) textPanel.hidden = mode !== 'text';
+      if (filePanel) filePanel.hidden = mode !== 'file';
+      clearResult();
+    });
+  });
+
+  textInput?.addEventListener('input', clearResult);
+  fileInput?.addEventListener('change', clearResult);
+  algorithmInput?.addEventListener('change', clearResult);
+
+  document.querySelector<HTMLButtonElement>('[data-sha-action="digest"]')?.addEventListener('click', async () => {
+    if (!output || !algorithmInput) return;
+    const currentRequest = ++requestId;
+    output.value = '';
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle || typeof subtle.digest !== 'function') {
+      showStatus('当前浏览器不支持 Web Crypto 摘要计算', 'error');
+      return;
+    }
+    const algorithm = algorithmInput.value as ShaAlgorithm;
+    try {
+      let bytes: ArrayBuffer;
+      if (mode === 'file') {
+        const file = fileInput?.files?.[0];
+        if (!file) {
+          showStatus('请先选择文件', 'error');
+          return;
+        }
+        const validation = validateHashFile(file);
+        if (!validation.ok) {
+          showStatus(validation.error, 'error');
+          return;
+        }
+        showStatus('正在读取并计算文件摘要');
+        bytes = await file.arrayBuffer();
+      } else {
+        if (!textInput?.value) {
+          showStatus('请输入文本', 'error');
+          return;
+        }
+        bytes = new TextEncoder().encode(textInput.value).buffer;
+      }
+      if (currentRequest !== requestId) return;
+      const digest = await digestBytes(bytes, algorithm, subtle);
+      if (currentRequest !== requestId) return;
+      output.value = digest;
+      showStatus('摘要计算完成', 'success');
+    } catch {
+      if (currentRequest === requestId) showStatus('摘要计算失败，请重试', 'error');
+    }
+  });
+
+  document.querySelector<HTMLButtonElement>('[data-sha-action="copy"]')?.addEventListener('click', async () => {
+    if (!output?.value) {
+      showStatus('没有可复制的摘要', 'error');
+      return;
+    }
+    const result = await copyText(output.value);
+    showStatus(result.ok ? '已复制摘要' : result.error, result.ok ? 'success' : 'error');
+  });
+</script>

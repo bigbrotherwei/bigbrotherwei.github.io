@@ -78,6 +78,13 @@ if (!existsSync(join(root, registryPath))) {
       browserModule: 'browser.ts',
       browserCalls: ['swapTransformation', 'copyText'],
     },
+    sha: {
+      logicModule: 'sha.ts',
+      logicCalls: ['digestBytes', 'validateHashFile'],
+      toolResultCalls: ['validateHashFile'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
     timestamp: {
       logicModule: 'timestamp.ts',
       logicCalls: ['convertTimestamp'],

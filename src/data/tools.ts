@@ -100,6 +100,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: '进制 转换 二进制 八进制 十进制 十六进制 radix binary hex',
   },
   {
+    slug: 'sha',
+    href: '/tools/sha/',
+    title: 'SHA 摘要',
+    description: '计算文本或本地文件的 SHA-256、SHA-384、SHA-512 摘要。',
+    category: 'development',
+    backgroundKey: 'tool-sha',
+    searchTerms: 'sha 摘要 哈希 hash 校验 文件 文本 sha256 sha384 sha512',
+  },
+  {
     slug: 'timestamp',
     href: '/tools/timestamp/',
     title: '时间戳转换',

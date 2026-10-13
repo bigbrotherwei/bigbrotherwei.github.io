@@ -31,6 +31,7 @@ export const backgroundKeys = [
   'tool-text-diff',
   'tool-regex',
   'tool-radix',
+  'tool-sha',
   'topic-distributed-filesystems',
   'post-cephfs-architecture',
   'post-juicefs-architecture',
@@ -196,6 +197,12 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'tool-radix': {
     desktop: '/images/backgrounds/tool-radix.webp',
     mobile: '/images/backgrounds/tool-radix-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-sha': {
+    desktop: '/images/backgrounds/tool-sha.webp',
+    mobile: '/images/backgrounds/tool-sha-mobile.webp',
     position: 'center',
     mobilePosition: 'center',
   },
