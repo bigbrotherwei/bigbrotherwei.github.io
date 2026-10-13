@@ -6,7 +6,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
 <BaseLayout
   title="站内搜索"
-  description="在文章、专题、工具和项目中查找内容。搜索词只在当前浏览器中处理。"
+  description="在文章、专题和工具中查找内容。搜索词只在当前浏览器中处理。"
   robots="noindex,follow"
   backgroundKey="search-index"
 >
@@ -14,7 +14,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <PageHero
       eyebrow="Search"
       title="站内搜索"
-      description="搜索文章、专题、工具与项目。输入内容只在浏览器中处理。"
+      description="搜索文章、专题和工具。输入内容只在浏览器中处理。"
     />
 
     <section class="search-panel" aria-label="站内搜索">
@@ -35,7 +35,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <p class="search-panel__status" data-search-status role="status">输入关键词开始搜索</p>
 
       <div class="search-results" data-search-results hidden></div>
-      <p class="search-state" data-search-idle>可搜索已发布的文章、专题、工具和项目。</p>
+      <p class="search-state" data-search-idle>可搜索已发布的文章、专题和工具。</p>
       <p class="search-state" data-search-empty hidden>没有找到匹配内容，试试更短或不同的关键词。</p>
       <p class="search-state search-state--error" data-search-error hidden>搜索暂时不可用，请稍后重试。</p>
 

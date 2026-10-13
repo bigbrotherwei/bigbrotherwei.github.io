@@ -94,12 +94,16 @@ if (!packageJson.scripts?.build?.includes('verify:dist')) {
 
 const htmlFiles = collectFiles(dist, (path) => path.endsWith('.html'));
 const searchableRoutes = [];
-const expectedTypes = new Set(['文章', '专题', '工具', '项目']);
+const expectedTypes = new Set(['文章', '专题', '工具']);
 const foundTypes = new Set();
 
 for (const path of htmlFiles) {
   const html = read(path);
   const route = toRoute(path);
+
+  if (route.startsWith('/projects/')) {
+    failures.push(`Site must not publish project route: ${route}`);
+  }
 
   if (/^\/posts\/[^/]+\/$/.test(route)) {
     const document = new JSDOM(html).window.document;
@@ -185,7 +189,7 @@ for (const path of htmlFiles) {
   }
 }
 
-const detailRoots = ['posts', 'topics', 'projects', 'tools'];
+const detailRoots = ['posts', 'topics', 'tools'];
 const expectedSearchableRoutes = htmlFiles
   .map(toRoute)
   .filter((route) => detailRoots.some((rootName) => new RegExp(`^/${rootName}/[^/]+/$`).test(route)));
@@ -196,7 +200,7 @@ if (searchableRoutes.length !== expectedSearchableRoutes.length) {
 for (const route of expectedSearchableRoutes) {
   if (!searchableRoutes.includes(route)) failures.push(`Generated detail page is missing Pagefind body: ${route}`);
 }
-for (const [rootName, type] of [['posts', '文章'], ['topics', '专题'], ['tools', '工具'], ['projects', '项目']]) {
+for (const [rootName, type] of [['posts', '文章'], ['topics', '专题'], ['tools', '工具']]) {
   if (expectedSearchableRoutes.some((route) => route.startsWith(`/${rootName}/`)) && !foundTypes.has(type)) {
     failures.push(`Pagefind output is missing content type: ${type}`);
   }
@@ -282,6 +286,7 @@ if (!existsSync(sitemapIndexPath)) failures.push('Missing sitemap-index.xml.');
 if (sitemapShards.length === 0) failures.push('Missing Sitemap shard.');
 for (const path of [sitemapIndexPath, ...sitemapShards].filter(existsSync)) {
   if (read(path).includes('/search/')) failures.push(`${relative(dist, path)} must exclude /search/.`);
+  if (read(path).includes('/projects/')) failures.push(`${relative(dist, path)} must exclude /projects/.`);
 }
 
 const robotsPath = join(dist, 'robots.txt');

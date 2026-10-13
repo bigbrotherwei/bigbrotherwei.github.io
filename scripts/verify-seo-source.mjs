@@ -37,14 +37,12 @@ const searchPagePath = 'src/pages/search/index.astro';
 const searchableTemplates = new Map([
   ['src/pages/posts/[slug].astro', 'type:文章'],
   ['src/pages/topics/[slug].astro', 'type:专题'],
-  ['src/pages/projects/[slug].astro', 'type:项目'],
   ['src/components/tools/ToolLayout.astro', 'type:工具'],
 ]);
 const nonSearchableSources = [
   'src/pages/search/index.astro',
   'src/pages/posts/index.astro',
   'src/pages/topics/index.astro',
-  'src/pages/projects/index.astro',
   'src/pages/tools/index.astro',
   'src/pages/archive/index.astro',
   'src/pages/tags/index.astro',
