@@ -101,15 +101,15 @@ for (const path of htmlFiles) {
   const html = read(path);
   const route = toRoute(path);
 
-  if (html.includes('class="hand-painted-farm-backdrop"')) {
-    const imagePreloads = tagElements(html, 'link').filter((tag) =>
-      attribute(tag, 'rel') === 'preload' && attribute(tag, 'as') === 'image');
+  if (!route.startsWith('/interactive/')) {
+    const backgroundPreloads = tagElements(html, 'link').filter((tag) =>
+      /\sdata-background-preload(?:\s|>)/.test(tag));
     const backgrounds = {};
     for (const [variant, media] of [
       ['desktop', '(min-width: 640.01px)'],
       ['mobile', '(max-width: 640px)'],
     ]) {
-      const matches = imagePreloads.filter((tag) => attribute(tag, 'media') === media);
+      const matches = backgroundPreloads.filter((tag) => attribute(tag, 'media') === media);
       if (matches.length !== 1) {
         failures.push(`${route} must contain exactly one ${variant} background preload; found ${matches.length}.`);
         continue;
@@ -117,6 +117,9 @@ for (const path of htmlFiles) {
       const preload = matches[0];
       const href = attribute(preload, 'href');
       backgrounds[variant] = href;
+      if (attribute(preload, 'rel') !== 'preload' || attribute(preload, 'as') !== 'image') {
+        failures.push(`${route} ${variant} background preload must use rel=preload and as=image.`);
+      }
       if (attribute(preload, 'fetchpriority') !== 'high') {
         failures.push(`${route} ${variant} background preload must use fetchpriority=high.`);
       }
@@ -126,8 +129,8 @@ for (const path of htmlFiles) {
         failures.push(`${route} ${variant} background preload image is missing: ${href}.`);
       }
     }
-    if (imagePreloads.length !== 2) {
-      failures.push(`${route} must contain only the desktop and mobile background preloads; found ${imagePreloads.length} image preloads.`);
+    if (backgroundPreloads.length !== 2) {
+      failures.push(`${route} must contain only the desktop and mobile background preloads; found ${backgroundPreloads.length}.`);
     }
     if (backgrounds.desktop && backgrounds.desktop === backgrounds.mobile) {
       failures.push(`${route} desktop and mobile background preloads must use distinct images.`);

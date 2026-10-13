@@ -8,8 +8,8 @@ import test from 'node:test';
 
 const siteOrigin = 'https://bigbrotherwei.github.io';
 const verifierPath = fileURLToPath(new URL('../../scripts/verify-dist.mjs', import.meta.url));
-const desktopPreload = '<link rel="preload" as="image" href="/images/background-desktop.webp" media="(min-width: 640.01px)" fetchpriority="high">';
-const mobilePreload = '<link rel="preload" as="image" href="/images/background-mobile.webp" media="(max-width: 640px)" fetchpriority="high">';
+const desktopPreload = '<link rel="preload" as="image" href="/images/background-desktop.webp" media="(min-width: 640.01px)" fetchpriority="high" data-background-preload>';
+const mobilePreload = '<link rel="preload" as="image" href="/images/background-mobile.webp" media="(max-width: 640px)" fetchpriority="high" data-background-preload>';
 const toolCategories = ['文本', '编码', '时间', '开发', '文件'] as const;
 const toolRoutes = ['images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64', 'url', 'timestamp', 'uuid', 'text-counter'] as const;
 const categoryForTool: Record<string, string> = {
@@ -139,6 +139,31 @@ test('allows standalone interactive HTML without the site background', () => {
     write(root, 'dist/interactive/diagram.html', html('/interactive/diagram.html', []).replace('<div class="hand-painted-farm-backdrop"></div>', '').replace(desktopPreload, '').replace(mobilePreload, ''));
   });
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('requires background preloads even when the backdrop element is missing', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, '<div class="hand-painted-farm-backdrop"></div>', '');
+    replaceInHome(root, mobilePreload, '');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ must contain exactly one mobile background preload/);
+});
+
+test('allows an unrelated image preload', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, desktopPreload, `${desktopPreload}<link rel="preload" as="image" href="/images/article.webp">`);
+  });
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('identifies a broken background preload on a non-home route', () => {
+  const result = runVerifier((root) => {
+    const page = join(root, 'dist/posts/hello/index.html');
+    writeFileSync(page, readFileSync(page, 'utf8').replace(mobilePreload, ''));
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/posts\/hello\/ must contain exactly one mobile background preload/);
 });
 
 test('rejects remote and missing local background images', async (t) => {
