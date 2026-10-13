@@ -21,6 +21,13 @@ test('digests UTF-8 bytes to lowercase known SHA vectors', async () => {
   }
 });
 
+test('digests an empty byte sequence to the known SHA-256 value', async () => {
+  assert.equal(
+    await digestBytes(new ArrayBuffer(0), 'SHA-256', subtle),
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+  );
+});
+
 test('accepts 32 MiB exactly and rejects larger files', () => {
   assert.deepEqual(validateHashFile({ size: 32 * 1024 * 1024 }), { ok: true, value: undefined });
   const tooLarge = validateHashFile({ size: 32 * 1024 * 1024 + 1 });
@@ -111,6 +118,18 @@ test('page hashes text and a local file in their selected modes', async () => {
     await waitFor(() => output.value === vectors['SHA-512']);
     assert.equal(reads, 1);
     assert.equal(output.value, vectors['SHA-512']);
+  } finally { dom.window.close(); }
+});
+
+test('page hashes empty text instead of rejecting it', async () => {
+  const dom = createPage(subtle);
+  try {
+    const document = dom.window.document;
+    const output = document.querySelector<HTMLTextAreaElement>('#sha-output')!;
+    document.querySelector<HTMLButtonElement>('[data-sha-action="digest"]')!.click();
+    await waitFor(() => output.value !== '' || document.querySelector<HTMLElement>('#sha-status')!.dataset.state === 'error');
+    assert.equal(output.value, 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+    assert.equal(document.querySelector<HTMLElement>('#sha-status')!.dataset.state, 'success');
   } finally { dom.window.close(); }
 });
 

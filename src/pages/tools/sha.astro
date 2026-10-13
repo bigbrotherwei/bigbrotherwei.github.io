@@ -113,10 +113,7 @@ if (!tool) throw new Error('缺少 SHA 摘要工具注册信息');
         showStatus('正在读取并计算文件摘要');
         bytes = await file.arrayBuffer();
       } else {
-        if (!textInput?.value) {
-          showStatus('请输入文本', 'error');
-          return;
-        }
+        if (!textInput) return;
         bytes = new TextEncoder().encode(textInput.value).buffer;
       }
       if (currentRequest !== requestId) return;
