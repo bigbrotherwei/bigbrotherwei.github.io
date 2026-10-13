@@ -90,6 +90,11 @@ const bases = Array.from({ length: 35 }, (_, index) => index + 2);
           showStatus('先输入有效整数，再交换进制', 'error');
           return;
         }
+        const outputDigits = output.value.length - Number(output.value.startsWith('-'));
+        if (outputDigits > 256) {
+          showStatus('转换结果超过 256 位，无法作为输入交换', 'error');
+          return;
+        }
         const swapped = swapTransformation({ input: input.value, output: output.value, mode: 'encode' });
         input.value = swapped.input;
         output.value = swapped.output;
