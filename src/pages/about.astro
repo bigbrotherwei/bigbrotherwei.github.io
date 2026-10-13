@@ -17,26 +17,21 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <section class="sketch-card about-panel" aria-label="关于内容">
       <div class="about-panel__section">
-        <p class="eyebrow">File Systems</p>
-        <h2>分布式文件系统</h2>
+        <p class="eyebrow">Work</p>
+        <h2>工作方向</h2>
         <p>参与高性能并行文件存储从架构调研到落地的全过程，面向 PB 级集群设计和实现客户端、元数据服务、文件锁、集群路由及监控告警等能力，并支持元数据集群动态扩展。</p>
-      </div>
-      <div class="about-panel__section">
-        <p class="eyebrow">Engineering</p>
-        <h2>性能与可靠性</h2>
         <p>围绕 RDMA、SPDK、FUSE 和 NFS 等技术，持续优化数据与元数据访问路径；推进目录 Quota、元数据服务多线程、平滑重启、文件系统迁移等特性，也参与线上问题排查与系统运维。</p>
-      </div>
-      <div class="about-panel__section">
-        <p class="eyebrow">Exploration</p>
-        <h2>其他探索</h2>
         <p>参与 IO500 存储性能评测与优化，也探索过使用文件存储卸载推理 KV Cache，以及面向大模型请求的语义缓存。</p>
       </div>
       <div class="about-panel__section">
-        <p class="eyebrow">GitHub</p>
-        <h2>更多内容</h2>
-        <p class="about-links">
-          <a href="https://github.com/bigbrotherwei" target="_blank" rel="noreferrer">GitHub 主页</a>
-        </p>
+        <p class="eyebrow">Beyond Work</p>
+        <h2>个人兴趣与实践</h2>
+        <p>工作之外，也会做游戏和参与开源社区。</p>
+        <ul class="about-links">
+          <li><a href="https://store.steampowered.com/app/2640710/_/" target="_blank" rel="noreferrer">《这个地堡》</a>：上架 Steam 的独立游戏。</li>
+          <li><a href="https://github.com/libfuse/libfuse/pull/885" target="_blank" rel="noreferrer">libfuse PR #885</a>：为 FUSE_CAP_HANDLE_KILLPRIV 增加初始化处理并调整默认行为，已合入。</li>
+          <li><a href="https://github.com/bigbrotherwei" target="_blank" rel="noreferrer">GitHub 主页</a>：更多个人项目与代码。</li>
+        </ul>
       </div>
     </section>
   </main>
@@ -65,9 +60,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   }
 
   .about-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem 1rem;
+    display: grid;
+    gap: 0.7rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .about-links li {
+    line-height: 1.8;
   }
 
   .about-links a {
