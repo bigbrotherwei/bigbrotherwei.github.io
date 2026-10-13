@@ -38,6 +38,11 @@ const attribute = (element, name) => {
   return match?.[1] ?? match?.[2] ?? match?.[3];
 };
 
+const cssUrl = (value) => {
+  const match = value.trim().match(/^url\((?:"([^"]+)"|'([^']+)'|([^)]*))\)$/);
+  return match?.[1] ?? match?.[2] ?? match?.[3]?.trim();
+};
+
 const elementsByAttribute = (html, tagName, name, value) =>
   tagElements(html, tagName).filter((element) => attribute(element, name) === value);
 
@@ -102,6 +107,8 @@ for (const path of htmlFiles) {
   const route = toRoute(path);
 
   if (!route.startsWith('/interactive/')) {
+    const backdrop = new JSDOM(html).window.document.querySelector('.hand-painted-farm-backdrop');
+    if (!backdrop) failures.push(`${route} must contain the rendered backdrop.`);
     const linkTags = tagElements(html, 'link');
     const backgroundPreloads = linkTags.filter((tag) =>
       /\sdata-background-preload(?:\s|>)/.test(tag));
@@ -118,6 +125,10 @@ for (const path of htmlFiles) {
       const preload = matches[0];
       const href = attribute(preload, 'href');
       backgrounds[variant] = href;
+      const property = variant === 'desktop' ? '--background-image' : '--background-image-mobile';
+      if (backdrop && href !== cssUrl(backdrop.style.getPropertyValue(property))) {
+        failures.push(`${route} ${variant} background preload does not match the rendered backdrop.`);
+      }
       if (attribute(preload, 'rel') !== 'preload' || attribute(preload, 'as') !== 'image') {
         failures.push(`${route} ${variant} background preload must use rel=preload and as=image.`);
       }

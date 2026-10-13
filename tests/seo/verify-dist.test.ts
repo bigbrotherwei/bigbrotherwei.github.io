@@ -46,7 +46,7 @@ const html = (
 ): string => `<!doctype html>
 <html><head>${metadata(route)}${schemas.map((type) => (
   `<script type="application/ld+json">{"@type":"${type}"}</script>`
-)).join('')}</head><body${pagefindType ? ' data-pagefind-body' : ''}><div class="hand-painted-farm-backdrop"></div>
+)).join('')}</head><body${pagefindType ? ' data-pagefind-body' : ''}><div class="hand-painted-farm-backdrop" style="--background-image: url('/images/background-desktop.webp'); --background-image-mobile: url('/images/background-mobile.webp')"></div>
 ${pagefindType ? `<h1 data-pagefind-meta="type:${pagefindType}">Title</h1>` : ''}
 </body></html>`;
 
@@ -112,6 +112,15 @@ test('rejects a missing mobile background preload', () => {
   assert.match(result.stderr, /\/.*mobile background preload/);
 });
 
+test('rejects a preload that does not match the rendered backdrop', () => {
+  const result = runVerifier((root) => {
+    write(root, 'dist/images/other-desktop.webp', 'other');
+    replaceInHome(root, 'href="/images/background-desktop.webp"', 'href="/images/other-desktop.webp"');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ desktop background preload does not match the rendered backdrop/);
+});
+
 test('rejects two desktop background preloads', () => {
   const result = runVerifier((root) => replaceInHome(root, desktopPreload, desktopPreload + desktopPreload));
   assert.equal(result.status, 1);
@@ -143,18 +152,26 @@ test('rejects low-priority and identical background variants', () => {
 
 test('allows standalone interactive HTML without the site background', () => {
   const result = runVerifier((root) => {
-    write(root, 'dist/interactive/diagram.html', html('/interactive/diagram.html', []).replace('<div class="hand-painted-farm-backdrop"></div>', '').replace(desktopPreload, '').replace(mobilePreload, ''));
+    write(root, 'dist/interactive/diagram.html', html('/interactive/diagram.html', []).replace(/<div class="hand-painted-farm-backdrop"[^>]*><\/div>/, '').replace(desktopPreload, '').replace(mobilePreload, ''));
   });
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
 });
 
 test('requires background preloads even when the backdrop element is missing', () => {
   const result = runVerifier((root) => {
-    replaceInHome(root, '<div class="hand-painted-farm-backdrop"></div>', '');
+    replaceInHome(root, '<div class="hand-painted-farm-backdrop" style="--background-image: url(\'/images/background-desktop.webp\'); --background-image-mobile: url(\'/images/background-mobile.webp\')"></div>', '');
     replaceInHome(root, mobilePreload, '');
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /\/ must contain exactly one mobile background preload/);
+});
+
+test('rejects a missing backdrop even when both preloads remain', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, '<div class="hand-painted-farm-backdrop" style="--background-image: url(\'/images/background-desktop.webp\'); --background-image-mobile: url(\'/images/background-mobile.webp\')"></div>', '');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ must contain the rendered backdrop/);
 });
 
 test('allows an unrelated image preload', () => {
