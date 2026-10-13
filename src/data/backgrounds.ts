@@ -33,6 +33,7 @@ export const backgroundKeys = [
   'tool-radix',
   'tool-sha',
   'tool-password',
+  'tool-qr',
   'topic-distributed-filesystems',
   'post-cephfs-architecture',
   'post-juicefs-architecture',
@@ -210,6 +211,12 @@ export const pageBackgrounds: Record<BackgroundKey, PageBackground> = {
   'tool-password': {
     desktop: '/images/backgrounds/tool-password.webp',
     mobile: '/images/backgrounds/tool-password-mobile.webp',
+    position: 'center',
+    mobilePosition: 'center',
+  },
+  'tool-qr': {
+    desktop: '/images/backgrounds/tool-qr.webp',
+    mobile: '/images/backgrounds/tool-qr-mobile.webp',
     position: 'center',
     mobilePosition: 'center',
   },

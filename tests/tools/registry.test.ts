@@ -9,11 +9,11 @@ import { JSDOM } from 'jsdom';
 import ts from 'typescript';
 import { toolCategories, tools } from '../../src/data/tools.ts';
 
-test('publishes thirteen uniquely addressable tools including password generation', () => {
-  assert.equal(tools.length, 13);
+test('publishes fourteen uniquely addressable tools including QR generation', () => {
+  assert.equal(tools.length, 14);
   assert.deepEqual(tools.map((tool) => tool.slug), [
     'images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64',
-    'url', 'radix', 'sha', 'password', 'timestamp', 'uuid', 'text-counter',
+    'url', 'radix', 'sha', 'password', 'qr', 'timestamp', 'uuid', 'text-counter',
   ]);
   assert.equal(tools.find((tool) => tool.slug === 'markdown')?.href, '/tools/markdown/');
   assert.equal(tools.find((tool) => tool.slug === 'text-diff')?.href, '/tools/text-diff/');
@@ -21,6 +21,7 @@ test('publishes thirteen uniquely addressable tools including password generatio
   assert.equal(tools.find((tool) => tool.slug === 'radix')?.href, '/tools/radix/');
   assert.equal(tools.find((tool) => tool.slug === 'sha')?.href, '/tools/sha/');
   assert.equal(tools.find((tool) => tool.slug === 'password')?.href, '/tools/password/');
+  assert.equal(tools.find((tool) => tool.slug === 'qr')?.href, '/tools/qr/');
   assert.equal(new Set(tools.map((tool) => tool.slug)).size, tools.length);
 
   for (const tool of tools) {
@@ -38,7 +39,7 @@ test('assigns every tool to a registered category and unique future background k
   assert.equal(new Set(tools.map((tool) => tool.backgroundKey)).size, tools.length);
   assert.deepEqual(Object.fromEntries([...categoryValues].map((category) => [
     category, tools.filter((tool) => tool.category === category).length,
-  ])), { text: 3, encoding: 3, time: 1, development: 5, file: 1 });
+  ])), { text: 3, encoding: 4, time: 1, development: 5, file: 1 });
 });
 
 test('route verification rejects a registry route that has no page even when legacy routes remain', () => {

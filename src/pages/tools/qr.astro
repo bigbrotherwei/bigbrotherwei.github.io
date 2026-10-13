@@ -1,0 +1,81 @@
+---
+import { Download, QrCode, Trash2 } from 'lucide-astro';
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'qr');
+if (!tool) throw new Error('缺少二维码工具注册信息');
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-qr" statusId="qr-status" statusInside>
+  <div class="tool-field">
+    <label for="qr-text">文本或网址</label>
+    <textarea id="qr-text" placeholder="输入要编码的内容（最多 1000 个 UTF-8 字节）" spellcheck="false"></textarea>
+  </div>
+  <div class="tool-fields qr-options">
+    <div class="tool-field">
+      <label for="qr-size">图片尺寸</label>
+      <select id="qr-size">
+        <option value="256">256 × 256 px</option>
+        <option value="512" selected>512 × 512 px</option>
+        <option value="1024">1024 × 1024 px</option>
+      </select>
+    </div>
+    <div class="tool-field">
+      <label for="qr-level">纠错级别</label>
+      <select id="qr-level">
+        <option value="L">低</option>
+        <option value="M" selected>中</option>
+        <option value="Q">较高</option>
+        <option value="H">高</option>
+      </select>
+    </div>
+  </div>
+  <div class="tool-toolbar" aria-label="二维码操作">
+    <button type="button" id="qr-generate"><QrCode size={18} aria-hidden="true" />生成二维码</button>
+    <a id="qr-download" class="qr-download" download="qrcode.png" hidden><Download size={18} aria-hidden="true" />下载 PNG</a>
+    <button type="button" id="qr-clear"><Trash2 size={18} aria-hidden="true" />清空</button>
+  </div>
+  <div class="qr-preview" aria-label="二维码预览">
+    <canvas id="qr-canvas" hidden aria-label="生成的二维码"></canvas>
+  </div>
+</ToolLayout>
+
+<style>
+  #qr-text { min-height: 8rem; overflow-wrap: anywhere; }
+  .qr-options { margin-top: 1rem; }
+  .qr-download { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.65rem 1rem; background: var(--color-action); color: white; text-decoration: none; border-radius: 4px; }
+  .qr-download:focus-visible { outline: 3px solid var(--color-action); outline-offset: 3px; }
+  .qr-preview { margin-top: 1rem; min-height: 1px; }
+  #qr-canvas { display: block; max-width: 100%; height: auto; margin-inline: auto; background: white; }
+</style>
+
+<script>
+  import { createQrController } from '../../lib/tools/qr.ts';
+
+  const text = document.querySelector<HTMLTextAreaElement>('#qr-text');
+  const size = document.querySelector<HTMLSelectElement>('#qr-size');
+  const level = document.querySelector<HTMLSelectElement>('#qr-level');
+  const canvas = document.querySelector<HTMLCanvasElement>('#qr-canvas');
+  const download = document.querySelector<HTMLAnchorElement>('#qr-download');
+  const status = document.querySelector<HTMLElement>('#qr-status');
+
+  if (text && size && level && canvas && download && status) {
+    const controller = createQrController({ text, size, level, canvas, download, status }, async (value, target, options) => {
+      const QRCode = await import('qrcode');
+      await QRCode.toCanvas(target, value, { ...options, margin: 2 });
+      return target.toDataURL('image/png');
+    });
+    const invalidate = () => { controller.clear(); controller.status('内容或设置已更改', 'idle'); };
+    text.addEventListener('input', invalidate);
+    size.addEventListener('change', invalidate);
+    level.addEventListener('change', invalidate);
+    document.querySelector('#qr-generate')?.addEventListener('click', controller.generate);
+    document.querySelector('#qr-clear')?.addEventListener('click', () => {
+      text.value = '';
+      controller.clear();
+      controller.status('已清空内容', 'idle');
+      text.focus();
+    });
+  }
+</script>

@@ -92,6 +92,10 @@ if (!existsSync(join(root, registryPath))) {
       browserModule: 'browser.ts',
       browserCalls: ['copyText'],
     },
+    qr: {
+      logicModule: 'qr.ts',
+      logicCalls: ['createQrController'],
+    },
     timestamp: {
       logicModule: 'timestamp.ts',
       logicCalls: ['convertTimestamp'],

@@ -12,9 +12,9 @@ test('accepts a tool page only when it names its expected background key', () =>
   assert.equal(hasExplicitBackgroundKey(source, 'tool-base64'), false);
 });
 
-test('tool backgrounds including password have distinct published files', () => {
+test('tool backgrounds including QR have distinct published files', () => {
   const hashes = new Set<string>();
-  for (const key of ['tool-images-pdf', 'tool-markdown', 'tool-text-diff', 'tool-regex', 'tool-password'] as const) {
+  for (const key of ['tool-images-pdf', 'tool-markdown', 'tool-text-diff', 'tool-regex', 'tool-password', 'tool-qr'] as const) {
     for (const variant of ['desktop', 'mobile'] as const) {
       const asset = pageBackgrounds[key][variant];
       const file = new URL(`../../public${asset}`, import.meta.url);
@@ -22,5 +22,5 @@ test('tool backgrounds including password have distinct published files', () => 
       hashes.add(createHash('sha256').update(readFileSync(file)).digest('hex'));
     }
   }
-  assert.equal(hashes.size, 10);
+  assert.equal(hashes.size, 12);
 });

@@ -118,6 +118,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: '密码 随机 生成 password 字母 数字 符号 安全',
   },
   {
+    slug: 'qr',
+    href: '/tools/qr/',
+    title: '二维码生成',
+    description: '将文本或网址生成二维码，预览并下载 PNG 图片。',
+    category: 'encoding',
+    backgroundKey: 'tool-qr',
+    searchTerms: '二维码 qr code 文本 网址 png 生成 下载',
+  },
+  {
     slug: 'timestamp',
     href: '/tools/timestamp/',
     title: '时间戳转换',
