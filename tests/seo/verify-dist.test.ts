@@ -8,6 +8,8 @@ import test from 'node:test';
 
 const siteOrigin = 'https://bigbrotherwei.github.io';
 const verifierPath = fileURLToPath(new URL('../../scripts/verify-dist.mjs', import.meta.url));
+const desktopPreload = '<link rel="preload" as="image" href="/images/background-desktop.webp" media="(min-width: 640.01px)" fetchpriority="high" data-background-preload>';
+const mobilePreload = '<link rel="preload" as="image" href="/images/background-mobile.webp" media="(max-width: 640px)" fetchpriority="high" data-background-preload>';
 const toolCategories = ['文本', '编码', '时间', '开发', '文件'] as const;
 const toolRoutes = ['images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64', 'url', 'timestamp', 'uuid', 'text-counter'] as const;
 const categoryForTool: Record<string, string> = {
@@ -33,6 +35,8 @@ const metadata = (route: string): string => `
   <meta name="twitter:title" content="Title">
   <meta name="twitter:description" content="Description">
   <meta name="twitter:image" content="${siteOrigin}/image.webp">
+  ${desktopPreload}
+  ${mobilePreload}
 `;
 
 const html = (
@@ -42,7 +46,7 @@ const html = (
 ): string => `<!doctype html>
 <html><head>${metadata(route)}${schemas.map((type) => (
   `<script type="application/ld+json">{"@type":"${type}"}</script>`
-)).join('')}</head><body${pagefindType ? ' data-pagefind-body' : ''}>
+)).join('')}</head><body${pagefindType ? ' data-pagefind-body' : ''}><div class="hand-painted-farm-backdrop" style="--background-image: url('/images/background-desktop.webp'); --background-image-mobile: url('/images/background-mobile.webp')"></div>
 ${pagefindType ? `<h1 data-pagefind-meta="type:${pagefindType}">Title</h1>` : ''}
 </body></html>`;
 
@@ -50,6 +54,8 @@ const createValidFixture = (): string => {
   const root = mkdtempSync(join(tmpdir(), 'dist-verifier-'));
 
   write(root, 'package.json', JSON.stringify({ scripts: { build: 'npm run verify:dist' } }));
+  write(root, 'dist/images/background-desktop.webp', 'desktop');
+  write(root, 'dist/images/background-mobile.webp', 'mobile');
   write(root, 'dist/index.html', html('/', ['WebSite']));
   write(root, 'dist/posts/hello/index.html', html('/posts/hello/', ['BlogPosting', 'BreadcrumbList'], '文章'));
   write(root, 'dist/topics/hello/index.html', html('/topics/hello/', [], '专题'));
@@ -98,6 +104,100 @@ test('accepts complete canonical and social URL metadata', () => {
   const result = runVerifier();
 
   assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('rejects a missing mobile background preload', () => {
+  const result = runVerifier((root) => replaceInHome(root, mobilePreload, ''));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/.*mobile background preload/);
+});
+
+test('rejects a preload that does not match the rendered backdrop', () => {
+  const result = runVerifier((root) => {
+    write(root, 'dist/images/other-desktop.webp', 'other');
+    replaceInHome(root, 'href="/images/background-desktop.webp"', 'href="/images/other-desktop.webp"');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ desktop background preload does not match the rendered backdrop/);
+});
+
+test('rejects two desktop background preloads', () => {
+  const result = runVerifier((root) => replaceInHome(root, desktopPreload, desktopPreload + desktopPreload));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/.*desktop background preload/);
+});
+
+test('rejects an unmarked duplicate of a background image preload', () => {
+  const unmarked = desktopPreload.replace(' data-background-preload', '');
+  const result = runVerifier((root) => replaceInHome(root, desktopPreload, desktopPreload + unmarked));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ desktop background image is preloaded more than once/);
+});
+
+test('rejects an incorrect background preload media condition', () => {
+  const result = runVerifier((root) => replaceInHome(root, '(max-width: 640px)', '(max-width: 700px)'));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/.*mobile background preload/);
+});
+
+test('rejects low-priority and identical background variants', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, desktopPreload, desktopPreload.replace('fetchpriority="high"', 'fetchpriority="low"'));
+    replaceInHome(root, '/images/background-mobile.webp', '/images/background-desktop.webp');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ desktop background preload must use fetchpriority=high/);
+  assert.match(result.stderr, /\/ desktop and mobile background preloads must use distinct images/);
+});
+
+test('allows standalone interactive HTML without the site background', () => {
+  const result = runVerifier((root) => {
+    write(root, 'dist/interactive/diagram.html', html('/interactive/diagram.html', []).replace(/<div class="hand-painted-farm-backdrop"[^>]*><\/div>/, '').replace(desktopPreload, '').replace(mobilePreload, ''));
+  });
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('requires background preloads even when the backdrop element is missing', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, '<div class="hand-painted-farm-backdrop" style="--background-image: url(\'/images/background-desktop.webp\'); --background-image-mobile: url(\'/images/background-mobile.webp\')"></div>', '');
+    replaceInHome(root, mobilePreload, '');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ must contain exactly one mobile background preload/);
+});
+
+test('rejects a missing backdrop even when both preloads remain', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, '<div class="hand-painted-farm-backdrop" style="--background-image: url(\'/images/background-desktop.webp\'); --background-image-mobile: url(\'/images/background-mobile.webp\')"></div>', '');
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ must contain the rendered backdrop/);
+});
+
+test('allows an unrelated image preload', () => {
+  const result = runVerifier((root) => {
+    replaceInHome(root, desktopPreload, `${desktopPreload}<link rel="preload" as="image" href="/images/article.webp">`);
+  });
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('identifies a broken background preload on a non-home route', () => {
+  const result = runVerifier((root) => {
+    const page = join(root, 'dist/posts/hello/index.html');
+    writeFileSync(page, readFileSync(page, 'utf8').replace(mobilePreload, ''));
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/posts\/hello\/ must contain exactly one mobile background preload/);
+});
+
+test('rejects remote and missing local background images', async (t) => {
+  for (const href of ['https://example.invalid/background.webp', '/images/missing.webp']) {
+    await t.test(href, () => {
+      const result = runVerifier((root) => replaceInHome(root, '/images/background-mobile.webp', href));
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /\/.*background preload.*(local|missing)/);
+    });
+  }
 });
 
 test('rejects retired project pages and sitemap entries', () => {

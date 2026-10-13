@@ -38,6 +38,11 @@ const attribute = (element, name) => {
   return match?.[1] ?? match?.[2] ?? match?.[3];
 };
 
+const cssUrl = (value) => {
+  const match = value.trim().match(/^url\((?:"([^"]+)"|'([^']+)'|([^)]*))\)$/);
+  return match?.[1] ?? match?.[2] ?? match?.[3]?.trim();
+};
+
 const elementsByAttribute = (html, tagName, name, value) =>
   tagElements(html, tagName).filter((element) => attribute(element, name) === value);
 
@@ -100,6 +105,55 @@ const foundTypes = new Set();
 for (const path of htmlFiles) {
   const html = read(path);
   const route = toRoute(path);
+
+  if (!route.startsWith('/interactive/')) {
+    const backdrop = new JSDOM(html).window.document.querySelector('.hand-painted-farm-backdrop');
+    if (!backdrop) failures.push(`${route} must contain the rendered backdrop.`);
+    const linkTags = tagElements(html, 'link');
+    const backgroundPreloads = linkTags.filter((tag) =>
+      /\sdata-background-preload(?:\s|>)/.test(tag));
+    const backgrounds = {};
+    for (const [variant, media] of [
+      ['desktop', '(min-width: 640.01px)'],
+      ['mobile', '(max-width: 640px)'],
+    ]) {
+      const matches = backgroundPreloads.filter((tag) => attribute(tag, 'media') === media);
+      if (matches.length !== 1) {
+        failures.push(`${route} must contain exactly one ${variant} background preload; found ${matches.length}.`);
+        continue;
+      }
+      const preload = matches[0];
+      const href = attribute(preload, 'href');
+      backgrounds[variant] = href;
+      const property = variant === 'desktop' ? '--background-image' : '--background-image-mobile';
+      if (backdrop && href !== cssUrl(backdrop.style.getPropertyValue(property))) {
+        failures.push(`${route} ${variant} background preload does not match the rendered backdrop.`);
+      }
+      if (attribute(preload, 'rel') !== 'preload' || attribute(preload, 'as') !== 'image') {
+        failures.push(`${route} ${variant} background preload must use rel=preload and as=image.`);
+      }
+      if (attribute(preload, 'fetchpriority') !== 'high') {
+        failures.push(`${route} ${variant} background preload must use fetchpriority=high.`);
+      }
+      if (!href?.startsWith('/images/') || !href.endsWith('.webp') || href.includes('..')) {
+        failures.push(`${route} ${variant} background preload must reference a local WebP image: ${href ?? '(missing href)'}.`);
+      } else if (!existsSync(join(dist, href.slice(1)))) {
+        failures.push(`${route} ${variant} background preload image is missing: ${href}.`);
+      }
+    }
+    if (backgroundPreloads.length !== 2) {
+      failures.push(`${route} must contain only the desktop and mobile background preloads; found ${backgroundPreloads.length}.`);
+    }
+    if (backgrounds.desktop && backgrounds.desktop === backgrounds.mobile) {
+      failures.push(`${route} desktop and mobile background preloads must use distinct images.`);
+    }
+    for (const [variant, href] of Object.entries(backgrounds)) {
+      if (href && linkTags.filter((tag) =>
+        attribute(tag, 'rel') === 'preload' && attribute(tag, 'as') === 'image' && attribute(tag, 'href') === href).length > 1) {
+        failures.push(`${route} ${variant} background image is preloaded more than once: ${href}.`);
+      }
+    }
+  }
 
   if (route.startsWith('/projects/')) {
     failures.push(`Site must not publish project route: ${route}`);
