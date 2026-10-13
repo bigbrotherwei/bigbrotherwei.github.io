@@ -14,10 +14,10 @@ test('navigation icons expose visible hover labels without button frames', () =>
   assert.match(css, /\.site-nav__icon-link\s*\{[^}]*border:\s*0/s);
 });
 
-test('footer keeps GitHub and counters but no other links or privacy prompts', () => {
+test('footer keeps GitHub but no site counters, other links, or privacy prompts', () => {
   const footer = read('src/components/SiteFooter.astro');
   assert.match(footer, /github\.com\/bigbrotherwei/);
-  assert.match(footer, /<SiteStats\s*\/>/);
+  assert.doesNotMatch(footer, /<SiteStats\s*\/>/);
   assert.doesNotMatch(footer, /href="\/(posts|topics|tools|about|rss\.xml)/);
   for (const path of ['src/components/SiteStats.astro', 'src/components/PageViews.astro', 'src/components/ArticleComments.astro']) {
     assert.doesNotMatch(read(path), /href="\/privacy\/"/, path);

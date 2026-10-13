@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import { ArrowRight } from 'lucide-astro';
 import PostDate from '../components/PostDate.astro';
+import SiteStats from '../components/SiteStats.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getDailyQuote, quotes } from '../data/quotes';
 import { tools } from '../data/tools';
@@ -32,6 +33,7 @@ const structuredData = buildWebsiteJsonLd({ site: Astro.site! });
 <BaseLayout title="bigbrotherwei" bodyClass="home" backgroundKey="home" {structuredData}>
   <main>
     <section class="home-hero">
+      <div class="home-hero__stats"><SiteStats /></div>
       <section class="hero-content" aria-labelledby="site-title">
         <p class="eyebrow">Personal Blog</p>
         <h1 id="site-title">bigbrotherwei</h1>
@@ -119,6 +121,31 @@ const structuredData = buildWebsiteJsonLd({ site: Astro.site! });
       linear-gradient(to bottom, rgba(5, 16, 28, 0.22), rgba(7, 18, 29, 0.08) 38%, rgba(5, 15, 23, 0.5));
   }
 
+  .home-hero__stats {
+    position: absolute;
+    z-index: 2;
+    top: 5.25rem;
+    right: max(1rem, calc((100vw - 1120px) / 2));
+  }
+
+  .home-hero__stats :global(.site-stats) {
+    border: 1px solid rgba(255, 250, 241, 0.32);
+    border-radius: 6px;
+    background: rgba(11, 22, 41, 0.48);
+    color: var(--color-scene-text);
+  }
+
+  .home-hero__stats :global(.site-stats__inner) {
+    width: auto;
+    margin: 0;
+    padding: 0.55rem 0.8rem;
+    gap: 0.35rem 1rem;
+  }
+
+  .home-hero__stats :global(.site-stats__item span) {
+    color: var(--color-scene-muted);
+  }
+
   .hero-content {
     position: relative;
     z-index: 1;
@@ -187,6 +214,7 @@ const structuredData = buildWebsiteJsonLd({ site: Astro.site! });
   .home-tools__grid svg { grid-column: 2; grid-row: 1; }
   .home-empty { color: var(--color-scene-muted); }
   @media (max-width: 680px) {
+    .home-hero__stats { top: 7rem; }
     .home-section-heading { align-items: start; }
     .home-section-heading > a { align-self: end; font-size: 0.88rem; }
     .home-post { grid-template-columns: minmax(0, 1fr) auto; gap: 0.45rem; }
@@ -194,4 +222,9 @@ const structuredData = buildWebsiteJsonLd({ site: Astro.site! });
     .home-topic__content { flex-direction: column; align-items: start; }
     .home-tools__grid { grid-template-columns: minmax(0, 1fr); }
   }
+
+  @media (max-width: 390px) {
+    h1 { font-size: 2.2rem; }
+  }
+
 </style>
