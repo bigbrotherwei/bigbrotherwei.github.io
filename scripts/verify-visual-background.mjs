@@ -221,6 +221,7 @@ const pageBackgroundRequirements = {
   'src/pages/tools/uuid.astro': 'tool-uuid',
   'src/pages/tools/text-counter.astro': 'tool-text-counter',
   'src/pages/tools/images-pdf.astro': 'tool-images-pdf',
+  'src/pages/tools/radix.astro': 'tool-radix',
 };
 
 const expectedToolAssets = {
@@ -251,6 +252,10 @@ const expectedToolAssets = {
   'tool-images-pdf': {
     desktop: '/images/backgrounds/tool-images-pdf.webp',
     mobile: '/images/backgrounds/tool-images-pdf-mobile.webp',
+  },
+  'tool-radix': {
+    desktop: '/images/backgrounds/tool-radix.webp',
+    mobile: '/images/backgrounds/tool-radix-mobile.webp',
   },
 };
 

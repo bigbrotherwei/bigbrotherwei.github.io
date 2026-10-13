@@ -91,6 +91,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: 'url 编码 解码 查询参数 转义',
   },
   {
+    slug: 'radix',
+    href: '/tools/radix/',
+    title: '进制转换',
+    description: '在 2 到 36 进制之间精确转换整数。',
+    category: 'encoding',
+    backgroundKey: 'tool-radix',
+    searchTerms: '进制 转换 二进制 八进制 十进制 十六进制 radix binary hex',
+  },
+  {
     slug: 'timestamp',
     href: '/tools/timestamp/',
     title: '时间戳转换',

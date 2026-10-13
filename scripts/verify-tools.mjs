@@ -71,6 +71,13 @@ if (!existsSync(join(root, registryPath))) {
       browserModule: 'browser.ts',
       swapCall: 'swapTransformation',
     },
+    radix: {
+      logicModule: 'radix.ts',
+      logicCalls: ['convertRadix'],
+      toolResultCalls: ['convertRadix'],
+      browserModule: 'browser.ts',
+      browserCalls: ['swapTransformation', 'copyText'],
+    },
     timestamp: {
       logicModule: 'timestamp.ts',
       logicCalls: ['convertTimestamp'],
