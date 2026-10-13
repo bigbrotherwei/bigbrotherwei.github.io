@@ -120,3 +120,28 @@ test('changing settings invalidates the previous password and a failed copy is r
     assert.equal(document.querySelector<HTMLButtonElement>('[data-password-action="copy"]')!.disabled, true);
   } finally { dom.window.close(); }
 });
+
+test('copy completion cannot restore success after settings change or reset', async () => {
+  for (const invalidate of ['settings', 'reset'] as const) {
+    let finishCopy!: (result: ToolResult<true>) => void;
+    const dom = createPage(0, () => new Promise((resolve) => { finishCopy = resolve; }));
+    try {
+      const document = dom.window.document;
+      const output = document.querySelector<HTMLTextAreaElement>('#password-output')!;
+      const status = document.querySelector<HTMLElement>('#password-status')!;
+      document.querySelector<HTMLButtonElement>('[data-password-action="generate"]')!.click();
+      document.querySelector<HTMLButtonElement>('[data-password-action="copy"]')!.click();
+      if (invalidate === 'settings') {
+        document.querySelector<HTMLInputElement>('#password-symbols')!.click();
+      } else {
+        document.querySelector<HTMLButtonElement>('[data-password-action="reset"]')!.click();
+      }
+      const expectedStatus = invalidate === 'settings' ? '设置已更改' : '已重置设置并清空密码';
+      assert.equal(output.value, '');
+      finishCopy({ ok: true, value: true });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      assert.equal(status.textContent, expectedStatus);
+      assert.equal(status.dataset.state, undefined);
+    } finally { dom.window.close(); }
+  }
+});

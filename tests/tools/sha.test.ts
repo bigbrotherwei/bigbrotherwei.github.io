@@ -144,3 +144,23 @@ test('page reports a failed copy', async () => {
     assert.equal(document.querySelector<HTMLElement>('#sha-status')!.dataset.state, 'error');
   } finally { dom.window.close(); }
 });
+
+test('copy completion cannot restore success after the SHA input changes', async () => {
+  let finishCopy!: (result: { ok: true }) => void;
+  const dom = createPage(subtle, () => new Promise((resolve) => { finishCopy = resolve; }));
+  try {
+    const document = dom.window.document;
+    const output = document.querySelector<HTMLTextAreaElement>('#sha-output')!;
+    const input = document.querySelector<HTMLTextAreaElement>('#sha-text')!;
+    const status = document.querySelector<HTMLElement>('#sha-status')!;
+    output.value = vectors['SHA-256'];
+    document.querySelector<HTMLButtonElement>('[data-sha-action="copy"]')!.click();
+    input.value = 'changed';
+    input.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    assert.equal(output.value, '');
+    finishCopy({ ok: true });
+    await tick();
+    assert.equal(status.textContent, '准备就绪');
+    assert.equal(status.dataset.state, undefined);
+  } finally { dom.window.close(); }
+});

@@ -131,7 +131,10 @@ if (!tool) throw new Error('缺少 SHA 摘要工具注册信息');
       showStatus('没有可复制的摘要', 'error');
       return;
     }
-    const result = await copyText(output.value);
+    const copiedRequest = requestId;
+    const copiedDigest = output.value;
+    const result = await copyText(copiedDigest);
+    if (copiedRequest !== requestId || output.value !== copiedDigest) return;
     showStatus(result.ok ? '已复制摘要' : result.error, result.ok ? 'success' : 'error');
   });
 </script>
