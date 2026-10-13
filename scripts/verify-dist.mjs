@@ -279,20 +279,37 @@ if (!existsSync(toolIndexPath)) {
   failures.push('Missing published tool directory: /tools/');
 } else {
   const directory = read(toolIndexPath);
-  const cards = tagElements(directory, 'a').filter((tag) => /\sdata-tool-card(?:\s|>)/.test(tag));
+  const document = new JSDOM(directory).window.document;
+  const cards = document.querySelectorAll('a[data-tool-card]');
+  const groups = document.querySelectorAll('section[data-tool-group]');
+  const expectedGroups = new Set(Object.values(toolCategories));
+  const seenGroups = new Set();
+  for (const group of groups) {
+    const category = group.getAttribute('data-category');
+    if (!expectedGroups.has(category) || seenGroups.has(category)) {
+      failures.push(`Tool directory has an unknown or duplicate category group: ${category ?? '(missing category)'}`);
+    }
+    seenGroups.add(category);
+  }
+  for (const category of expectedGroups) {
+    if (!seenGroups.has(category)) failures.push(`Tool directory is missing category group: ${category}`);
+  }
   const seen = new Set();
   for (const card of cards) {
-    const route = attribute(card, 'href');
+    const route = card.getAttribute('href');
     const slug = route?.match(/^\/tools\/([^/]+)\/$/)?.[1];
     if (!slug || !Object.hasOwn(toolCategories, slug) || seen.has(slug)) {
       failures.push(`Tool directory has an unknown or duplicate card: ${route ?? '(missing href)'}`);
       continue;
     }
     seen.add(slug);
-    if (attribute(card, 'data-category') !== toolCategories[slug]) {
+    if (card.getAttribute('data-category') !== toolCategories[slug]) {
       failures.push(`Tool directory category mismatch: ${slug}`);
     }
-    if (!attribute(card, 'data-search')?.trim()) failures.push(`Tool directory search text is missing: ${slug}`);
+    if (card.closest('[data-tool-group]')?.getAttribute('data-category') !== toolCategories[slug]) {
+      failures.push(`Tool directory group mismatch: ${slug}`);
+    }
+    if (!card.getAttribute('data-search')?.trim()) failures.push(`Tool directory search text is missing: ${slug}`);
   }
   for (const slug of toolSlugs) {
     if (!seen.has(slug)) failures.push(`Tool directory is missing card: ${slug}`);

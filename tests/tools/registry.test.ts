@@ -118,3 +118,45 @@ test('directory search and category filters update the visible count together', 
     dom.window.close();
   }
 });
+
+test('directory hides empty groups and restores the active category after clearing search', () => {
+  const source = readFileSync(new URL('../../src/pages/tools/index.astro', import.meta.url), 'utf8');
+  const script = source.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script);
+  const dom = new JSDOM(`
+    <input id="tool-search" type="search">
+    <button data-category-filter="all" aria-pressed="true"></button>
+    <button data-category-filter="text" aria-pressed="false"></button>
+    <button data-category-filter="encoding" aria-pressed="false"></button>
+    <section data-tool-group data-category="text"><a data-tool-card data-category="text" data-search="Markdown preview"></a></section>
+    <section data-tool-group data-category="encoding"><a data-tool-card data-category="encoding" data-search="Base64 converter"></a></section>
+    <p data-result-count>已显示 2 个工具。</p><p data-empty-state hidden></p>
+  `, { runScripts: 'outside-only' });
+  try {
+    const document = dom.window.document;
+    const search = document.querySelector<HTMLInputElement>('#tool-search')!;
+    const groups = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-group]'));
+    const count = document.querySelector<HTMLElement>('[data-result-count]')!;
+    const empty = document.querySelector<HTMLElement>('[data-empty-state]')!;
+    assert.deepEqual(groups.map((group) => group.hidden), [false, false]);
+    dom.window.eval(ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText);
+
+    search.value = 'markdown';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    assert.deepEqual(groups.map((group) => group.hidden), [false, true]);
+    assert.equal(count.textContent, '已显示 1 个工具。');
+
+    document.querySelector<HTMLButtonElement>('[data-category-filter="encoding"]')!.click();
+    assert.deepEqual(groups.map((group) => group.hidden), [true, true]);
+    assert.equal(count.textContent, '已显示 0 个工具。');
+    assert.equal(empty.hidden, false);
+
+    search.value = '';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    assert.deepEqual(groups.map((group) => group.hidden), [true, false]);
+    assert.equal(count.textContent, '已显示 1 个工具。');
+    assert.equal(empty.hidden, true);
+  } finally {
+    dom.window.close();
+  }
+});
