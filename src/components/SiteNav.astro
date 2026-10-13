@@ -1,6 +1,7 @@
 ---
 import { Search } from 'lucide-astro';
 import { BookOpenText, House, LibraryBig, Monitor, Moon, Sun, UserRound, Wrench } from 'lucide-astro';
+import SiteStats from './SiteStats.astro';
 
 const links = [
   { href: '/', label: '首页', icon: House },
@@ -13,6 +14,7 @@ const links = [
 
 <nav class="site-nav" aria-label="主导航">
   <a class="site-nav__brand" href="/">bigbrotherwei</a>
+  {Astro.url.pathname === '/' && <div class="site-nav__stats"><SiteStats /></div>}
   <div class="site-nav__links">
     {links.map((link) => <a class="site-nav__icon-link" href={link.href} aria-label={link.label} data-tooltip={link.label} aria-current={Astro.url.pathname === link.href || Astro.url.pathname.startsWith(`${link.href}/`) && link.href !== '/' ? 'page' : undefined}><link.icon aria-hidden="true" size={19} strokeWidth={2.2} /></a>)}
     <a class="site-nav__icon-link" href="/search/" aria-label="搜索" data-tooltip="搜索">
