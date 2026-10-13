@@ -30,6 +30,7 @@ test('GitHub link stays in the footer while site counters share the home navigat
 test('site statistics align with desktop navigation and avoid mobile icon overlap', () => {
   const css = read('src/styles/global.css');
   assert.match(css, /\.site-nav__stats\s*\{[^}]*align-self:\s*center/s);
+  assert.match(css, /\.site-nav__stats \.site-stats\s*\{[^}]*border:\s*0;[^}]*background:\s*transparent/s);
   assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.site-nav__stats\s*\{[^}]*position:\s*absolute/);
   assert.match(css, /@media \(max-width: 760px\)[\s\S]*?body\.home \.site-nav\s*\{[^}]*gap:\s*1\.25rem/);
 });
