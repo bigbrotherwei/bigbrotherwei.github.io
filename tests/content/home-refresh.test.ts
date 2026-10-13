@@ -13,16 +13,25 @@ test('home discovers published articles, an active topic, and real tools', () =>
   assert.doesNotMatch(home, /第二阶段先把入口铺好|后续逐步实现 JSON/);
 });
 
-test('GitHub link stays in the shared footer while site counters live in the home hero', () => {
+test('GitHub link stays in the footer while site counters share the home navigation row', () => {
   const layout = read('src/layouts/BaseLayout.astro');
   const footer = read('src/components/SiteFooter.astro');
   const home = read('src/pages/index.astro');
+  const nav = read('src/components/SiteNav.astro');
   assert.match(layout, /<SiteFooter\s*\/>/);
   assert.doesNotMatch(footer, /<SiteStats\s*\/>/);
-  assert.match(home, /<section class="home-hero">[\s\S]*?<SiteStats\s*\/>[\s\S]*?<section class="hero-content"/);
-  assert.equal((home.match(/<SiteStats\s*\/>/g) ?? []).length, 1);
+  assert.doesNotMatch(home, /<SiteStats\s*\/>/);
+  assert.match(nav, /Astro\.url\.pathname === '\/' && <div class="site-nav__stats"><SiteStats\s*\/><\/div>/);
+  assert.match(nav, /class="site-nav__stats"[\s\S]*?class="site-nav__links"/);
   assert.doesNotMatch(footer, /\/rss\.xml/);
   assert.match(footer, /github\.com\/bigbrotherwei/);
+});
+
+test('site statistics align with desktop navigation and avoid mobile icon overlap', () => {
+  const css = read('src/styles/global.css');
+  assert.match(css, /\.site-nav__stats\s*\{[^}]*align-self:\s*center/s);
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.site-nav__stats\s*\{[^}]*position:\s*absolute/);
+  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?body\.home \.site-nav\s*\{[^}]*gap:\s*1\.25rem/);
 });
 
 test('article dates and page views have their requested icons', () => {
