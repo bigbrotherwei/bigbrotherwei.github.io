@@ -11,10 +11,10 @@ const verifierPath = fileURLToPath(new URL('../../scripts/verify-dist.mjs', impo
 const desktopPreload = '<link rel="preload" as="image" href="/images/background-desktop.webp" media="(min-width: 640.01px)" fetchpriority="high" data-background-preload>';
 const mobilePreload = '<link rel="preload" as="image" href="/images/background-mobile.webp" media="(max-width: 640px)" fetchpriority="high" data-background-preload>';
 const toolCategories = ['文本', '编码', '时间', '开发', '文件'] as const;
-const toolRoutes = ['images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64', 'url', 'radix', 'sha', 'timestamp', 'uuid', 'text-counter'] as const;
+const toolRoutes = ['images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64', 'url', 'radix', 'sha', 'password', 'timestamp', 'uuid', 'text-counter'] as const;
 const categoryForTool: Record<string, string> = {
   'images-pdf': 'file', markdown: 'text', 'text-diff': 'text', regex: 'development',
-  json: 'development', base64: 'encoding', url: 'encoding', radix: 'encoding', sha: 'development', timestamp: 'time',
+  json: 'development', base64: 'encoding', url: 'encoding', radix: 'encoding', sha: 'development', password: 'development', timestamp: 'time',
   uuid: 'development', 'text-counter': 'text',
 };
 
@@ -65,7 +65,7 @@ const createValidFixture = (): string => {
     return `<section data-tool-group data-category="${category}"><h2>${label}</h2>${cards}</section>`;
   }).join('');
   const filters = ['全部', ...toolCategories].map((label, index) => `<button data-category-filter="${['all', 'text', 'encoding', 'time', 'development', 'file'][index]}">${label}</button>`).join('');
-  write(root, 'dist/tools/index.html', html('/tools/', []).replace('</body>', `${filters}${groups}<p data-result-count>已显示 12 个工具。</p><p data-empty-state hidden>没有找到匹配的工具。</p></body>`));
+  write(root, 'dist/tools/index.html', html('/tools/', []).replace('</body>', `${filters}${groups}<p data-result-count>已显示 13 个工具。</p><p data-empty-state hidden>没有找到匹配的工具。</p></body>`));
   for (const slug of toolRoutes) {
     const notice = slug === 'markdown'
       ? '<p class="tool-privacy-note">Markdown 文件只在浏览器中读取，不会上传或保存。预览中的远程图片会由浏览器向图片地址发出请求。</p>'
@@ -252,7 +252,7 @@ test('rejects an unlisted extra published tool route', () => {
     write(root, 'dist/tools/extra/index.html', html('/tools/extra/', [], '工具'));
   });
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /Published tool route count must be 12/);
+  assert.match(result.stderr, /Published tool route count must be 13/);
 });
 
 test('rejects a tool route missing from search', () => {
@@ -267,11 +267,11 @@ test('rejects a tool route missing from search', () => {
 test('rejects a tool card with a wrong category and stale count', () => {
   const result = runVerifier((root) => {
     const path = join(root, 'dist/tools/index.html');
-    writeFileSync(path, readFileSync(path, 'utf8').replace('data-tool-card data-category="file"', 'data-tool-card data-category="text"').replace('已显示 12 个工具', '已显示 11 个工具'));
+    writeFileSync(path, readFileSync(path, 'utf8').replace('data-tool-card data-category="file"', 'data-tool-card data-category="text"').replace('已显示 13 个工具', '已显示 12 个工具'));
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Tool directory category mismatch: images-pdf/);
-  assert.match(result.stderr, /Tool directory initial count must be 12/);
+  assert.match(result.stderr, /Tool directory initial count must be 13/);
 });
 
 test('rejects a tool card placed in a different category group', () => {

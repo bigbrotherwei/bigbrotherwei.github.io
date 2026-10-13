@@ -109,6 +109,15 @@ export const tools: readonly ToolDefinition[] = [
     searchTerms: 'sha 摘要 哈希 hash 校验 文件 文本 sha256 sha384 sha512',
   },
   {
+    slug: 'password',
+    href: '/tools/password/',
+    title: '随机密码生成',
+    description: '使用浏览器安全随机数生成包含所选字符的密码。',
+    category: 'development',
+    backgroundKey: 'tool-password',
+    searchTerms: '密码 随机 生成 password 字母 数字 符号 安全',
+  },
+  {
     slug: 'timestamp',
     href: '/tools/timestamp/',
     title: '时间戳转换',

@@ -8,7 +8,7 @@ const siteOrigin = 'https://bigbrotherwei.github.io';
 const failures = [];
 const toolCategories = {
   'images-pdf': 'file', markdown: 'text', 'text-diff': 'text', regex: 'development',
-  json: 'development', base64: 'encoding', url: 'encoding', radix: 'encoding', sha: 'development', timestamp: 'time',
+  json: 'development', base64: 'encoding', url: 'encoding', radix: 'encoding', sha: 'development', password: 'development', timestamp: 'time',
   uuid: 'development', 'text-counter': 'text',
 };
 const toolSlugs = Object.keys(toolCategories);

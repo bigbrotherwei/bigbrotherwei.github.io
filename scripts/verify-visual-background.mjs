@@ -223,6 +223,7 @@ const pageBackgroundRequirements = {
   'src/pages/tools/images-pdf.astro': 'tool-images-pdf',
   'src/pages/tools/radix.astro': 'tool-radix',
   'src/pages/tools/sha.astro': 'tool-sha',
+  'src/pages/tools/password.astro': 'tool-password',
 };
 
 const expectedToolAssets = {
@@ -261,6 +262,10 @@ const expectedToolAssets = {
   'tool-sha': {
     desktop: '/images/backgrounds/tool-sha.webp',
     mobile: '/images/backgrounds/tool-sha-mobile.webp',
+  },
+  'tool-password': {
+    desktop: '/images/backgrounds/tool-password.webp',
+    mobile: '/images/backgrounds/tool-password-mobile.webp',
   },
 };
 

@@ -85,6 +85,13 @@ if (!existsSync(join(root, registryPath))) {
       browserModule: 'browser.ts',
       browserCalls: ['copyText'],
     },
+    password: {
+      logicModule: 'password.ts',
+      logicCalls: ['generatePassword'],
+      toolResultCalls: ['generatePassword'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
     timestamp: {
       logicModule: 'timestamp.ts',
       logicCalls: ['convertTimestamp'],
