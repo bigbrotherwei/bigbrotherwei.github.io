@@ -101,6 +101,39 @@ for (const path of htmlFiles) {
   const html = read(path);
   const route = toRoute(path);
 
+  if (html.includes('class="hand-painted-farm-backdrop"')) {
+    const imagePreloads = tagElements(html, 'link').filter((tag) =>
+      attribute(tag, 'rel') === 'preload' && attribute(tag, 'as') === 'image');
+    const backgrounds = {};
+    for (const [variant, media] of [
+      ['desktop', '(min-width: 640.01px)'],
+      ['mobile', '(max-width: 640px)'],
+    ]) {
+      const matches = imagePreloads.filter((tag) => attribute(tag, 'media') === media);
+      if (matches.length !== 1) {
+        failures.push(`${route} must contain exactly one ${variant} background preload; found ${matches.length}.`);
+        continue;
+      }
+      const preload = matches[0];
+      const href = attribute(preload, 'href');
+      backgrounds[variant] = href;
+      if (attribute(preload, 'fetchpriority') !== 'high') {
+        failures.push(`${route} ${variant} background preload must use fetchpriority=high.`);
+      }
+      if (!href?.startsWith('/images/') || !href.endsWith('.webp') || href.includes('..')) {
+        failures.push(`${route} ${variant} background preload must reference a local WebP image: ${href ?? '(missing href)'}.`);
+      } else if (!existsSync(join(dist, href.slice(1)))) {
+        failures.push(`${route} ${variant} background preload image is missing: ${href}.`);
+      }
+    }
+    if (imagePreloads.length !== 2) {
+      failures.push(`${route} must contain only the desktop and mobile background preloads; found ${imagePreloads.length} image preloads.`);
+    }
+    if (backgrounds.desktop && backgrounds.desktop === backgrounds.mobile) {
+      failures.push(`${route} desktop and mobile background preloads must use distinct images.`);
+    }
+  }
+
   if (route.startsWith('/projects/')) {
     failures.push(`Site must not publish project route: ${route}`);
   }
