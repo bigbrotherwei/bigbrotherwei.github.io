@@ -102,7 +102,8 @@ for (const path of htmlFiles) {
   const route = toRoute(path);
 
   if (!route.startsWith('/interactive/')) {
-    const backgroundPreloads = tagElements(html, 'link').filter((tag) =>
+    const linkTags = tagElements(html, 'link');
+    const backgroundPreloads = linkTags.filter((tag) =>
       /\sdata-background-preload(?:\s|>)/.test(tag));
     const backgrounds = {};
     for (const [variant, media] of [
@@ -134,6 +135,12 @@ for (const path of htmlFiles) {
     }
     if (backgrounds.desktop && backgrounds.desktop === backgrounds.mobile) {
       failures.push(`${route} desktop and mobile background preloads must use distinct images.`);
+    }
+    for (const [variant, href] of Object.entries(backgrounds)) {
+      if (href && linkTags.filter((tag) =>
+        attribute(tag, 'rel') === 'preload' && attribute(tag, 'as') === 'image' && attribute(tag, 'href') === href).length > 1) {
+        failures.push(`${route} ${variant} background image is preloaded more than once: ${href}.`);
+      }
     }
   }
 

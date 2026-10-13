@@ -118,6 +118,13 @@ test('rejects two desktop background preloads', () => {
   assert.match(result.stderr, /\/.*desktop background preload/);
 });
 
+test('rejects an unmarked duplicate of a background image preload', () => {
+  const unmarked = desktopPreload.replace(' data-background-preload', '');
+  const result = runVerifier((root) => replaceInHome(root, desktopPreload, desktopPreload + unmarked));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /\/ desktop background image is preloaded more than once/);
+});
+
 test('rejects an incorrect background preload media condition', () => {
   const result = runVerifier((root) => replaceInHome(root, '(max-width: 640px)', '(max-width: 700px)'));
   assert.equal(result.status, 1);
