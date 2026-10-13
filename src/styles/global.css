@@ -458,16 +458,15 @@ body.home .site-nav {
 }
 
 .site-nav__stats .site-stats {
-  border: 1px solid rgba(255, 250, 241, 0.32);
-  border-radius: 6px;
-  background: rgba(11, 22, 41, 0.48);
+  border: 0;
+  background: transparent;
   color: var(--color-scene-text);
 }
 
 .site-nav__stats .site-stats__inner {
   width: auto;
   margin: 0;
-  padding: 0.4rem 0.7rem;
+  padding: 0;
   gap: 0.35rem 0.85rem;
 }
 
