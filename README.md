@@ -79,6 +79,8 @@ GitHub 仓库设置中，Pages 发布源应选择 **GitHub Actions**。
 5. Review 后合并到 `master`。
 6. GitHub Actions 自动发布。
 
+合并前后的页面与服务检查见[发布巡检清单](docs/release-checklist.zh.md)。
+
 文章和专题内容系统已经接入 Astro Content Collections。新增文章和专题时，应先修改 Markdown 内容，再运行 `npm run build` 验证。
 
 ## 实用工具
