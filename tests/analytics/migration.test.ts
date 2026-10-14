@@ -24,6 +24,12 @@ test('static pages use Vercount counters without an online placeholder', () => {
   assert.doesNotMatch(home, /当前在线|data-stat-key/);
 });
 
+test('tool page grid keeps the visit counter at content height', () => {
+  const toolsCss = read('src/styles/tools.css');
+  const gridRule = toolsCss.match(/\.tool-page\s*\{([^}]+)\}/)?.[1] ?? '';
+  assert.match(gridRule, /align-content:\s*start\s*;/);
+});
+
 test('article and tool work surfaces use translucent outer panels while inputs stay solid', () => {
   const globalCss = read('src/styles/global.css');
   const toolsCss = read('src/styles/tools.css');
