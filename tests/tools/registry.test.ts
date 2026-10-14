@@ -81,6 +81,15 @@ test('keeps hidden tool cards visually removed even when card classes set displa
   assert.match(globalCss, /\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important\s*;/s);
 });
 
+test('tool directory cards stay left-aligned and capped at a normal width', () => {
+  const page = readFileSync(new URL('../../src/pages/tools/index.astro', import.meta.url), 'utf8');
+  const gridRule = page.match(/\.tool-group \.sketch-grid\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(gridRule, 'tool groups need their own grid sizing');
+  assert.match(gridRule, /grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(min\(100%,\s*220px\),\s*min\(100%,\s*260px\)\)\)/);
+  assert.doesNotMatch(gridRule, /1fr/, 'a group with one card must not stretch it across the row');
+});
+
 test('new tool status messages stay inside their work panels', () => {
   for (const slug of ['images-pdf', 'markdown', 'text-diff', 'regex']) {
     const page = readFileSync(new URL(`../../src/pages/tools/${slug}.astro`, import.meta.url), 'utf8');
