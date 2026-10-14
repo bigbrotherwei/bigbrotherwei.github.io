@@ -71,6 +71,31 @@ if (!existsSync(join(root, registryPath))) {
       browserModule: 'browser.ts',
       swapCall: 'swapTransformation',
     },
+    radix: {
+      logicModule: 'radix.ts',
+      logicCalls: ['convertRadix'],
+      toolResultCalls: ['convertRadix'],
+      browserModule: 'browser.ts',
+      browserCalls: ['swapTransformation', 'copyText'],
+    },
+    sha: {
+      logicModule: 'sha.ts',
+      logicCalls: ['digestBytes', 'validateHashFile'],
+      toolResultCalls: ['validateHashFile'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
+    password: {
+      logicModule: 'password.ts',
+      logicCalls: ['generatePassword'],
+      toolResultCalls: ['generatePassword'],
+      browserModule: 'browser.ts',
+      browserCalls: ['copyText'],
+    },
+    qr: {
+      logicModule: 'qr.ts',
+      logicCalls: ['createQrController'],
+    },
     timestamp: {
       logicModule: 'timestamp.ts',
       logicCalls: ['convertTimestamp'],

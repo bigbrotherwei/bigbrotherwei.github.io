@@ -221,6 +221,10 @@ const pageBackgroundRequirements = {
   'src/pages/tools/uuid.astro': 'tool-uuid',
   'src/pages/tools/text-counter.astro': 'tool-text-counter',
   'src/pages/tools/images-pdf.astro': 'tool-images-pdf',
+  'src/pages/tools/radix.astro': 'tool-radix',
+  'src/pages/tools/sha.astro': 'tool-sha',
+  'src/pages/tools/password.astro': 'tool-password',
+  'src/pages/tools/qr.astro': 'tool-qr',
 };
 
 const expectedToolAssets = {
@@ -251,6 +255,22 @@ const expectedToolAssets = {
   'tool-images-pdf': {
     desktop: '/images/backgrounds/tool-images-pdf.webp',
     mobile: '/images/backgrounds/tool-images-pdf-mobile.webp',
+  },
+  'tool-radix': {
+    desktop: '/images/backgrounds/tool-radix.webp',
+    mobile: '/images/backgrounds/tool-radix-mobile.webp',
+  },
+  'tool-sha': {
+    desktop: '/images/backgrounds/tool-sha.webp',
+    mobile: '/images/backgrounds/tool-sha-mobile.webp',
+  },
+  'tool-password': {
+    desktop: '/images/backgrounds/tool-password.webp',
+    mobile: '/images/backgrounds/tool-password-mobile.webp',
+  },
+  'tool-qr': {
+    desktop: '/images/backgrounds/tool-qr.webp',
+    mobile: '/images/backgrounds/tool-qr-mobile.webp',
   },
 };
 

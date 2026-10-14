@@ -1,0 +1,123 @@
+---
+import { ArrowLeftRight, Copy, Trash2 } from 'lucide-astro';
+import ToolLayout from '../../components/tools/ToolLayout.astro';
+import { tools } from '../../data/tools';
+
+const tool = tools.find(({ slug }) => slug === 'radix');
+if (!tool) throw new Error('缺少进制转换工具注册信息');
+const bases = Array.from({ length: 35 }, (_, index) => index + 2);
+---
+
+<ToolLayout title={tool.title} description={tool.description} backgroundKey="tool-radix" statusId="radix-status" statusInside>
+  <div class="tool-fields">
+    <div class="tool-field">
+      <label for="radix-from">原进制</label>
+      <select id="radix-from">
+        {bases.map((base) => <option value={base} selected={base === 10}>{base} 进制</option>)}
+      </select>
+    </div>
+    <div class="tool-field">
+      <label for="radix-to">目标进制</label>
+      <select id="radix-to">
+        {bases.map((base) => <option value={base} selected={base === 16}>{base} 进制</option>)}
+      </select>
+    </div>
+  </div>
+  <div class="tool-fields radix-values">
+    <div class="tool-field">
+      <label for="radix-input">输入整数</label>
+      <textarea id="radix-input" placeholder="输入最多 256 位的整数" spellcheck="false" autocapitalize="characters"></textarea>
+    </div>
+    <div class="tool-field">
+      <label for="radix-output">转换结果</label>
+      <textarea id="radix-output" readonly placeholder="结果会显示在这里"></textarea>
+    </div>
+  </div>
+  <div class="tool-toolbar" aria-label="进制转换操作">
+    <button type="button" data-radix-action="swap" title="交换输入、结果与进制"><ArrowLeftRight size={18} aria-hidden="true" />交换</button>
+    <button type="button" data-radix-action="copy" title="复制转换结果"><Copy size={18} aria-hidden="true" />复制结果</button>
+    <button type="button" data-radix-action="clear" title="清空输入和结果"><Trash2 size={18} aria-hidden="true" />清空</button>
+  </div>
+</ToolLayout>
+
+<style>
+  .radix-values { margin-top: 1rem; }
+  .radix-values textarea { min-height: 9rem; overflow-wrap: anywhere; }
+</style>
+
+<script>
+  import { copyText, swapTransformation } from '../../lib/tools/browser.ts';
+  import { convertRadix } from '../../lib/tools/radix.ts';
+
+  const input = document.querySelector<HTMLTextAreaElement>('#radix-input');
+  const output = document.querySelector<HTMLTextAreaElement>('#radix-output');
+  const from = document.querySelector<HTMLSelectElement>('#radix-from');
+  const to = document.querySelector<HTMLSelectElement>('#radix-to');
+  const status = document.querySelector<HTMLElement>('#radix-status');
+
+  const showStatus = (message: string, state: 'success' | 'error' | 'idle' = 'idle') => {
+    if (!status) return;
+    status.textContent = message;
+    if (state === 'idle') delete status.dataset.state;
+    else status.dataset.state = state;
+  };
+
+  const convert = () => {
+    if (!input || !output || !from || !to) return;
+    if (input.value.trim() === '') {
+      output.value = '';
+      showStatus('输入整数以转换');
+      return;
+    }
+    const result = convertRadix(input.value, Number(from.value), Number(to.value));
+    if (!result.ok) {
+      output.value = '';
+      showStatus(result.error, 'error');
+      return;
+    }
+    output.value = result.value;
+    showStatus('转换完成', 'success');
+  };
+
+  input?.addEventListener('input', convert);
+  from?.addEventListener('change', convert);
+  to?.addEventListener('change', convert);
+  document.querySelectorAll<HTMLButtonElement>('[data-radix-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!input || !output || !from || !to) return;
+      if (button.dataset.radixAction === 'swap') {
+        if (!output.value) {
+          showStatus('先输入有效整数，再交换进制', 'error');
+          return;
+        }
+        const outputDigits = output.value.length - Number(output.value.startsWith('-'));
+        if (outputDigits > 256) {
+          showStatus('转换结果超过 256 位，无法作为输入交换', 'error');
+          return;
+        }
+        const swapped = swapTransformation({ input: input.value, output: output.value, mode: 'encode' });
+        input.value = swapped.input;
+        output.value = swapped.output;
+        const previousBase = from.value;
+        from.value = to.value;
+        to.value = previousBase;
+        convert();
+        input.focus();
+        return;
+      }
+      if (button.dataset.radixAction === 'clear') {
+        input.value = '';
+        output.value = '';
+        showStatus('已清空内容');
+        input.focus();
+        return;
+      }
+      if (!output.value) {
+        showStatus('没有可复制的结果', 'error');
+        return;
+      }
+      const result = await copyText(output.value);
+      showStatus(result.ok ? '已复制转换结果' : result.error, result.ok ? 'success' : 'error');
+    });
+  });
+</script>

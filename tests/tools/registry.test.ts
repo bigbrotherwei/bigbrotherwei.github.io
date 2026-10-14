@@ -9,15 +9,19 @@ import { JSDOM } from 'jsdom';
 import ts from 'typescript';
 import { toolCategories, tools } from '../../src/data/tools.ts';
 
-test('publishes ten uniquely addressable tools including regex', () => {
-  assert.equal(tools.length, 10);
+test('publishes fourteen uniquely addressable tools including QR generation', () => {
+  assert.equal(tools.length, 14);
   assert.deepEqual(tools.map((tool) => tool.slug), [
     'images-pdf', 'markdown', 'text-diff', 'regex', 'json', 'base64',
-    'url', 'timestamp', 'uuid', 'text-counter',
+    'url', 'radix', 'sha', 'password', 'qr', 'timestamp', 'uuid', 'text-counter',
   ]);
   assert.equal(tools.find((tool) => tool.slug === 'markdown')?.href, '/tools/markdown/');
   assert.equal(tools.find((tool) => tool.slug === 'text-diff')?.href, '/tools/text-diff/');
   assert.equal(tools.find((tool) => tool.slug === 'regex')?.href, '/tools/regex/');
+  assert.equal(tools.find((tool) => tool.slug === 'radix')?.href, '/tools/radix/');
+  assert.equal(tools.find((tool) => tool.slug === 'sha')?.href, '/tools/sha/');
+  assert.equal(tools.find((tool) => tool.slug === 'password')?.href, '/tools/password/');
+  assert.equal(tools.find((tool) => tool.slug === 'qr')?.href, '/tools/qr/');
   assert.equal(new Set(tools.map((tool) => tool.slug)).size, tools.length);
 
   for (const tool of tools) {
@@ -35,7 +39,7 @@ test('assigns every tool to a registered category and unique future background k
   assert.equal(new Set(tools.map((tool) => tool.backgroundKey)).size, tools.length);
   assert.deepEqual(Object.fromEntries([...categoryValues].map((category) => [
     category, tools.filter((tool) => tool.category === category).length,
-  ])), { text: 3, encoding: 2, time: 1, development: 3, file: 1 });
+  ])), { text: 3, encoding: 4, time: 1, development: 5, file: 1 });
 });
 
 test('route verification rejects a registry route that has no page even when legacy routes remain', () => {
@@ -77,6 +81,15 @@ test('keeps hidden tool cards visually removed even when card classes set displa
   assert.match(globalCss, /\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important\s*;/s);
 });
 
+test('tool directory cards stay left-aligned and capped at a normal width', () => {
+  const page = readFileSync(new URL('../../src/pages/tools/index.astro', import.meta.url), 'utf8');
+  const gridRule = page.match(/\.tool-group \.sketch-grid\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(gridRule, 'tool groups need their own grid sizing');
+  assert.match(gridRule, /grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(min\(100%,\s*220px\),\s*min\(100%,\s*260px\)\)\)/);
+  assert.doesNotMatch(gridRule, /1fr/, 'a group with one card must not stretch it across the row');
+});
+
 test('new tool status messages stay inside their work panels', () => {
   for (const slug of ['images-pdf', 'markdown', 'text-diff', 'regex']) {
     const page = readFileSync(new URL(`../../src/pages/tools/${slug}.astro`, import.meta.url), 'utf8');
@@ -112,6 +125,48 @@ test('directory search and category filters update the visible count together', 
     assert.equal(empty.hidden, false);
 
     dom.window.document.querySelector<HTMLButtonElement>('[data-category-filter="all"]')!.click();
+    assert.equal(count.textContent, '已显示 1 个工具。');
+    assert.equal(empty.hidden, true);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('directory hides empty groups and restores the active category after clearing search', () => {
+  const source = readFileSync(new URL('../../src/pages/tools/index.astro', import.meta.url), 'utf8');
+  const script = source.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(script);
+  const dom = new JSDOM(`
+    <input id="tool-search" type="search">
+    <button data-category-filter="all" aria-pressed="true"></button>
+    <button data-category-filter="text" aria-pressed="false"></button>
+    <button data-category-filter="encoding" aria-pressed="false"></button>
+    <section data-tool-group data-category="text"><a data-tool-card data-category="text" data-search="Markdown preview"></a></section>
+    <section data-tool-group data-category="encoding"><a data-tool-card data-category="encoding" data-search="Base64 converter"></a></section>
+    <p data-result-count>已显示 2 个工具。</p><p data-empty-state hidden></p>
+  `, { runScripts: 'outside-only' });
+  try {
+    const document = dom.window.document;
+    const search = document.querySelector<HTMLInputElement>('#tool-search')!;
+    const groups = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-group]'));
+    const count = document.querySelector<HTMLElement>('[data-result-count]')!;
+    const empty = document.querySelector<HTMLElement>('[data-empty-state]')!;
+    assert.deepEqual(groups.map((group) => group.hidden), [false, false]);
+    dom.window.eval(ts.transpileModule(script, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText);
+
+    search.value = 'markdown';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    assert.deepEqual(groups.map((group) => group.hidden), [false, true]);
+    assert.equal(count.textContent, '已显示 1 个工具。');
+
+    document.querySelector<HTMLButtonElement>('[data-category-filter="encoding"]')!.click();
+    assert.deepEqual(groups.map((group) => group.hidden), [true, true]);
+    assert.equal(count.textContent, '已显示 0 个工具。');
+    assert.equal(empty.hidden, false);
+
+    search.value = '';
+    search.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    assert.deepEqual(groups.map((group) => group.hidden), [true, false]);
     assert.equal(count.textContent, '已显示 1 个工具。');
     assert.equal(empty.hidden, true);
   } finally {

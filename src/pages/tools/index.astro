@@ -30,15 +30,22 @@ import { tools, toolCategories } from '../../data/tools';
       </div>
     </section>
 
-    <section class="sketch-grid" aria-label="工具列表">
-      {tools.map((tool) => (
-        <a class="sketch-card content-card" href={tool.href} data-tool-card data-category={tool.category} data-search={`${tool.title} ${tool.description} ${tool.searchTerms}`}>
-          <p class="eyebrow">{toolCategories.find((category) => category.value === tool.category)?.label}</p>
-          <h2>{tool.title}</h2>
-          <p>{tool.description}</p>
-        </a>
+    <div class="tool-groups" aria-label="工具列表">
+      {toolCategories.filter((category) => category.value !== 'all').map((category) => (
+        <section class="tool-group" data-tool-group data-category={category.value} aria-label={category.label}>
+          <h2>{category.label}</h2>
+          <div class="sketch-grid">
+            {tools.filter((tool) => tool.category === category.value).map((tool) => (
+              <a class="sketch-card content-card" href={tool.href} data-tool-card data-category={tool.category} data-search={`${tool.title} ${tool.description} ${tool.searchTerms}`}>
+                <p class="eyebrow">{category.label}</p>
+                <h3>{tool.title}</h3>
+                <p>{tool.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
       ))}
-    </section>
+    </div>
     <p class="tool-result-count" data-result-count role="status" aria-live="polite">已显示 {tools.length} 个工具。</p>
     <p data-empty-state hidden role="status" aria-live="polite">没有找到匹配的工具。</p>
   </main>
@@ -47,6 +54,7 @@ import { tools, toolCategories } from '../../data/tools';
 <script>
   const searchInput = document.querySelector<HTMLInputElement>('#tool-search');
   const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-card]'));
+  const groups = Array.from(document.querySelectorAll<HTMLElement>('[data-tool-group]'));
   const categoryFilters = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-category-filter]'));
   const resultCount = document.querySelector<HTMLElement>('[data-result-count]');
   const emptyState = document.querySelector<HTMLElement>('[data-empty-state]');
@@ -64,6 +72,10 @@ import { tools, toolCategories } from '../../data/tools';
       const visible = matchesQuery && matchesCategory;
       card.hidden = !visible;
       if (visible) visibleCount += 1;
+    }
+
+    for (const group of groups) {
+      group.hidden = !Array.from(group.querySelectorAll<HTMLElement>('[data-tool-card]')).some((card) => !card.hidden);
     }
 
     if (resultCount) resultCount.textContent = `已显示 ${visibleCount} 个工具。`;
@@ -84,6 +96,21 @@ import { tools, toolCategories } from '../../data/tools';
 </script>
 
 <style>
+  .tool-groups {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .tool-group h2 {
+    margin: 0 0 0.9rem;
+    color: var(--color-scene-text);
+    font-size: 1.35rem;
+  }
+
+  .tool-group .sketch-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), min(100%, 260px)));
+  }
+
   .tool-panel {
     display: grid;
     gap: 1rem;
